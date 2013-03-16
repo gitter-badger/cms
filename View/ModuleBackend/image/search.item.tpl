@@ -1,0 +1,1 @@
+<img style="cursor:pointer;float:left;width:120px;height:120px;" src="{$item->link_square}" alt="{$item->title}" onclick="MenuTree.editDeepChild({$item->nodeID});" />

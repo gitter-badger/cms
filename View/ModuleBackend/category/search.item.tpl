@@ -1,0 +1,1 @@
+<a style="background:url('{$smarty.const.sys_url}app/content/img/cms/icons/menu/article.png') no-repeat scroll left center transparent;padding-left:20px;" href="#{$item->ID}" onclick="MenuTree.editDeepChild({$item->ID});return false;" >{$item->title}</a><br />
