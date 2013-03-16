@@ -1,7 +1,7 @@
 Gratheon CMS
 ===
 
-Its a blog engine system which includes modular and embeddable content types, search, cloud hosting, multilinguality..
+Its a blog engine which includes modular and embeddable content types, search, cloud hosting, multilinguality, news feed synchronization
 
 Requirements
 ---
