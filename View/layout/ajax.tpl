@@ -1,10 +1,4 @@
-<div class="well">
-	{if $title}
-		<h1>{$title}
-		{if $title_badge}<span class="label label-info">{$title_badge}</span>{/if}
-		</h1>
-	{/if}
-
+<div class="ajaxWrapper ajaxWrapper{$strModule}">
 	{include file='helpers/messages.tpl'}
 
 	{foreach from=$controller->arrStyles item=item}

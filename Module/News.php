@@ -21,8 +21,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
     //adminpanel methods
 
     public function main() {
-        global $controller;
-        $controller->redirect(sys_url . '/content/call/' . $this->name . '/list_news/');
+		$this->controller->redirect(sys_url . '/content/call/' . $this->name . '/list_news/');
     }
 
     public function list_news() {
@@ -83,6 +82,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			ORDER BY t1.date_added DESC
 			LIMIT {$offset},{$intPerPage}", "array"
         );
+		$total_count = $content_news->count();
 
 //        $total_count  = $content_news->q("SELECT FOUND_ROWS()", 'int');
 
@@ -94,9 +94,9 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
         }
 
         #Create page navigation for first page
-        $total_count = $content_news->count();
+
         $this->assign('title', $this->translate('News'));
-        $this->assign('title_badge', $total_count);
+        $this->assign('filter_count', $total_count);
         $objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
 
 //        $this->assign('messages', array('info' => array($this->translate('News are articles that have strong chronological dependence'))));
@@ -118,7 +118,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
     }
 
     public function edit_news() {
-        global $user, $controller;
+        global $user;
 
         $strFunction = strtolower(__FUNCTION__);
         $ID = (int)$_GET['id'];
@@ -188,7 +188,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
                 }
             }
 
-            $controller->redirect(sys_url . '/content/call/' . $this->name . '/list_news/');
+			$this->controller->redirect(sys_url . '/content/call/' . $this->name . '/list_news/');
 
             /*
                if($_FILES){
@@ -242,7 +242,6 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
     }
 
     public function delete_news() {
-        global $controller;
         $ID = (int)$_GET['id'];
 
         $content_news = $this->model('News');
@@ -256,7 +255,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
         }
 
         $content_news->delete("ID='$ID'");
-        $controller->redirect(sys_url . '/content/call/' . $this->name . '/list_news/?page=' . $_GET['page']);
+        $this->controller->redirect(sys_url . '/content/call/' . $this->name . '/list_news/?page=' . $_GET['page']);
     }
 
     public function delete_image($ID = null) {

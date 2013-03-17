@@ -27,8 +27,8 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		if($parentID) {
 			$recElement = $content_file->obj('parentID=' . $parentID);
 			if($recElement) {
-				$recElement->scribd        = $content_file_scribd->obj("fileID='{$recElement->ID}'");
-				$recElement->url           = $content_file->getFileURL($recElement);
+				$recElement->scribd = $content_file_scribd->obj("fileID='{$recElement->ID}'");
+				$recElement->url    = $content_file->getFileURL($recElement);
 				//$recElement->root_path     = sys_root . '/res/file/' . $recElement->ID . '.' . $recElement->ext;
 				$recElement->scribd_source = 'http://d.scribd.com/ScribdViewer.swf?document_id=' . $recElement->scribd->docID . '&amp;access_key=' . $recElement->scribd->access_key . '&amp;page=1&amp;version=1&amp;viewMode=';
 
@@ -49,17 +49,47 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			$this->assign('recElement', $recElement);
 		}
 		else {
-			$arrFiles = LoadFiles(sys_root . '/res/incoming/');
 
-			if($arrFiles) {
-				SortByDate($arrFiles);
-				foreach($arrFiles as $file) {
-					$arrClearFiles[] = end(explode('/', $file[0]));
+
+			function LoadFiles($dir) {
+				$Files = array();
+				$It    = opendir($dir);
+				if(!$It) {
+					die('Cannot list files for ' . $dir);
 				}
-				//pre($arrClearFiles);
+				while($Filename = readdir($It)) {
+					if($Filename == '.' || $Filename == '..') {
+						continue;
+					}
+					$LastModified = filemtime($dir . $Filename);
+					$Files[]      = array($dir . $Filename, $LastModified);
+				}
+
+				return $Files;
 			}
 
-			$this->assign('arrFiles', $arrClearFiles);
+			function DateCmp($a, $b) {
+				return ($a[1] < $b[1]) ? -1 : 0;
+			}
+
+			function SortByDate(&$Files) {
+				usort($Files, 'DateCmp');
+			}
+
+
+			if(is_dir(sys_root . '/res/incoming/')) {
+				$arrFiles = LoadFiles(sys_root . '/res/incoming/');
+
+				if($arrFiles) {
+					SortByDate($arrFiles);
+					foreach($arrFiles as $file) {
+						$arrClearFiles[] = end(explode('/', $file[0]));
+					}
+					//pre($arrClearFiles);
+				}
+
+				$this->assign('arrFiles', $arrClearFiles);
+			}
 		}
 
 //		$this->assign('link_audio_player', sys_url . 'ext/audio_player/player.swf');
@@ -93,7 +123,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$oldElement = $content_file->obj('parentID=' . $parentID);
 
 		if($oldElement->ID) {
-			$newElement->ID            = $oldElement->ID;
+			$newElement->ID = $oldElement->ID;
 //			$newElement->scribd_upload = (int)$_POST['scribd_upload'];
 //			$newElement->scribd_show   = (int)$_POST['scribd_show'];
 			$content_file->update($newElement);
@@ -101,14 +131,14 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		else {
 //			$newElement->scribd_upload = (int)$_POST['scribd_upload'];
 //			$newElement->scribd_show   = (int)$_POST['scribd_show'];
-			$newElement->date_added    = 'NOW()';
-			$newElement->ID            = $content_file->insert($newElement);
+			$newElement->date_added = 'NOW()';
+			$newElement->ID         = $content_file->insert($newElement);
 		}
 
 
 		$filename = $newElement->ID . '.' . $strExt;
 
-		$strFilePath = sys_root . 'res/file/' . $filename;
+		$strFilePath        = sys_root . 'res/file/' . $filename;
 		$sourceIncomingFile = sys_root . 'res/incoming/' . $_POST['title'];
 
 		if($_FILES['file']['name']) {
@@ -121,7 +151,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 				$strFilePath
 			);
 
-			if($bool_added){
+			if($bool_added) {
 				unlink($sourceIncomingFile);
 			}
 		}
@@ -140,12 +170,10 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 //		}
 
 
-
-
 		$content_menu->q('UPDATE ' . $content_menu->table . ' SET title="' . $strMenuTitle . '" WHERE ID=' . $parentID);
 
 //		if($newElement->scribd_show && in_array($strExt, $this->document_scribd_extensions) && $this->config('scribd_api_key')) {
-			//$this->addFileToScribd($newElement->ID, $strFileURL, array('title' => $strMenuTitle, 'ext' => $strExt));
+		//$this->addFileToScribd($newElement->ID, $strFileURL, array('title' => $strMenuTitle, 'ext' => $strExt));
 //		}
 	}
 
@@ -271,14 +299,15 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	}
 
 
-	function search_from_admin($q) {}
+	function search_from_admin($q) {
+	}
 
 
 	//Custom private methods
 	function getArticleData($nodeID) {
 		/** @var $content_file \Gratheon\CMS\Model\File */
-		$content_menu     = $this->model('Menu');
-		$content_file     = $this->model('File');
+		$content_menu = $this->model('Menu');
+		$content_file = $this->model('File');
 
 		$arrFiles = $content_menu->q(
 			"SELECT t1.title,t2.MIME, t1.ID AS nodeID,
@@ -338,8 +367,6 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	}
 
 
-
-
 	function file_download() {
 		/** @var $content_file \Gratheon\CMS\Model\File */
 
@@ -389,29 +416,4 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 //		}
 //	}
 
-}
-
-function LoadFiles($dir) {
-	$Files = array();
-	$It    = opendir($dir);
-	if(!$It) {
-		die('Cannot list files for ' . $dir);
-	}
-	while($Filename = readdir($It)) {
-		if($Filename == '.' || $Filename == '..') {
-			continue;
-		}
-		$LastModified = filemtime($dir . $Filename);
-		$Files[]      = array($dir . $Filename, $LastModified);
-	}
-
-	return $Files;
-}
-
-function DateCmp($a, $b) {
-	return ($a[1] < $b[1]) ? -1 : 0;
-}
-
-function SortByDate(&$Files) {
-	usort($Files, 'DateCmp');
 }

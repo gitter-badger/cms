@@ -2,15 +2,21 @@
 
 <style>
 	{foreach from=$arrModules key=key item=item}
-		{if $item.icon}
-			.icon_{$item.ID}    {literal}{{/literal}background:transparent url('{$item.icon}') no-repeat right;{literal}}{/literal}
-		{/if}
+	{if $item.icon}
+	.icon_ {$item.ID} {literal} {
+		{/literal} background: transparent url('{$item.icon}') no-repeat right;
+	{literal}
+	}
+
+	{/literal}
+	{/if}
 	{/foreach}
 </style>
 </head>
 
 <body>
-<div id="navbar" class="navbar navbar-inverse">
+
+<div id="navbar" class="navbar navbar-inverse" style="margin-bottom: 0;">
 	<div class="navbar-inner">
 		<div class="container">
 
@@ -38,10 +44,14 @@
 						<li><a href="#settings/list_emails/">{t}Email templates{/t}</a></li>
 						<li><a href="#settings/list_sync_accounts/">{t}Sync accounts{/t}</a></li>
 						<li><a href="#settings/view_diagnostics/">{t}Diagnostics{/t}</a></li>
-						<li><a href="{$sys_url}content/profile/logout/" class="logout">{t}Logout{/t}</a></li>
+
 					</ul>
 				</li>
+
+
+				<li><a href="{$sys_url}content/profile/logout/" class="logout">{t}Logout{/t}</a></li>
 			</ul>
+
 
 		</div>
 	</div>
@@ -50,22 +60,43 @@
 <div class="modal" id="pageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"></div>
 
 <div class="dialog hidden" id="dialog_wrapper">
-    <div id="dialog"></div>
+	<div id="dialog"></div>
 </div>
 
 
 <div id='content'>
-    <div id="notification" class="hidden"></div>
-    <div id='content_area'>
-	</div>
+	<div id="notification" class="hidden"></div>
+
+	<div id='content_area'></div>
 </div>
 
 <div id='panel' class="noselect">
-    <div style="direction:ltr;padding:8px 0;" class="well">
+	<div class="navbar navbar-inverse">
+		<div class="navbar-inner">
+			<span style="padding-top:6px;display: inline-block;">Pathfinding</span>
+			<div class="btn-group pull-right">
+				<a class="btn btn-mini btn-primary" href="#"><i class="icon-page icon-white"></i> {t}Add{/t}</a>
+				<a class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+				<ul class="dropdown-menu">
+					{foreach from=$arrModules key=key item=item}
+						<li>
+						<a href="#">
+							<img {if in_array($item.ID, array('person','map','file','slide', 'image', 'video', 'formula', 'game','movie','code'))}class="modal_trigger"{/if} src="{$item.icon}" alt="{t code="module_`$item.ID`"}{/t}" data-module="{$item.ID}"/>
+							{$item.ID}
+						</a>
+						</li>
+					{/foreach}
+				</ul>
+			</div>
+		</div>
+	</div>
 
+	<div style="direction:ltr;padding:8px 0;" class="well">
 
 		<ul class="nav nav-list" id="panel_list">
-			<li class="nav-header">{t}Pages{/t}</li>
+			<li>Menu</li>
+
+
 			<li id="content_menu">
 				<ul id="mainmenu">
 					<li id="node1" class="root">
@@ -77,26 +108,18 @@
 
 
 
-		{foreach from=$arrModuleMenu item=module}
-			<li class="divider"></li>
-			<li class="nav-header">{$module.title}</li>
-			{if $module.children}
-				{foreach from=$module.children item=submodule}
-					<li class="{if $submodule.active}active{/if}">
-						<a rel="{$submodule.rel}" href='{$submodule.link}&static=1' class="ajax">{$submodule.title}</a>
-					</li>
-				{/foreach}
-			{/if}
-		{/foreach}
+			{foreach from=$arrModuleMenu item=module}
+				<li class="divider"></li>
+				<li class="nav-header">{$module.title}</li>
+				{if $module.children}
+					{foreach from=$module.children item=submodule}
+						<li class="{if $submodule.active}active{/if}">
+							<a rel="{$submodule.rel}" href='{$submodule.link}&static=1' class="ajax">{$submodule.title}</a>
+						</li>
+					{/foreach}
+				{/if}
+			{/foreach}
 		</ul>
-	</div>
-</div>
-
-<div id="panel_resize">
-	<div class="btn-group btn-group-vertical">
-		{foreach from=$arrModules key=key item=item}
-			<button type="button" class="btn"><img {if in_array($item.ID, array('person','map','file','slide', 'image', 'video', 'formula', 'game','movie','code'))}class="modal_trigger"{/if} src="{$item.icon}" alt="{t code="module_`$item.ID`"}{/t}" data-module="{$item.ID}"/></button>
-		{/foreach}
 	</div>
 </div>
 
@@ -132,6 +155,8 @@
 	</li>
 </ul>
 <ul id='context_menu' class="hidden"></ul>
+
+<div id="panel_resize"></div>
 
 </body>
 </html>

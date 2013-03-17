@@ -785,7 +785,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$this->useScriptedRedirect = true;
 
 		if($strModule) {
-			$view = $this->loadModule($strModule, function ($objModule) use ($strFunction, $controller) {
+			$view = $this->loadModule($strModule, function ($objModule) use ($strModule, $strFunction, $controller) {
 
 				/** @var \Gratheon\Core\Module $objModule */
 				$objModule->init($strFunction);
@@ -807,13 +807,20 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 				$objModule->assign('content_template', $contentTemplate);
+				$objModule->assign('strModule', $strModule);
 
 
 				$controller->assign('title', '');
 //				$controller->cache_css();
 
 				if(method_exists($objModule, $strFunction)) {
-					$objModule->$strFunction();
+					if(isset($this->input->URI[5])){
+						$id = $this->input->URI[5];
+					}
+					else{
+						$id = null;
+					}
+					$objModule->$strFunction($id);
 					return $controller->view($objModule->strWrapperTpl);
 				}
 			});

@@ -20,6 +20,18 @@ class Image extends \Gratheon\CMS\ContentModule
 	public $allowedExtensions = array('jpg', 'gif', 'png', 'bmp', 'jpeg');
 	public $exifExtensions = array('jpg', 'jpeg', 'tiff');
 
+	public $per_page = 40;
+
+
+	private function getImageModel() {
+		/** @var \Gratheon\CMS\Model\Image $content_image */
+		$content_image = $this->model('Image');
+		if($this->config('amazon_key')) {
+			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
+		}
+		return $content_image;
+	}
+
 
 	public function insert($parentID) {
 		$content_menu = $this->model('Menu');
@@ -53,7 +65,7 @@ class Image extends \Gratheon\CMS\ContentModule
 
 
 	public function update($parentID) {
-		$content_image = $this->model('Image');
+		$content_image = $this->getImageModel();
 		$content_menu  = $this->model('Menu');
 
 		$recMenu    = $content_menu->obj($parentID);
@@ -197,8 +209,7 @@ class Image extends \Gratheon\CMS\ContentModule
 
 	public function edit($recMenu = null) {
 
-		/** @var $content_image \Gratheon\CMS\Model\Image */
-		$content_image       = $this->model('Image');
+		$content_image       = $this->getImageModel();
 		$content_menu_rating = $this->model('content_menu_rating');
 
 		$parentID = $recMenu->ID;
@@ -211,15 +222,6 @@ class Image extends \Gratheon\CMS\ContentModule
 			)
 		));
 
-
-		if($this->config('amazon_key')) {
-			$content_image->setAmazonData(
-				$this->config('amazon_bucket'),
-				$this->config('amazon_host'),
-				$this->config('amazon_key'),
-				$this->config('amazon_secret')
-			);
-		}
 
 		if($parentID) {
 			if($recMenu->elementID) {
@@ -260,14 +262,8 @@ class Image extends \Gratheon\CMS\ContentModule
 
 
 	public function get_adminpanel_box_list() {
-		/** @var \Gratheon\CMS\Model\Image $content_image */
-		$content_image = $this->model('Image');
+		$content_image = $this->getImageModel();
 		$content_menu  = $this->model('Menu');
-
-
-		if($this->config('amazon_key')) {
-			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
-		}
 
 		$objLastData['data'] = $content_menu->arr(
 			"t1.module='image' ORDER BY t1.date_added DESC LIMIT 20",
@@ -290,17 +286,55 @@ class Image extends \Gratheon\CMS\ContentModule
 
 
 	public function list_images() {
-		global $controller;
-		$content_image = $this->model('Image');
-		$images        = $content_image->arr("1=1 LIMIT 100");
 
-		foreach($images as &$item) {
-			$item->link_square = $content_image->getResizedURL($item, 65, 65, 'square');
+		$content_image = $this->getImageModel();
+
+		$offset = $_GET['page'] > 0 ? $this->per_page * ((int)$_GET['page'] - 1) : 0;
+		$intPerPage = $this->per_page;
+		$images        = $content_image->q(
+			"SELECT SQL_CALC_FOUND_ROWS *
+			FROM content_image
+			ORDER BY date_added DESC, ID DESC
+			LIMIT {$offset},{$intPerPage}", "array"
+		);
+
+		$total_count = $content_image->count();
+		$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+		$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
+		$objPaginator->url='#image/list_images/';
+
+		if($images) {
+			foreach($images as &$item) {
+				$item->image_link = $content_image->getURL($item, 'thumb');
+
+			}
 		}
 
 		$this->assign('images', $images);
+		$this->assign('objPaginator', $objPaginator);
 
-		return $controller->view($this->strWrapperTpl);
+		return $this->controller->view($this->strWrapperTpl);
+	}
+
+
+	public function edit_image($id){
+		$id = intval($id);
+		$content_image = $this->getImageModel();
+		$image = $content_image->obj($id);
+		$image->source = $content_image->getOriginalURL($image);
+		$this->assign('image', $image);
+
+		$content_menu = $this->model('Menu');
+		$pages = $content_menu->arr("(elementID='$id' OR ID='{$image->parentID}') AND module='image'");
+		$this->assign('pages', $pages);
+
+
+		return $this->controller->view($this->strWrapperTpl);
+	}
+
+	public function delete_image($id){
+		$this->deleteByID($id);
+		$this->controller->redirect('#image/list_images/&page='.$_GET['page']);
 	}
 
 
@@ -512,16 +546,12 @@ class Image extends \Gratheon\CMS\ContentModule
 	//Static front methods
 	public function search_from_public($q) {
 		$content_menu  = $this->model('Menu');
-		/** @var \Gratheon\CMS\Model\Image $content_image */
-		$content_image = $this->model('Image');
-		if($this->config('amazon_key')) {
-			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
-		}
+		$content_image = $this->getImageModel();
 
 		$arrImages = $content_menu->arr("t1.title LIKE '%" . $q . "%' AND t1.module='image'",
 			't1.title,t2.ID, t2.image_format, t2.cloud_storage',
 				$content_menu->table . ' t1 LEFT JOIN ' .
-				$content_image->table . ' t2 ON t2.parentID=t1.ID');
+						$content_image->table . ' t2 ON t2.parentID=t1.ID');
 
 		$arrEnvelope           = new \Gratheon\CMS\SearchEnvelope();
 		$arrEnvelope->count    = $content_menu->count();
@@ -689,7 +719,7 @@ class Image extends \Gratheon\CMS\ContentModule
 
 
 	function attachImageInfo($image) {
-		$content_image       = $this->model('Image');
+		$content_image       = $this->getImageModel();
 		$content_menu_rating = $this->model('content_menu_rating');
 
 		$arrRatings    = $content_menu_rating->map("parentID='{$image->parentID}'", "xrate_tag, rating");
@@ -700,10 +730,6 @@ class Image extends \Gratheon\CMS\ContentModule
 			}
 		}
 
-
-		if($this->config('amazon_key')) {
-			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
-		}
 
 		/** @var \Gratheon\CMS\Model\Image $content_image */
 
@@ -735,6 +761,7 @@ class Image extends \Gratheon\CMS\ContentModule
 		$content_image->delete('ID=' . $recElement->ID);
 	}
 
+
 	//Embeddable
 	public function getPlaceholder($menu) {
 		$parentID = $menu->ID;
@@ -752,7 +779,6 @@ class Image extends \Gratheon\CMS\ContentModule
 
 		return '';
 	}
-
 
 
 	//Cloud

@@ -1,8 +1,12 @@
+{if $title}
+	<h1>{$title}</h1>
+{/if}
+
 <form class="ajax form-inline well" method='POST' action="{$link_filter}">
 	<input name="date_from" type="text" id="date_from" value="{$form_filter.date_from}" class="date" placeholder="{t}From{/t}">
 	<input name="date_to" type="text" id="date_to" value="{$form_filter.date_to}" class="date" placeholder="{t}To{/t}">
 	<button name="save_standart" class="btn ajax">{t}Filter{/t}</button>
-	<a href="{$link_add}" class="btn btn-primary ajax">{t}Add{/t}</a>
+	<a href="{$link_add}" class="btn btn-primary ajax pull-right">{t}Add{/t}</a>
 
 	{if $link_twitter_sync}
 		<a href="{$link_twitter_sync}" class="ajax button"><span>{t}Import Twitter posts{/t}</span></a>
@@ -30,9 +34,11 @@
 			{/foreach}
 		</table>
 
-	{include file="helpers/paginator.tpl"}
+		{include file="helpers/paginator.tpl"}
+
+		<p class="total_count">{$filter_count} items matching filter</p>
 	</div>
-	{else}
+{else}
 	<div class="alert alert-info">{t}List is empty{/t}</div>
 {/if}
 </form>

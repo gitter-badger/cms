@@ -381,9 +381,9 @@ Content.Views.ContentPage = Backbone.View.extend({
 
 		Content.activeSession.update();
 		if (!responce.ID) {
-			$(this.el).hide();
-			$(this.el).html(responce);
-			$(this.el).show();
+//			this.$el.hide();
+			this.$el.html(responce);
+			this.$el.show();
 		}
 
 		$('#savebutton', this.el).click(function () {
@@ -413,6 +413,10 @@ Content.Views.ContentPage = Backbone.View.extend({
 		this.addDynamicForms();
 
 		Content.resizeEditor();
+
+		$('img.modal_trigger').click(function(){
+			Content.modalPage.addPage(Content.page.ID, $(this).data('module'));
+		});
 
 		$('.module_select', me.el).change(function () {
 			if (Content.page.ID) {
@@ -459,7 +463,7 @@ Content.Views.ModalPage = Content.Views.ContentPage.extend({
 });
 
 Content.Views.Page = Content.Views.ContentPage.extend({
-	el: '#content',
+
 	editors: [],
 	autosaveEnabled: false,
 
@@ -550,7 +554,11 @@ Content.Views.Page = Content.Views.ContentPage.extend({
 
 			var me = this;
 			$.get(url, function (responce) {
-				Content.page.attachPageEvents(responce);
+				me.attachPageEvents(responce);
+
+
+
+
 
 				if (typeof(callback) == 'function') {
 					callback();

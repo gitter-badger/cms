@@ -6,7 +6,9 @@ $(document).ready(function () {
 	Content.menu = new Content.Views.Menu();
 	Content.contextMenuView = new Content.Views.ContextMenu();
 	Content.notePanel = new Content.Views.Note();
-	Content.page = new Content.Views.Page();
+	Content.page = new Content.Views.Page({
+		el: $('#content_area')
+	});
 	Content.searchView = new Content.Views.NavBar();
 	Content.menuPanel = new Content.Views.MenuPanel();
 	Content.modalPage = new Content.Views.ModalPage();
@@ -15,33 +17,6 @@ $(document).ready(function () {
 	Content.inactivity = 0;
 	Content.activeSession.init();
 
-	if (1 * $.cookie("panel_resize_left") > 0) {
-		var pos = 1 * $.cookie("panel_resize_left");
-
-		$('#panel_resize').css({
-			left: pos
-		});
-
-		if(pos>50 && pos <1600){
-			$('#panel').width(pos);
-			$('#top').css('left', pos + 'px');
-			$('#content').css('left', (pos + 26) + 'px');
-		}
-	}
-
-	$('#panel_resize').draggable({
-		axis: 'x',
-		iframeFix: true,
-		drag: function (e, ui) {
-		},
-		stop: function (e, ui) {
-			$.cookie("panel_resize_left", ui.position.left);
-			pos = ui.position.left
-			$('#panel').width(pos);
-			$('#top').css('left', pos + 'px');
-			$('#content').css('left', (pos + 26) + 'px');
-		}
-	});
 
 	$(window).resize(function () {
 		body.resize();
@@ -250,12 +225,43 @@ $(document).ready(function () {
 		}
 	});
 
-	$('#panel_resize img').click(function(){
-		if($(this).hasClass('modal_trigger')){
-			Content.modalPage.addPage(Content.page.ID, $(this).data('module'));
-		}
-		else{
-			Content.AddElement(Content.page.ID, $(this).data('module'));
+
+
+//		if($(this).hasClass('modal_trigger')){
+//		}
+//		else{
+//			Content.AddElement(Content.page.ID, $(this).data('module'));
+//		}
+//	});
+
+//	if (1 * $.cookie("panel_resize_left") > 0) {
+//		var pos = 1 * $.cookie("panel_resize_left");
+//
+//		$('#panel_resize').css({
+//			left: pos
+//		});
+//
+//		if(pos>50 && pos <1600){
+//			$('#panel').width(pos);
+//			$('#top').css('left', pos + 'px');
+//			$('#content').css('left', (pos + 26) + 'px');
+//		}
+//	}
+	$('#panel_resize').draggable({
+		axis: 'x',
+		iframeFix: true,
+		drag: function (e, ui) {
+			pos = ui.position.left
+			$('#panel').width(pos);
+			$('#top').css('left', pos + 'px');
+			$('#content').css('left', (pos + 5) + 'px');
+		},
+		stop: function (e, ui) {
+			$.cookie("panel_resize_left", ui.position.left);
+			pos = ui.position.left
+			$('#panel').width(pos);
+			$('#top').css('left', pos + 'px');
+			$('#content').css('left', (pos + 5) + 'px');
 		}
 	});
 	//}

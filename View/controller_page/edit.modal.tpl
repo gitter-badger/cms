@@ -120,7 +120,7 @@
 			<button class="btn btn-danger" onclick="if (confirm('{t}Are you sure?{/t}')) Content.DeleteElement({$recMenu->ID});" class="delete_link">{t}Delete{/t}</button>
 		{/if}
 
-        <a href="#" class="btn close">Close</a>
+        <a class="btn close">{t}Close{/t}</a>
 
     </div>
 

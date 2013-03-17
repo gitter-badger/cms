@@ -1,7 +1,7 @@
 <fieldset>
 
 	{if !$hideTitle}
-	<div class="control-group">
+	<div class="control-group float">
 		{if in_array($recMenu->module, array('image'))}
 			<textarea name="title" class="span7">{$recMenu->title}</textarea>
 		{else}
@@ -10,8 +10,17 @@
 	</div>
 	{/if}
 
+	{if $show_URL && $recMenu->ID}
+		<div class="control-group float">
+			<label class="control-label"><a target="_blank" class="external" href="{$recMenu->url}">{t}URL{/t}</a></label>
+			<div class="controls">
+				<input type="text" name="url" value="{$recMenu->smart_url}" class="input-small"/>
+			</div>
+		</div>
+	{/if}
 
-		<div class="control-group float {if $modal}hidden{/if}">
+
+		<div class="control-group float {if $modal || $recMenu->ID && $recMenu->module=='article'}hidden{/if}">
 			<label class="control-label" for="module">{t}Page type{/t}</label>
 
 			<div class="controls">
@@ -33,15 +42,16 @@
 			</div>
 		</div>
 
-
-	{if $show_URL && $recMenu->ID}
-		<div class="control-group float">
-			<label class="control-label"><a target="_blank" class="external" href="{$recMenu->url}">{t}URL{/t}</a></label>
-			<div class="controls">
-				<input type="text" name="url" value="{$recMenu->smart_url}" class="input-small"/>
-			</div>
+	{if $recMenu->module=='article'}
+		<div id="modal_subpage_selector" class="btn-group clear">
+			{foreach from=array('person','map','file','slide', 'image', 'video', 'formula', 'game','movie') key=key item=item}
+				<button type="button" class="btn">
+					<img class="modal_trigger" src="/vendor/Gratheon/CMS/assets/img/icons/menu/{$item}.png" alt="{t code="module_`$item`"}{/t}" data-module="{$item}"/>
+				</button>
+			{/foreach}
 		</div>
 	{/if}
+
 
 	{if $contentTemplate}
 		{include file=$contentTemplate}
