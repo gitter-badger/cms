@@ -1,4 +1,5 @@
-<form class="standart ajax" action='{$link_save}' method='POST'> 	 	
+<div class="ajaxSettingsWrapper">
+<form class="standart ajax" action='{$link_save}' method='POST'>
 	<div class="control-group">
 		<div class="label">
 			<label for="title">{t}Group{/t}</label>
@@ -14,11 +15,4 @@
 	</div>
 </form>
 
-<script language="Javascript">
-	{literal}
-		jQuery('#backbutton').click(function(){
-			Content.get('{/literal}{$link_list}{literal}');
-			return false;
-		});
-	{/literal}
-</script>
+</div>

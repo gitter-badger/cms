@@ -1,3 +1,4 @@
+<div class="ajaxSettingsWrapper">
 <form class="form-horizontal ajax" action='{$link_save}' method='POST'>
 
 	<h3>Sync account</h3>
@@ -68,3 +69,4 @@
 	<script src="http://connect.facebook.net/en_US/all.js"></script>
 	<div id="fb_data" class="clear"></div>
 {/if}
+</div>

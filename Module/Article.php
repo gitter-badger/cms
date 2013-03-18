@@ -430,7 +430,7 @@ class Article
 
 		//$this->assign('show_twitter',$this->config('twitter_login'));
 
-		return $this->controller->view('ModuleFrontend/' . $this->name . '/' . __FUNCTION__ . '.tpl');
+		return $this->controller->view('ModuleBackend/' . $this->name . '/' . __FUNCTION__ . '.tpl');
 	}
 
 

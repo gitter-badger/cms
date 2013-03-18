@@ -2,7 +2,7 @@
     <div class="dyn_content recent_content {*if $smarty.foreach.results.index > 0}hidden{/if*}" id="dyn_tab_{$key}">
         <ul class="thumbnails">
 		{foreach from=$block.data item=item}
-            <li class="span2">
+            <li class="span2"  style="float:{cycle values="left,right"};">
                 <div class="thumbnail">
 
 					{if $item->site eq 'youtube.com'}

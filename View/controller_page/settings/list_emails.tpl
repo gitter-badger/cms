@@ -1,3 +1,4 @@
+<div class="ajaxSettingsWrapper">
 {if $arrList}
 	<table class="table table-striped table-bordered table-condensed">
 		<tr>
@@ -17,3 +18,4 @@
 	</table>
 	{include file="helpers/paginator.tpl"}
 {/if}
+</div>

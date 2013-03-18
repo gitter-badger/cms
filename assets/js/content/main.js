@@ -101,7 +101,7 @@ Content.Routers.Main = Backbone.Router.extend({
 		"dashboard": "dashboard",
 		"search/:q": "search",
 		"page/:id": "page",
-		"settings/:id/": "settings",
+		"settings/*path": "settings",
 		"add/:module/:parent/:lang/": "add",
 		"*path": "other"
 	},
@@ -125,11 +125,11 @@ Content.Routers.Main = Backbone.Router.extend({
 
 	settings: function (path) {
 		Content.page.load(sys_url + 'content/settings/' + path);
-
 	},
 
 	other: function (path) {
 		var anchor = path.split('/');
+		console.log('other');
 
 		Content.openMenu = anchor[0];
 

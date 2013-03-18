@@ -1,4 +1,5 @@
-<form class="standart ajax" action='{$link_save}' method='POST'> 	 
+<div class="ajaxSettingsWrapper">
+<form class="standart ajax" action='{$link_save}' method='POST'>
 	<div class="control-group">
 		<div class="label"><label class="control-label">Tag</label></div>
 		<div class="controls">
@@ -30,3 +31,4 @@
 		<button name="save_standart" id='savebutton'><span>{t}Save{/t}</span></button>
 	</div>
 </form>
+</div>

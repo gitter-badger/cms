@@ -1,3 +1,4 @@
+<div class="ajaxSettingsWrapper">
 <form class="form-inline well ajax" method='POST' action="{$link_filter}">
 	<select name="group" id="group">
 		<option value="">{t}Group{/t}
@@ -43,3 +44,4 @@
 {else}
 	<div class="alert alert-info">{t}List is empty{/t}</div>
 {/if}
+</div>

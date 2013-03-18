@@ -1,3 +1,4 @@
+<div class="ajaxSettingsWrapper">
 <h1>{$title}</h1>
 <form class="form-inline well ajax" method='POST' action="{$link_filter}">
 	<select name="application" id="application">
@@ -9,9 +10,10 @@
 
 	<input name="keyword" type="text" id="keyword" value="{$keyword}" placeholder="{t}Keyword{/t}" />
 	<button class="btn" name="save_standart" id='savebutton'>{t}Filter{/t}</button>
-	<a class="btn btn-primary ajax" href="{$link_add}" class="ajax button">{t}Add{/t}</a>
-	<a class="btn" href="{$link_import}" class="ajax button" rel="settings/import_translations">{t}Import{/t} &uarr;</a>
-	<a class="btn" href="{$smarty.const.sys_url}content/call/settings/export_translations"  target="_blank" class="button">{t}Export{/t} &darr;</a>
+
+	<a class="btn btn-primary" href="#settings/edit_translation/">{t}Add{/t}</a>
+	<a class="btn" href="#settings/import_translations">{t}Import{/t} &uarr;</a>
+	<a class="btn" href="#settings/export_translations">{t}Export{/t} &darr;</a>
 </form>
 
 {if $arrData}
@@ -43,3 +45,5 @@
 {else}
 	<div class="alert alert-info">{t}No translations found{/t}</div>
 {/if}
+
+</div>

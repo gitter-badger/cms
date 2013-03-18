@@ -16,21 +16,9 @@ class Image extends \Gratheon\CMS\ContentModule
 	public $models = array('content_image', 'content_menu', 'sys_languages');
 	public $static_methods = array('front_rss', 'resized');
 	public $name = 'image';
-
 	public $allowedExtensions = array('jpg', 'gif', 'png', 'bmp', 'jpeg');
 	public $exifExtensions = array('jpg', 'jpeg', 'tiff');
-
 	public $per_page = 40;
-
-
-	private function getImageModel() {
-		/** @var \Gratheon\CMS\Model\Image $content_image */
-		$content_image = $this->model('Image');
-		if($this->config('amazon_key')) {
-			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
-		}
-		return $content_image;
-	}
 
 
 	public function insert($parentID) {
@@ -61,47 +49,6 @@ class Image extends \Gratheon\CMS\ContentModule
 		if($_GET['returnHTML']) {
 			echo '<img rel="' . $parentID . '" src="' . $content_image->getURL($content_image->obj($intElement), 'thumb') . '" />';
 		}
-	}
-
-
-	public function update($parentID) {
-		$content_image = $this->getImageModel();
-		$content_menu  = $this->model('Menu');
-
-		$recMenu    = $content_menu->obj($parentID);
-		$recElement = $content_image->obj($recMenu->elementID);
-		$strExt     = $recElement->image_format;
-
-		$recElement->date_added     = $_POST['date_added'];
-		$recElement->float_position = $_POST['float_position'] ? $_POST['float_position'] : $this->config('float_position');
-		$recElement->thumbnail_size = $_POST['thumbnail_size'] ? $_POST['thumbnail_size'] : $this->config('thumbnail_size');
-		$recElement->thumbnail_type = $_POST['thumbnail_type'] ? $_POST['thumbnail_type'] : $this->config('thumbnail_type');
-		$filename                   = $recElement->ID . '.' . $strExt;
-
-		$arrCropPositions = explode(':', $_POST['crop_position']);
-
-
-		if($this->config('cloud_hosting') && $this->config('amazon_cloudonly')) {
-			$this->copyFromCloud($filename);
-		}
-
-		$this->resizeImage($filename, $recElement->thumbnail_size, array(), $arrCropPositions);
-
-
-		$content_image->update($recElement, 'parentID=' . $parentID);
-
-
-		//Copy to cloud
-
-		if($this->config('cloud_hosting')) {
-			$this->deleteFromCloud($filename);
-			$this->copyToCloud($filename);
-			$recElement->cloud_storage = 'amazon';
-		}
-		$content_image->update($recElement, 'parentID=' . $parentID);
-
-
-		$this->saveImageRating($_POST['xrate'], $parentID);
 	}
 
 
@@ -188,6 +135,122 @@ class Image extends \Gratheon\CMS\ContentModule
 	}
 
 
+	private function getFileArray($strField, $key) {
+		$arrFile = array();
+
+		if($_FILES[$strField]['name']) {
+			if(!is_null($key)) {
+				$arrFile['name']     = $_FILES[$strField]['name'][$key];
+				$arrFile['type']     = $_FILES[$strField]['type'][$key];
+				$arrFile['tmp_name'] = $_FILES[$strField]['tmp_name'][$key];
+				$arrFile['error']    = $_FILES[$strField]['error'][$key];
+				$arrFile['size']     = $_FILES[$strField]['size'][$key];
+				$arrFile['tmpfile']  = & $_FILES[$strField]['tmp_name'][$key];
+			}
+			else {
+				$arrFile            = & $_FILES[$strField];
+				$arrFile['tmpfile'] = $strFileTmpName = & $_FILES[$strField]['tmp_name'];
+			}
+		}
+		elseif(file_exists($this->getIncomingFilePath($_POST['title']))) {
+			$arrFile['tmpfile'] = $this->getIncomingFilePath($_POST['title']);
+
+			$arrFile['name'] = $_POST['title'];
+			$arrFile['type'] = mime_content_type($arrFile['tmpfile']);
+			$arrFile['size'] = filesize($arrFile['tmpfile']);
+		}
+
+		return $arrFile;
+	}
+
+
+	private function getIncomingFilePath($title) {
+		return sys_root . '/res/incoming/' . $title;
+	}
+
+
+	public function update($parentID) {
+		$content_image = $this->getImageModel();
+		$content_menu  = $this->model('Menu');
+
+		$recMenu    = $content_menu->obj($parentID);
+		$recElement = $content_image->obj($recMenu->elementID);
+		$strExt     = $recElement->image_format;
+
+		$recElement->date_added     = $_POST['date_added'];
+		$recElement->float_position = $_POST['float_position'] ? $_POST['float_position'] : $this->config('float_position');
+		$recElement->thumbnail_size = $_POST['thumbnail_size'] ? $_POST['thumbnail_size'] : $this->config('thumbnail_size');
+		$recElement->thumbnail_type = $_POST['thumbnail_type'] ? $_POST['thumbnail_type'] : $this->config('thumbnail_type');
+		$filename                   = $recElement->ID . '.' . $strExt;
+
+		$arrCropPositions = explode(':', $_POST['crop_position']);
+
+
+		if($this->config('cloud_hosting') && $this->config('amazon_cloudonly')) {
+			$this->copyFromCloud($filename);
+		}
+
+		$this->resizeImage($filename, $recElement->thumbnail_size, array(), $arrCropPositions);
+
+
+		$content_image->update($recElement, 'parentID=' . $parentID);
+
+
+		//Copy to cloud
+
+		if($this->config('cloud_hosting')) {
+			$this->deleteFromCloud($filename);
+			$this->copyToCloud($filename);
+			$recElement->cloud_storage = 'amazon';
+		}
+		$content_image->update($recElement, 'parentID=' . $parentID);
+
+
+		$this->saveImageRating($_POST['xrate'], $parentID);
+	}
+
+
+	public function copyFromCloud($filename) {
+		if($this->config('amazon_key')) {
+			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
+				$this->config('amazon_bucket'),
+				$this->config('amazon_key'),
+				$this->config('amazon_secret')
+			);
+
+
+			$cloudAdapter->copyFileFromCloud(
+				'image/original/' . $filename,
+				$this->getOriginalFilePath($filename)
+			);
+			return true;
+		}
+		return false;
+	}
+
+
+	public function deleteFromCloud($filename, $arrExtraSizes = array()) {
+		if($this->config('amazon_key')) {
+
+			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
+				$this->config('amazon_bucket'),
+				$this->config('amazon_key'),
+				$this->config('amazon_secret')
+			);
+
+			$cloudAdapter->deleteFile('image/original/' . $filename);
+			$cloudAdapter->deleteFile('image/square/' . $filename);
+			$cloudAdapter->deleteFile('image/thumb/' . $filename);
+
+			if($arrExtraSizes) {
+				foreach($arrExtraSizes as $folder => $size) {
+					$cloudAdapter->deleteFile('image/' . $folder . '/' . $filename);
+				}
+			}
+		}
+	}
+
+
 	private function saveImageRating($arrRates, $parentID) {
 		$content_menu_rating = $this->model('content_menu_rating');
 		$content_menu_rating->delete('parentID=' . $parentID);
@@ -261,6 +324,25 @@ class Image extends \Gratheon\CMS\ContentModule
 	}
 
 
+	public function deleteByID($ID, $arrExtraFolders = array()) {
+		$content_image = $this->model('Image');
+
+		$recElement = $content_image->obj($ID);
+		$filename   = $recElement->ID . '.' . $recElement->image_format;
+
+
+		$arrFolders = array('square', 'thumb', 'original');
+		if($arrExtraFolders) {
+			$arrFolders = array_merge($arrFolders, $arrExtraFolders);
+		}
+
+		$this->deleteLocalFiles($filename, $arrFolders);
+		$this->deleteFromCloud($filename, $arrExtraFolders);
+
+		$content_image->delete('ID=' . $recElement->ID);
+	}
+
+
 	public function get_adminpanel_box_list() {
 		$content_image = $this->getImageModel();
 		$content_menu  = $this->model('Menu');
@@ -317,6 +399,16 @@ class Image extends \Gratheon\CMS\ContentModule
 	}
 
 
+	private function getImageModel() {
+		/** @var \Gratheon\CMS\Model\Image $content_image */
+		$content_image = $this->model('Image');
+		if($this->config('amazon_key')) {
+			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
+		}
+		return $content_image;
+	}
+
+
 	public function edit_image($id){
 		$id = intval($id);
 		$content_image = $this->getImageModel();
@@ -332,68 +424,73 @@ class Image extends \Gratheon\CMS\ContentModule
 		return $this->controller->view($this->strWrapperTpl);
 	}
 
+
 	public function delete_image($id){
 		$this->deleteByID($id);
 		$this->controller->redirect('#image/list_images/&page='.$_GET['page']);
 	}
 
 
-	private function getFileArray($strField, $key) {
-		$arrFile = array();
+	public function addURLFile($strURL, $parentID = null, $arrExtraSizes = null) {
+		$content_image = $this->model('Image');
 
-		if($_FILES[$strField]['name']) {
-			if(!is_null($key)) {
-				$arrFile['name']     = $_FILES[$strField]['name'][$key];
-				$arrFile['type']     = $_FILES[$strField]['type'][$key];
-				$arrFile['tmp_name'] = $_FILES[$strField]['tmp_name'][$key];
-				$arrFile['error']    = $_FILES[$strField]['error'][$key];
-				$arrFile['size']     = $_FILES[$strField]['size'][$key];
-				$arrFile['tmpfile']  = & $_FILES[$strField]['tmp_name'][$key];
-			}
-			else {
-				$arrFile            = & $_FILES[$strField];
-				$arrFile['tmpfile'] = $strFileTmpName = & $_FILES[$strField]['tmp_name'];
-			}
-		}
-		elseif(file_exists($this->getIncomingFilePath($_POST['title']))) {
-			$arrFile['tmpfile'] = $this->getIncomingFilePath($_POST['title']);
+		$strExt = strtolower(end(explode('.', $strURL)));
 
-			$arrFile['name'] = $_POST['title'];
-			$arrFile['type'] = mime_content_type($arrFile['tmpfile']);
-			$arrFile['size'] = filesize($arrFile['tmpfile']);
+		if(!in_array($strExt, $this->allowedExtensions)) {
+			throw new \Exception("Invalid filetype");
 		}
 
-		return $arrFile;
-	}
+		$recElement = new \Gratheon\Core\Record();
+		if($parentID) {
+			$recElement->parentID = $parentID;
+		}
+
+		$recElement->filename       = end(explode('/', $strURL));
+		$recElement->date_added     = 'NOW()';
+		$recElement->thumbnail_size = $this->config('thumbnail_size'); //100;
+		$recElement->thumbnail_type = $this->config('thumbnail_type'); //'square';
+		$recElement->ID             = $content_image->insert($recElement);
+
+		$filename = $recElement->ID . '.' . $recElement->image_format;
+
+		//Add file to res folder
+		$strOriginalFile = $this->getOriginalFilePath($filename);
+
+		$arrImageData = getimagesize($strOriginalFile);
+
+		$recElement->image_format = $strExt; //$ArrImageTypes[$arrImageData[2]];
+		$recElement->width        = $arrImageData[0];
+		$recElement->height       = $arrImageData[1];
+		$content_image->update($recElement);
 
 
-	private function getIncomingFilePath($title) {
-		return sys_root . '/res/incoming/' . $title;
+		$copied = copy($strURL, $strOriginalFile);
+
+		if($copied) {
+			$this->resizeImage($filename, $recElement->thumbnail_size, $arrExtraSizes);
+
+			if($this->config('amazon_key') && $this->copyToCloud($filename, $arrExtraSizes)) {
+				$recElement->cloud_storage = 'amazon';
+
+				if($this->config('amazon_cloudonly')) {
+					$this->deleteLocalFiles($filename, array_keys($arrExtraSizes));
+				}
+			}
+
+
+			$content_image->update($recElement);
+
+			return $recElement->ID;
+		}
+		else {
+			$content_image->delete($recElement->ID);
+			throw new \Exception('File copying failed');
+		}
 	}
 
 
 	private function getOriginalFilePath($filename) {
 		return sys_root . 'res/image/original/' . $filename;
-	}
-
-
-	private function getThumbFilePath($filename) {
-		return sys_root . 'res/image/thumb/' . $filename;
-	}
-
-
-	private function getSquareFilePath($filename) {
-		return sys_root . 'res/image/square/' . $filename;
-	}
-
-
-	private function getCustomSizeFilePath($folder, $filename) {
-		return sys_root . 'res/image/' . $folder . '/' . $filename;
-	}
-
-
-	private function getInlineFilePath($filename) {
-		return sys_root . 'res/image/inline/' . $filename;
 	}
 
 
@@ -485,65 +582,59 @@ class Image extends \Gratheon\CMS\ContentModule
 	}
 
 
-	public function addURLFile($strURL, $parentID = null, $arrExtraSizes = null) {
-		$content_image = $this->model('Image');
-
-		$strExt = strtolower(end(explode('.', $strURL)));
-
-		if(!in_array($strExt, $this->allowedExtensions)) {
-			throw new \Exception("Invalid filetype");
-		}
-
-		$recElement = new \Gratheon\Core\Record();
-		if($parentID) {
-			$recElement->parentID = $parentID;
-		}
-
-		$recElement->filename       = end(explode('/', $strURL));
-		$recElement->date_added     = 'NOW()';
-		$recElement->thumbnail_size = $this->config('thumbnail_size'); //100;
-		$recElement->thumbnail_type = $this->config('thumbnail_type'); //'square';
-		$recElement->ID             = $content_image->insert($recElement);
-
-		$filename = $recElement->ID . '.' . $recElement->image_format;
-
-		//Add file to res folder
-		$strOriginalFile = $this->getOriginalFilePath($filename);
-
-		$arrImageData = getimagesize($strOriginalFile);
-
-		$recElement->image_format = $strExt; //$ArrImageTypes[$arrImageData[2]];
-		$recElement->width        = $arrImageData[0];
-		$recElement->height       = $arrImageData[1];
-		$content_image->update($recElement);
+	private function getThumbFilePath($filename) {
+		return sys_root . 'res/image/thumb/' . $filename;
+	}
 
 
-		$copied = copy($strURL, $strOriginalFile);
+	private function getSquareFilePath($filename) {
+		return sys_root . 'res/image/square/' . $filename;
+	}
 
-		if($copied) {
-			$this->resizeImage($filename, $recElement->thumbnail_size, $arrExtraSizes);
 
-			if($this->config('amazon_key') && $this->copyToCloud($filename, $arrExtraSizes)) {
-				$recElement->cloud_storage = 'amazon';
+	private function getInlineFilePath($filename) {
+		return sys_root . 'res/image/inline/' . $filename;
+	}
 
-				if($this->config('amazon_cloudonly')) {
-					$this->deleteLocalFiles($filename, array_keys($arrExtraSizes));
+
+	private function getCustomSizeFilePath($folder, $filename) {
+		return sys_root . 'res/image/' . $folder . '/' . $filename;
+	}
+
+
+	public function copyToCloud($filename, $arrExtraSizes = array()) {
+		if($this->config('amazon_key')) {
+			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
+				$this->config('amazon_bucket'),
+				$this->config('amazon_key'),
+				$this->config('amazon_secret')
+			);
+
+
+			$cloudAdapter->copyFile($this->getOriginalFilePath($filename), 'image/original/' . $filename);
+			$cloudAdapter->copyFile($this->getSquareFilePath($filename), 'image/square/' . $filename);
+			$cloudAdapter->copyFile($this->getThumbFilePath($filename), 'image/thumb/' . $filename);
+
+			if($arrExtraSizes) {
+				foreach($arrExtraSizes as $folder => $size) {
+					$cloudAdapter->copyFile($this->getCustomSizeFilePath($folder, $filename), 'image/' . $folder . '/' . $filename);
 				}
 			}
-
-
-			$content_image->update($recElement);
-
-			return $recElement->ID;
+			return true;
 		}
-		else {
-			$content_image->delete($recElement->ID);
-			throw new \Exception('File copying failed');
+		return false;
+	}
+
+
+	private function deleteLocalFiles($file, $arrFolders) {
+		foreach($arrFolders as $folder) {
+			if(file_exists(sys_root . 'res/image/' . $folder . '/' . $file)) {
+				unlink(sys_root . 'res/image/' . $folder . '/' . $file);
+			}
 		}
 	}
 
 
-	//Static front methods
 	public function search_from_public($q) {
 		$content_menu  = $this->model('Menu');
 		$content_image = $this->getImageModel();
@@ -570,24 +661,20 @@ class Image extends \Gratheon\CMS\ContentModule
 
 
 	public function search_from_admin($q) {
-		global $controller;
-
 		$content_menu  = $this->model('Menu');
-		$content_image = $this->model('Image');
+		$content_image = $this->getImageModel();
 
-		$arrImages = $content_menu->arr("t1.title LIKE '%" . $q . "%' AND t1.module='image'",
-			't1.title,t2.ID, t2.image_format, t1.ID nodeID',
-				$content_menu->table . ' t1 LEFT JOIN ' .
-						$content_image->table . ' t2 ON t2.parentID=t1.ID');
+		$arrImages = $content_menu->arr(
+			"t1.title LIKE '%" . $q . "%' AND t1.module='image'",
+			't1.title,t2.ID, t2.image_format, t1.ID nodeID, t2.cloud_storage',
+			'content_menu t1 LEFT JOIN content_image t2 ON t2.parentID=t1.ID');
 
 		$arrEnvelope        = new \Gratheon\CMS\SearchEnvelope();
 		$arrEnvelope->count = $content_menu->count();
-		$arrEnvelope->title = $controller->translate('Images');
+		$arrEnvelope->title = $this->translate('Images');
 
 		foreach($arrImages as &$item) {
-			//$item->link_square	=sys_url.'res/image/square/'.$item->ID.'.'.$item->image_format;
-			$item->link_square = sys_url . 'front/call/image/resized/' . $item->ID . '.jpg?w=120&h=120&src=square';
-			$item->link_view   = sys_url . 'res/image/original/' . $item->ID . '.' . $item->image_format;
+			$item->link_square = $content_image->getSquareURL($item);
 		}
 
 		$arrEnvelope->list = $arrImages;
@@ -742,27 +829,6 @@ class Image extends \Gratheon\CMS\ContentModule
 	}
 
 
-	//Custom methods
-	public function deleteByID($ID, $arrExtraFolders = array()) {
-		$content_image = $this->model('Image');
-
-		$recElement = $content_image->obj($ID);
-		$filename   = $recElement->ID . '.' . $recElement->image_format;
-
-
-		$arrFolders = array('square', 'thumb', 'original');
-		if($arrExtraFolders) {
-			$arrFolders = array_merge($arrFolders, $arrExtraFolders);
-		}
-
-		$this->deleteLocalFiles($filename, $arrFolders);
-		$this->deleteFromCloud($filename, $arrExtraFolders);
-
-		$content_image->delete('ID=' . $recElement->ID);
-	}
-
-
-	//Embeddable
 	public function getPlaceholder($menu) {
 		$parentID = $menu->ID;
 		$ID       = $menu->elementID;
@@ -778,81 +844,6 @@ class Image extends \Gratheon\CMS\ContentModule
 //		$ID       = $menu->elementID;
 
 		return '';
-	}
-
-
-	//Cloud
-	public function copyFromCloud($filename) {
-		if($this->config('amazon_key')) {
-			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
-				$this->config('amazon_bucket'),
-				$this->config('amazon_key'),
-				$this->config('amazon_secret')
-			);
-
-
-			$cloudAdapter->copyFileFromCloud(
-				'image/original/' . $filename,
-				$this->getOriginalFilePath($filename)
-			);
-			return true;
-		}
-		return false;
-	}
-
-
-	public function copyToCloud($filename, $arrExtraSizes = array()) {
-		if($this->config('amazon_key')) {
-			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
-				$this->config('amazon_bucket'),
-				$this->config('amazon_key'),
-				$this->config('amazon_secret')
-			);
-
-
-			$cloudAdapter->copyFile($this->getOriginalFilePath($filename), 'image/original/' . $filename);
-			$cloudAdapter->copyFile($this->getSquareFilePath($filename), 'image/square/' . $filename);
-			$cloudAdapter->copyFile($this->getThumbFilePath($filename), 'image/thumb/' . $filename);
-
-			if($arrExtraSizes) {
-				foreach($arrExtraSizes as $folder => $size) {
-					$cloudAdapter->copyFile($this->getCustomSizeFilePath($folder, $filename), 'image/' . $folder . '/' . $filename);
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-
-	public function deleteFromCloud($filename, $arrExtraSizes = array()) {
-		if($this->config('amazon_key')) {
-
-			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
-				$this->config('amazon_bucket'),
-				$this->config('amazon_key'),
-				$this->config('amazon_secret')
-			);
-
-			$cloudAdapter->deleteFile('image/original/' . $filename);
-			$cloudAdapter->deleteFile('image/square/' . $filename);
-			$cloudAdapter->deleteFile('image/thumb/' . $filename);
-
-			if($arrExtraSizes) {
-				foreach($arrExtraSizes as $folder => $size) {
-					$cloudAdapter->deleteFile('image/' . $folder . '/' . $filename);
-				}
-			}
-		}
-	}
-
-
-	private function deleteLocalFiles($file, $arrFolders) {
-		foreach($arrFolders as $folder) {
-			if(file_exists(sys_root . 'res/image/' . $folder . '/' . $file)) {
-				unlink(sys_root . 'res/image/' . $folder . '/' . $file);
-			}
-		}
 	}
 
 }

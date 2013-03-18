@@ -1,5 +1,5 @@
 {if $arrList}
-	<div class="list_wrap">
+	<div class="ajaxSettingsWrapper">
 		<table class="table table-striped table-bordered table-condensed">
 			<tr>
 				<th>{t code='connection_pages'}{/t}</th>

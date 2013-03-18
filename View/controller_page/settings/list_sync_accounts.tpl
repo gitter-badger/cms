@@ -1,4 +1,4 @@
-<div class="list_wrap">
+<div class="ajaxSettingsWrapper">
 	<div class="alert alert-info">{t code='sync_account_info'}{/t}</div>
 	{if $arrAccounts}
 		<table class="table table-striped table-bordered table-condensed">

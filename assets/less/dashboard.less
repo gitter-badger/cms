@@ -19,9 +19,26 @@
 	margin-left: 40px
 }
 
-#content .dashboard_box table.data td {
-	padding: 0 8px;
-	line-height: 18px
+#content .dashboard_box {
+
+	width: 350px;
+	float: left;
+	overflow: hidden;
+	margin: 5px;
+
+	.thumbnails {
+		margin-left: 0;
+		&>li {
+			margin-left: 0;
+			margin-right:3px;
+			width:calc(50%-3px);
+		}
+	}
+
+	table.data td {
+		padding: 0 8px;
+		line-height: 18px
+	}
 }
 
 #content .dashboard_box_image img {

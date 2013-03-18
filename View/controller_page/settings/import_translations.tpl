@@ -1,3 +1,4 @@
+<div class="ajaxSettingsWrapper">
 <h1>{t}Translations import{/t}</h1>
 {if $import_info}
 	<div class="alert alert-success">{t}Inserted{/t} <strong>{$import_info.inserts}</strong> {t}rows{/t}, {t}updated{/t} {$import_info.updates} {t}rows{/t}, {t}skipped{/t} {$import_info.skipped} {t}rows{/t}</div>
@@ -27,3 +28,4 @@
 		<button name="save_standart" id='savebutton'><span>{t}Save{/t}</span></button>
 	</div>
 </form>
+</div>

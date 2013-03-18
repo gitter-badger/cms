@@ -8,7 +8,7 @@ namespace Gratheon\CMS\Controller\Content;
 use Gratheon\CMS;
 
 class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentController {
-	var $per_page = 20;
+	public $per_page = 20;
 	public $preinit_languages = true;
 	public $load_config = true;
 
@@ -112,6 +112,7 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 
 		$this->assign('server_free_space_percent', $free_hdd_percent);
 		$this->assign('server_total_space', decodeSize($total_hdd));
+		return $this->view('controller_page/settings/' . __FUNCTION__ . '.tpl');
 	}
 
 

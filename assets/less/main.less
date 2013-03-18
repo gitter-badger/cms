@@ -192,36 +192,40 @@ div#panel #content_menu {
 }
 
 div#content {
-	background-color: rgb(36, 36, 36);
+	background: rgb(36, 36, 36) url('../img/bg/content.jpg');
 
 	div#content_area {
 		z-index: 6;
 
-		.ajaxWrapper{
-			background-color: white;
-			h1{
-				margin:0;
-			}
+		h1:first-child {
+			margin: 0;
+		}
 
-			&.ajaxWrappernews{
-				h1{
+		.ajaxSettingsWrapper {
+			background-color: white;
+		}
+		.ajaxWrapper {
+			background-color: white;
+
+			&.ajaxWrappernews {
+				h1 {
 					text-align: center;
 				}
 
-				.total_count{
+				.total_count {
 					text-align: center;
 					color: gray;
 				}
 			}
 
-			&.ajaxWrapperimage{
+			&.ajaxWrapperimage {
 				background: transparent;
 
-				.thumbnail{
-					border:none;
+				.thumbnail {
+					border: none;
 
 				}
-				.title{
+				.title {
 					background: transparent;
 					color: rgb(134, 134, 134);
 					border: none;
@@ -234,7 +238,6 @@ div#content {
 				}
 			}
 		}
-
 
 		p.info {
 			margin: 10px;
@@ -270,7 +273,6 @@ div#content {
 		p.central {
 			text-align: center;
 		}
-
 
 		h1,
 		h2,
