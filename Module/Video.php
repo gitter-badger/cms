@@ -217,8 +217,6 @@ class Video extends \Gratheon\CMS\ContentModule
 	//Public methods
 
 	function search_from_public($q) {
-		global $controller;
-
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
@@ -229,7 +227,7 @@ class Video extends \Gratheon\CMS\ContentModule
 
 		$arrEnvelope           = new \Gratheon\Core\Record();
 		$arrEnvelope->count    = $content_menu->count();
-		$arrEnvelope->title    = $controller->translate('Videos');
+		$arrEnvelope->title    = $this->translate('Videos');
 		$arrEnvelope->template = 'ModuleFrontend/video/front_search.tpl';
 
 		foreach($arrPublicVideos as &$item) {
@@ -245,19 +243,17 @@ class Video extends \Gratheon\CMS\ContentModule
 	}
 
 	function list_video_block($pageID) {
-		global $controller, $menu;
-
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
 		$intCount = $this->config('list_videos_block_limit');
 		$intCount = $intCount ? $intCount : 5;
 
-		$strDateFormat = $controller->config('date_format_sql');
+		$strDateFormat = $this->controller->config('date_format_sql');
 		$strDateFormat = $strDateFormat ? $strDateFormat : '%d.%m.%Y';
 
 		$arrVideos = $content_menu->arr(
-			"t1.module='video' AND t1.langID='{$controller->langID}' ORDER BY date_added DESC LIMIT $intCount", "*",
+			"t1.module='video' AND t1.langID='{$this->controller->langID}' ORDER BY date_added DESC LIMIT $intCount", "*",
 				$content_menu->table . " t1 INNER JOIN " .
 						$content_external_video->table . " t2 ON t1.ID=t2.parentID");
 

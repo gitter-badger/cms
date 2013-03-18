@@ -112,7 +112,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			$newElement->filename = $_FILES['file']['name'];
 		}
 		elseif(file_exists(sys_root . '/res/incoming/' . $_POST['title'])) {
-			$newElement->MIME     = mime_content_type(sys_root . '/res/incoming/' . $_POST['title']);
+			$newElement->MIME     = CMS\Model\Image::getMimeContentType(sys_root . '/res/incoming/' . $_POST['title']);
 			$newElement->filename = $_POST['title'];
 		}
 

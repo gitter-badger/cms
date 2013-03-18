@@ -573,9 +573,8 @@ pre($aExportAccounts);
     }
 
     public function category_view(&$recEntry) {
-        global $controller;
-
         $tree = new \Gratheon\CMS\Tree;
+		$menu = new \Gratheon\CMS\Menu;
 
         $content_article = $this->model('Article');
         $content_menu = $this->model('Menu');
@@ -597,7 +596,7 @@ pre($aExportAccounts);
 			ORDER BY t1.position", "object"
         );
 
-        $recEntry->url = sys_url . $controller->getPath($recEntry->ID) . '/';
+        $recEntry->url = sys_url . $menu->getPageURL($recEntry->ID) . '/';
 
         $recEntry->arrTags = $sys_tags->q(
             "SELECT t1.ID, t1.pop, t1.title
@@ -631,9 +630,9 @@ pre($aExportAccounts);
             }
         }
 
-        $objFile = new modFile();
-        $objFile->load_models();
-        $recEntry->arrFiles = $objFile->getNodeFiles($item->ID);
+//        $objFile = new modFile();
+//        $objFile->load_models();
+//        $recEntry->arrFiles = $objFile->getNodeFiles($item->ID);
         //$recEntry->arrFiles=$this->getFiles($recEntry->ID);
 
         $arrSelected = $tree->buildSelected($recEntry->ID);

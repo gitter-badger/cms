@@ -196,7 +196,6 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 
 	function pub_plain_list($parentID) {
-		global $controller, $user;
 
 		$content_menu        = $this->model('Menu');
 		$content_category    = $this->model('content_category');
@@ -209,7 +208,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 			$strFilter .= " AND t1.parentID='$parentID'";
 		}
 		else {
-			$strFilter .= " AND t1.langID='{$controller->langID}'";
+			$strFilter .= " AND t1.langID='{$this->controller->langID}'";
 		}
 
 		if($arrCategory->orderby) {
@@ -240,7 +239,6 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 
 	function image_list($parentID) {
-		global $user;
 		$content_category = $this->model('content_category');
 		$content_menu     = $this->model('content_menu');
 
@@ -258,7 +256,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 			$strFilter .= " AND
 					t1.module IN ('image') AND
 					t1.method='front_view' AND
-					t2.groupID='" . $user->data['groupID'] . "' AND
+					t2.groupID='" . $this->controller->user->data['groupID'] . "' AND
 					t2.rightID=2
 			";
 		}
@@ -296,19 +294,19 @@ class Category extends \Gratheon\CMS\ContentModule {
 		}
 
 
-		if($arrList) {
-			$modImage = new modImage;
-			$modImage->load_models();
-			$modImage->load_config();
-
-			foreach($arrList as &$item) {
-				$item->template = 'ModuleFrontend/' . $item->module . '/category_view.tpl';
-
-				if(method_exists($modImage, 'category_view')) {
-					$modImage->category_view($item);
-				}
-			}
-		}
+//		if($arrList) {
+////			$modImage = new modImage;
+////			$modImage->load_models();
+////			$modImage->load_config();
+////
+//			foreach($arrList as &$item) {
+//				$item->template = 'ModuleFrontend/' . $item->module . '/category_view.tpl';
+//
+//				if(method_exists($modImage, 'category_view')) {
+//					$modImage->category_view($item);
+//				}
+//			}
+//		}
 
 		$this->assign('arrCategoryItems', $arrList);
 	}

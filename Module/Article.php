@@ -754,7 +754,7 @@ class Article
 
 	//public methods
 	public function front_view($parentID) {
-		global $menu, $controller;
+		global $menu;
 		//$recElement=$content_article->obj('parentID='.$parentID);
 
 		$tree = new \Gratheon\CMS\Tree;
@@ -786,7 +786,7 @@ class Article
 		$objContent->arrTags   = $this->get_article_tags($parentID);
 		$objContent->arrSeries = $this->get_article_series($this->get_article_tags($parentID, true), $objContent->langID);
 
-		$this->assign('title', $controller->config('title_article') . $content_menu->int($parentID, 'title'));
+		$this->assign('title', $this->controller->config('title_article') . $content_menu->int($parentID, 'title'));
 		$this->assign('article', $objContent);
 		return $objContent;
 		//$this->assign('content_template','module.article.view.tpl');

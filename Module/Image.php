@@ -55,7 +55,7 @@ class Image extends \Gratheon\CMS\ContentModule
 	public function addFile($parentID = null, $arrExtraSizes = array(), $strField = 'file', $key = null) {
 		$content_menu  = $this->model('Menu');
 		$content_image = $this->model('Image');
-		/** @var \Gratheon\CMS\Model\Image $content_image */
+		/** @var CMS\Model\Image $content_image */
 
 		$arrFile = $this->getFileArray($strField, $key);
 
@@ -156,7 +156,7 @@ class Image extends \Gratheon\CMS\ContentModule
 			$arrFile['tmpfile'] = $this->getIncomingFilePath($_POST['title']);
 
 			$arrFile['name'] = $_POST['title'];
-			$arrFile['type'] = mime_content_type($arrFile['tmpfile']);
+			$arrFile['type'] = CMS\Model\Image::getMimeContentType($arrFile['tmpfile']);
 			$arrFile['size'] = filesize($arrFile['tmpfile']);
 		}
 
@@ -400,7 +400,7 @@ class Image extends \Gratheon\CMS\ContentModule
 
 
 	private function getImageModel() {
-		/** @var \Gratheon\CMS\Model\Image $content_image */
+		/** @var CMS\Model\Image $content_image */
 		$content_image = $this->model('Image');
 		if($this->config('amazon_key')) {
 			$content_image->setAmazonData($this->config('amazon_bucket'), $this->config('amazon_host'), $this->config('amazon_key'), $this->config('amazon_secret'));
@@ -818,7 +818,7 @@ class Image extends \Gratheon\CMS\ContentModule
 		}
 
 
-		/** @var \Gratheon\CMS\Model\Image $content_image */
+		/** @var CMS\Model\Image $content_image */
 
 		$image->link_original  = $content_image->getURL($image);
 		$image->link_square    = $content_image->getURL($image, 'square');
