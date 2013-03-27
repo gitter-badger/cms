@@ -34,7 +34,7 @@ class Poll extends \Gratheon\CMS\ContentModule {
 		$this->assign('poll', $recPoll);
 
 
-		if($_POST) {
+		if($this->controller->in->post) {
 
 			if(!isset($this->controller->user->data['ID'])){
 				$this->controller->session->set('messages', array(
@@ -49,7 +49,7 @@ class Poll extends \Gratheon\CMS\ContentModule {
 				$recResponse->date_added = 'NOW()';
 
 				$responseID = $content_poll_response->insert($recResponse);
-				foreach($_POST['question'] as $questionID => $answer) {
+				foreach($this->controller->in->post['question'] as $questionID => $answer) {
 
 					$vote = new \Gratheon\Core\Record();
 
@@ -151,11 +151,11 @@ class Poll extends \Gratheon\CMS\ContentModule {
 		$recAnswer  = new \Gratheon\Core\Record();
 
 		$recElement->parentID    = $parentID;
-		$recElement->title       = $_POST['title'];
-		$recElement->restriction = $_POST['restriction'];
+		$recElement->title       = $this->controller->in->post['title'];
+		$recElement->restriction = $this->controller->in->post['restriction'];
 		$recAnswer->pollID       = $recElement->ID = $content_poll->insert($recElement);
 
-		foreach((array)$_POST['values'] as $strAnswer) {
+		foreach((array)$this->controller->in->post['values'] as $strAnswer) {
 			if(strlen($strAnswer) > 0) {
 				$recAnswer->answer = $strAnswer;
 				$recAnswer->orderID++;
@@ -201,12 +201,12 @@ class Poll extends \Gratheon\CMS\ContentModule {
 
 		$recElement = $content_poll->obj('parentID=' . $parentID);
 
-		$recElement->title       = $_POST['title'];
-		$recElement->restriction = $_POST['restriction'];
+		$recElement->title       = $this->controller->in->post['title'];
+		$recElement->restriction = $this->controller->in->post['restriction'];
 		$content_poll->update($recElement);
 		$position = 1;
 
-		foreach((array)$_POST['values'] as $key => $strAnswer) {
+		foreach((array)$this->controller->in->post['values'] as $key => $strAnswer) {
 			if(strlen($strAnswer) > 0) {
 				$recAnswer          = new \Gratheon\Core\Record();
 				$recAnswer->answer  = $strAnswer;
@@ -300,12 +300,12 @@ class Poll extends \Gratheon\CMS\ContentModule {
 
 
 	function svg() {
-		global $controller;
+
 		$ID = (int)$_GET['ID']; //(int)$_GET['PollID'];
 		if(!$ID) {
 			return;
 		}
-		$controller->MIME = "image/svg+xml";
+		$this->controller->MIME = "image/svg+xml";
 
 		//Data initialization, should be sorted
 		$Data = $this->getPollData($ID);

@@ -23,15 +23,15 @@ class Slide extends \Gratheon\CMS\SearchableContentModule implements \Gratheon\C
 
 		$recElement           = new \Gratheon\Core\Record();
 		$recElement->parentID = $parentID;
-		$recElement->service  = $_POST['service'];
+		$recElement->service  = $this->controller->in->post['service'];
 
-		$recElement->serviceCode = $content_slide->parseCode($recElement->service, $_POST['serviceCode']);
+		$recElement->serviceCode = $content_slide->parseCode($recElement->service, $this->controller->in->post['serviceCode']);
 		$content_slide->insert($recElement);
 
 		$recMenu = $content_menu->obj($parentID);
 
 		if($recMenu->title=='' && $recElement->serviceCode){
-			$strTitle = $content_slide->getSlideTitleFromCode($recElement->service, $_POST['serviceCode']);
+			$strTitle = $content_slide->getSlideTitleFromCode($recElement->service, $this->controller->in->post['serviceCode']);
 			$strTitle = html_entity_decode($strTitle);
 
 			if(!$strTitle){
@@ -50,8 +50,8 @@ class Slide extends \Gratheon\CMS\SearchableContentModule implements \Gratheon\C
 
 		$recElement           = $content_slide->obj("parentID='$parentID'");
 		$recElement->parentID = $parentID;
-		$recElement->service  = $_POST['service'];
-		$recElement->serviceCode = $content_slide->parseCode($recElement->service, $_POST['serviceCode']);
+		$recElement->service  = $this->controller->in->post['service'];
+		$recElement->serviceCode = $content_slide->parseCode($recElement->service, $this->controller->in->post['serviceCode']);
 
 		$content_slide->update($recElement, 'parentID=' . $parentID);
 

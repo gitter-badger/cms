@@ -28,10 +28,10 @@ class Map extends \Gratheon\CMS\SearchableContentModule
 
         $recElement = $content_map->obj('parentID=' . $parentID);
 
-        $recElement->geoX = $_POST['geoX'];
-        $recElement->geoY = $_POST['geoY'];
-        $recElement->zoom    = $_POST['zoom'];
-        $recElement->service    = $_POST['service'];
+        $recElement->geoX = $this->controller->in->post['geoX'];
+        $recElement->geoY = $this->controller->in->post['geoY'];
+        $recElement->zoom    = $this->controller->in->post['zoom'];
+        $recElement->service    = $this->controller->in->post['service'];
 
         $content_map->update($recElement);
     }
@@ -41,10 +41,10 @@ class Map extends \Gratheon\CMS\SearchableContentModule
 
         $recElement = new \stdClass();
         $recElement->parentID = $parentID;
-        $recElement->geoX = $_POST['geoX'];
-        $recElement->geoY = $_POST['geoY'];
-        $recElement->zoom    = $_POST['zoom'];
-        $recElement->service    = $_POST['service'];
+        $recElement->geoX = $this->controller->in->post['geoX'];
+        $recElement->geoY = $this->controller->in->post['geoY'];
+        $recElement->zoom    = $this->controller->in->post['zoom'];
+        $recElement->service    = $this->controller->in->post['service'];
 
         $content_map->insert($recElement);
     }

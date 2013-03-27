@@ -56,12 +56,12 @@ class Sitemap extends \Gratheon\CMS\ContentModule {
 
 		$content_sitemap_node->insert(array(
 			'parentID'     => $parentID,
-			'listing_mode' => $_POST['listing_mode']
+			'listing_mode' => $this->controller->in->post['listing_mode']
 		));
 
 		$content_sitemap->delete("parentID='$parentID'");
-		if($_POST['pageIDs']) {
-			foreach($_POST['pageIDs'] as $id) {
+		if($this->controller->in->post['pageIDs']) {
+			foreach($this->controller->in->post['pageIDs'] as $id) {
 				$content_sitemap->insert(array('parentID' => $parentID, 'pageID' => $id));
 			}
 		}
@@ -73,10 +73,10 @@ class Sitemap extends \Gratheon\CMS\ContentModule {
 		$content_sitemap      = $this->model('content_sitemap');
 		$content_sitemap_node = $this->model('content_sitemap_node');
 
-		$content_sitemap_node->update("listing_mode='" . $_POST['listing_mode'] . "'", "parentID='$parentID'");
+		$content_sitemap_node->update("listing_mode='" . $this->controller->in->post['listing_mode'] . "'", "parentID='$parentID'");
 		$content_sitemap->delete("parentID='$parentID'");
-		if($_POST['pageIDs']) {
-			foreach($_POST['pageIDs'] as $id) {
+		if($this->controller->in->post['pageIDs']) {
+			foreach($this->controller->in->post['pageIDs'] as $id) {
 				$content_sitemap->insert(array('parentID' => $parentID, 'pageID' => $id));
 			}
 		}

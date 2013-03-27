@@ -51,7 +51,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				'rel'    => $item->module . '/' . $item->method,
 				'title'  => $this->translate($item->title),
 				'link'   => sys_url . 'content/call/' . $item->module . '/' . $item->method,
-				'active' => ($this->input->URI[3] == $item->module) ? 1 : 0
+				'active' => ($this->in->URI[3] == $item->module) ? 1 : 0
 			);
 
 			//add second level menu
@@ -62,7 +62,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 					'rel'    => $item2->module . '/' . $item2->method,
 					'title'  => $this->translate($item2->title),
 					'link'   => sys_url . 'content/call/' . $item2->module . '/' . $item2->method . '/',
-					'active' => (in_array($this->input->URI[4], $content_module_menu->arrint('parentID=' . $item->ID, 'module')))
+					'active' => (in_array($this->in->URI[4], $content_module_menu->arrint('parentID=' . $item->ID, 'module')))
 							? 1 : 0,
 				);
 			}
@@ -155,8 +155,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			}
 		}
 
-		if($_POST['langID']) {
-			$_SESSION['content']['lang_content'] = $_POST['lang_content'];
+		if($this->in->post['langID']) {
+			$_SESSION['content']['lang_content'] = $this->in->post['lang_content'];
 		}
 
 		$strLangAlpha2 = $sys_languages->int(
@@ -399,7 +399,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$content_menu_rights = $this->model('content_menu_rights');
 
 
-		if(!$_POST) {
+		if(!$this->in->post) {
 			$output['msg'] = $this->translate('Message post is empty');
 			return json_encode($output);
 		}
@@ -414,9 +414,9 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				return json_encode($output);
 			}
 		}
-		elseif($_POST['ftp_files']) {
-			$arrFiles = $_POST['ftp_files'];
-			unset($_POST['ftp_files']);
+		elseif($this->in->post['ftp_files']) {
+			$arrFiles = $this->in->post['ftp_files'];
+			unset($this->in->post['ftp_files']);
 
 			foreach($arrFiles as $strFile) {
 				$this->batch_ftp_file_move($strFile);
@@ -427,16 +427,16 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			return json_encode($output);
 		}
 
-		$recMenu->title = stripslashes($_POST['title']);
-		//$recMenu->visible		= isset($_POST['visible'])?1:0;
-		//$recMenu->accessible	= isset($_POST['accessible'])?1:0;
+		$recMenu->title = stripslashes($this->in->post['title']);
+		//$recMenu->visible		= isset($this->in->post['visible'])?1:0;
+		//$recMenu->accessible	= isset($this->in->post['accessible'])?1:0;
 		$recMenu->module     = $_REQUEST['module'] ? $_REQUEST['module'] : $recMenu->module;
 		$recMenu->method     = $_REQUEST['method'] ? $_REQUEST['method'] : $recMenu->method;
-		$arrDate             = explode(' ', $_POST['date_added']);
+		$arrDate             = explode(' ', $this->in->post['date_added']);
 		$strTime             = $arrDate[1];
 		$arrDate             = explode('.', $arrDate[0]);
 		$strDate             = implode('-', array($arrDate[2], $arrDate[1], $arrDate[0]));
-		$recMenu->date_added = $_POST['date_added'] <> '' ? $strDate . ' ' . $strTime : 'NOW()';
+		$recMenu->date_added = $this->in->post['date_added'] <> '' ? $strDate . ' ' . $strTime : 'NOW()';
 
 		//changing language moves node back to root
 		if($ID && $recMenu->langID != $_REQUEST['langID']) {
@@ -444,22 +444,22 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		}
 
 
-		if($_POST['elementID']) {
-			$recMenu->elementID = (int)$_POST['elementID'];
+		if($this->in->post['elementID']) {
+			$recMenu->elementID = (int)$this->in->post['elementID'];
 		}
 
-		$recMenu->langID           = $_POST['langID'] ? $_POST['langID'] : $recMenu->langID;
-		$recMenu->smart_url        = $_POST['url'];
-		$recMenu->meta_title       = stripslashes($_POST['meta_title']);
-		$recMenu->meta_description = stripslashes($_POST['meta_description']);
-		$recMenu->meta_keywords    = stripslashes($_POST['meta_keywords']);
+		$recMenu->langID           = $this->in->post['langID'] ? $this->in->post['langID'] : $recMenu->langID;
+		$recMenu->smart_url        = $this->in->post['url'];
+		$recMenu->meta_title       = stripslashes($this->in->post['meta_title']);
+		$recMenu->meta_description = stripslashes($this->in->post['meta_description']);
+		$recMenu->meta_keywords    = stripslashes($this->in->post['meta_keywords']);
 
-		if($_POST['meta_latitude']) {
-			$recMenu->meta_latitude = $_POST['meta_latitude'];
+		if($this->in->post['meta_latitude']) {
+			$recMenu->meta_latitude = $this->in->post['meta_latitude'];
 		}
 
-		if($_POST['meta_longitude']) {
-			$recMenu->meta_longitude = $_POST['meta_longitude'];
+		if($this->in->post['meta_longitude']) {
+			$recMenu->meta_longitude = $this->in->post['meta_longitude'];
 		}
 
 		if($_REQUEST['container_template']) {
@@ -481,7 +481,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 			$recMenuRight = new \Gratheon\Core\Record();
 
-			foreach((array)$_POST['user_rights'] as $intGroup => $arrGroup) {
+			foreach((array)$this->in->post['user_rights'] as $intGroup => $arrGroup) {
 				foreach($arrGroup as $intRight) {
 					$recMenuRight->groupID = $intGroup;
 					$recMenuRight->pageID  = $ID;
@@ -505,7 +505,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$recMenu->position = $content_menu->int('parentID=' . $recMenu->parentID, 'MAX(position)+1');
 
 			//use parent's langID
-			if(!$_POST['langID']) {
+			if(!$this->in->post['langID']) {
 				$recMenu->langID = $content_menu->int("ID='{$recMenu->parentID}'", 'langID');
 			}
 
@@ -525,7 +525,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 			$recMenuRight = new \Gratheon\Core\Record();
 			//Add system rights
-			foreach((array)$_POST['user_rights'] as $intGroup => $arrGroup) {
+			foreach((array)$this->in->post['user_rights'] as $intGroup => $arrGroup) {
 				foreach($arrGroup as $intRight) {
 					$recMenuRight->groupID = $intGroup;
 					$recMenuRight->pageID  = $ID;
@@ -548,7 +548,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$intReloadID = $content_menu->int('ID=' . $ID, 'parentID');
 		}
 
-		$this->editTags($_POST['tags'], $ID);
+		$this->editTags($this->in->post['tags'], $ID);
 
 		$this->MIME   = 'application/json';
 		$output['ID'] = $intReloadID;
@@ -776,8 +776,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 	public function call() {
-		$strModule   = $this->input->URI[3];
-		$strFunction = $this->input->URI[4] ? $this->input->URI[4] : 'main';
+		$strModule   = $this->in->URI[3];
+		$strFunction = $this->in->URI[4] ? $this->in->URI[4] : 'main';
 		$this->loadWrapper();
 
 		$controller = $this;
@@ -814,8 +814,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 //				$controller->cache_css();
 
 				if(method_exists($objModule, $strFunction)) {
-					if(isset($this->input->URI[5])){
-						$id = $this->input->URI[5];
+					if(isset($this->in->URI[5])){
+						$id = $this->in->URI[5];
 					}
 					else{
 						$id = null;
@@ -873,7 +873,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				: $this->getDefaultParentID());
 
 		if(!is_array($_FILES['file']['name'])) {
-			/*$_POST['title'] = */
+			/*$this->in->post['title'] = */
 
 			$strFilename = $_FILES['file']['name'];
 			$arrFile     = explode('.', $strFilename);
@@ -881,11 +881,11 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 			if(in_array($strExt, $this->image_extensions)) {
 				$_REQUEST['module']    = 'image';
-				$_POST['cut_position'] = 2;
+				$this->in->post['cut_position'] = 2;
 
 			}
 			else {
-				$_POST['title']     = $strFilename;
+				$this->in->post['title']     = $strFilename;
 				$_REQUEST['module'] = 'file';
 			}
 
@@ -897,14 +897,14 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			unset($_FILES);
 
 			foreach($tmpFiles['file']['name'] as $fileKey => $strFilename) {
-				$_POST['title'] = $strFilename;
+				$this->in->post['title'] = $strFilename;
 				$arrFile        = explode('.', $strFilename);
 				$strExt         = strtolower(end($arrFile));
 
 				if(in_array($strExt, $this->image_extensions)) {
 					$_REQUEST['module'] = 'image';
 
-					$_POST['cut_position'] = 2;
+					$this->in->post['cut_position'] = 2;
 
 				}
 				else {
@@ -934,18 +934,18 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	public function batch_ftp_file_move($strFile) {
 		set_time_limit(300);
 
-		$_POST['title'] = $strFilename = $strFile;
+		$this->in->post['title'] = $strFilename = $strFile;
 		$arrFile        = explode('.', $strFilename);
 		$strExt         = strtolower(end($arrFile));
 
 		if(in_array($strExt, $this->image_extensions)) {
-			$_POST['module'] = 'image';
+			$this->in->post['module'] = 'image';
 
-			$_POST['cut_position'] = 2;
+			$this->in->post['cut_position'] = 2;
 
 		}
 		else {
-			$_POST['module'] = 'file';
+			$this->in->post['module'] = 'file';
 		}
 
 		$this->save();
@@ -1014,15 +1014,15 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		 $content_menu = $this->model('content_menu');
 
 		 $oConvertor = new \Gratheon\Core\ObjectCovertor();
-		 $element    = $oConvertor->arrayToObject($_POST, 'menu_');
+		 $element    = $oConvertor->arrayToObject($this->in->post, 'menu_');
 
 
 		 if ($element->pack <> 'cms') {
-			 $element->accessible = (int)$_POST['menu_accessible'];
-			 $element->visible    = (int)$_POST['menu_visible'];
+			 $element->accessible = (int)$this->in->post['menu_accessible'];
+			 $element->visible    = (int)$this->in->post['menu_visible'];
 		 }
 
-		 if (!(int)$_POST['elementID']) {
+		 if (!(int)$this->in->post['elementID']) {
 			 $element->date_added = 'NOW()';
 			 $recMax              = $content_menu->fnSoftRow('parentID=' . $element->parentID, '(MAX(position)+1) as newpos');
 			 $element->position   = $recMax->newpos;
@@ -1035,14 +1035,14 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		 }
 		 else {
 			 if ($element->pack <> 'cms') {
-				 $oldMenu = $content_menu->find((int)$_POST['elementID']);
+				 $oldMenu = $content_menu->find((int)$this->in->post['elementID']);
 
 				 if ($oldMenu->visible <> $element->visible) {
 					 $element->date_added = 'NOW()';
 				 }
 			 }
 
-			 $element->ID = (int)$_POST['elementID'];
+			 $element->ID = (int)$this->in->post['elementID'];
 			 $content_menu->update($element);
 
 			 if ($element->pack <> 'cms') {
@@ -1057,26 +1057,26 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
  */
 	public function close_window() {
-		echo "<script>top.menu_load(" . $_POST['menu_parentID'] . ",1);</script>";
+		echo "<script>top.menu_load(" . $this->in->post['menu_parentID'] . ",1);</script>";
 	}
 
 
 	public function menu_edit() {
 		$content_menu = $this->model('content_menu');
 
-		if($_POST['menu_parentID']) {
+		if($this->in->post['menu_parentID']) {
 			$newMenu        = new \Gratheon\Core\Record();
-			$newMenu->title = $_POST['menu_title'];
-			$newMenu->ID    = $_POST['elementID'];
+			$newMenu->title = $this->in->post['menu_title'];
+			$newMenu->ID    = $this->in->post['elementID'];
 
 			//Case we change parent language
-			if(isset($_POST['langID'])) {
-				$newMenu->langID   = $_POST['langID'];
+			if(isset($this->in->post['langID'])) {
+				$newMenu->langID   = $this->in->post['langID'];
 				$newMenu->parentID = 1;
 			}
 
 			$content_menu->update($newMenu);
-			$this->element_change($_POST['elementID']);
+			$this->element_change($this->in->post['elementID']);
 			exit();
 		}
 	}

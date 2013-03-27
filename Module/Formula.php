@@ -25,9 +25,9 @@ class Formula extends \Gratheon\CMS\ContentModule
         $recElement = $content_formula->obj('parentID=' . $parentID);
 
         /** @var $recElement content_comment_record */
-        $recElement->content = ($_POST['content']);
-        $recElement->description = ($_POST['description']);
-        $recElement->format = $_POST['format'];
+        $recElement->content = ($this->controller->in->post['content']);
+        $recElement->description = ($this->controller->in->post['description']);
+        $recElement->format = $this->controller->in->post['format'];
 
         $content_formula->update($recElement);
     }
@@ -37,9 +37,9 @@ class Formula extends \Gratheon\CMS\ContentModule
 
         $recElement = new \Gratheon\Core\Record();
         $recElement->parentID = $parentID;
-        $recElement->content = ($_POST['content']);
-        $recElement->description = ($_POST['description']);
-        $recElement->format = $_POST['format'];
+        $recElement->content = ($this->controller->in->post['content']);
+        $recElement->description = ($this->controller->in->post['description']);
+        $recElement->format = $this->controller->in->post['format'];
         $content_formula->insert($recElement);
     }
 

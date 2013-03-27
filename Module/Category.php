@@ -42,10 +42,10 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 		$recElement = $content_category->obj('parentID=' . $parentID);
 
-		$recElement->deepness = $_POST['deepness'];
-		$recElement->orderby  = $_POST['orderby'];
-		if($_POST['elements_per_page']) {
-			$recElement->elements_per_page = $_POST['elements_per_page'];
+		$recElement->deepness = $this->controller->in->post['deepness'];
+		$recElement->orderby  = $this->controller->in->post['orderby'];
+		if($this->controller->in->post['elements_per_page']) {
+			$recElement->elements_per_page = $this->controller->in->post['elements_per_page'];
 		}
 		$content_category->update($recElement);
 	}
@@ -56,10 +56,10 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 		$recElement           = new \stdClass();
 		$recElement->parentID = $parentID;
-		$recElement->deepness = $_POST['deepness'];
-		$recElement->orderby  = $_POST['orderby'];
-		if($_POST['elements_per_page']) {
-			$recElement->elements_per_page = $_POST['elements_per_page'];
+		$recElement->deepness = $this->controller->in->post['deepness'];
+		$recElement->orderby  = $this->controller->in->post['orderby'];
+		if($this->controller->in->post['elements_per_page']) {
+			$recElement->elements_per_page = $this->controller->in->post['elements_per_page'];
 		}
 		$content_category->insert($recElement);
 	}
@@ -155,7 +155,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 		//Paginator
 		if($arrCategory->elements_per_page) {
 			$total_count  = $content_menu->count();
-			$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $arrCategory->elements_per_page);
+			$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $arrCategory->elements_per_page);
 
 
 			$this->assign('objPaginator', $objPaginator);
@@ -288,7 +288,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 		//Paginator
 		if($arrCategory->elements_per_page) {
 			$total_count  = $content_menu->count();
-			$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $arrCategory->elements_per_page);
+			$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $arrCategory->elements_per_page);
 
 			$this->assign('objPaginator', $objPaginator);
 		}

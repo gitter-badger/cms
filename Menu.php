@@ -55,9 +55,7 @@ class Menu extends \Gratheon\CMS\Tree {
 	}
 
 
-	function getTplPage($intTemplateLink) {
-		global $controller;
-
+	function getTplPage($intTemplateLink, $langID = 'eng') {
 		$tpl_links_page = new \Gratheon\Core\Model('tpl_links_page');
 		$tpl_links      = new \Gratheon\Core\Model('tpl_links');
 		$content_menu   = \Gratheon\CMS\Model\Menu::singleton();
@@ -66,13 +64,13 @@ class Menu extends \Gratheon\CMS\Tree {
 			$intTemplateLink = $tpl_links->int("`tag`='$intTemplateLink'", 'ID');
 
 			if(!$intTemplateLink) {
-				return;
+				return '';
 			}
 		}
 
 		$intPage = $tpl_links_page->int("t1.connectionID='$intTemplateLink'", 't1.pageID',
 				$tpl_links_page->table . " t1 INNER JOIN " .
-						$content_menu->table . " t2 ON t2.ID=t1.pageID AND t2.langID='{$controller->langID}'");
+				$content_menu->table . " t2 ON t2.ID=t1.pageID AND t2.langID='{$langID}'");
 
 		if($this->intLangCount > 1) {
 			$strPage = $this->getPageURL($intPage);

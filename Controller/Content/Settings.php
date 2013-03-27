@@ -1,12 +1,15 @@
 <?php
+
+namespace Gratheon\CMS\Controller\Content;
+use Gratheon\CMS;
+
 /**
  * Settings - translations, users etc.
  * @author Artjom Kurapov
  * @version 1.1.1
+ * @p
+ *
  */
-namespace Gratheon\CMS\Controller\Content;
-use Gratheon\CMS;
-
 class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentController {
 	public $per_page = 20;
 	public $preinit_languages = true;
@@ -26,8 +29,8 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 		$sys_languages    = $this->model('sys_languages');
 		$sys_sync_account = $this->model('sys_sync_account');
 
-		if($_POST) {
-			foreach($_POST['var_name'] as $sApp => $aValue) {
+		if($this->in->post) {
+			foreach($this->in->post['var_name'] as $sApp => $aValue) {
 				foreach($aValue as $sKey => $sValue) {
 					$recVar = $sys_config->obj("var_name='$sKey' AND application='$sApp'");
 
@@ -118,15 +121,13 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 
 	//Sync accounts
 	function redirect_sync() {
-		global $input;
-
 		$sys_sync_account = $this->model('sys_sync_account');
 
 		$_SESSION['sync'] = $arrSync = (array)$sys_sync_account->obj($_GET['id']);
 		//pre($_SESSION['sync']);
 
 		$objSocial = new SocialUser();
-		$objSocial->getSocialProfile($arrSync['service'], $input->sURL);
+		$objSocial->getSocialProfile($arrSync['service'], $this->in->sURL);
 
 		$this->redirect('external_services/twitter_oauth/redirect.php');
 	}
@@ -209,13 +210,13 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 			$this->assign('item', $objItem);
 
 
-			if($_POST) {
+			if($this->in->post) {
 				$recAccount        = new \stdClass();
-				$recAccount->login = $_POST['login'];
+				$recAccount->login = $this->in->post['login'];
 				$sys_sync_account->update($recAccount, "ID='$ID'");
 
-				if($_POST['password']) {
-					$sys_sync_account->setPassword($_POST['password'], $ID);
+				if($this->in->post['password']) {
+					$sys_sync_account->setPassword($this->in->post['password'], $ID);
 				}
 
 				//$this->redirect(sys_url . '/content/settings/list_sync_accounts/');
@@ -238,18 +239,18 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 		$sys_languages    = $this->model('sys_languages');
 		$sys_translations = $this->model('sys_translations');
 
-		if($_POST['export']) {
+		if($this->in->post['export']) {
 			return $this->export_translations();
 		}
 
 		$intPage = isset($_GET['page']) ? (int)$_GET['page'] : ($_SESSION['content']['translations']['list_filter']['page'] ? (int)$_SESSION['content']['translations']['list_filter']['page'] : 1);
 
-		if(isset($_POST['application'])) {
-			$_SESSION['content']['translations']['list_filter']['application'] = $_POST['application'];
+		if(isset($this->in->post['application'])) {
+			$_SESSION['content']['translations']['list_filter']['application'] = $this->in->post['application'];
 		}
 
-		if(isset($_POST['keyword'])) {
-			$_SESSION['content']['translations']['list_filter']['keyword'] = $_POST['keyword'];
+		if(isset($this->in->post['keyword'])) {
+			$_SESSION['content']['translations']['list_filter']['keyword'] = $this->in->post['keyword'];
 		}
 
 		$strApp = $_SESSION['content']['translations']['list_filter']['application'];
@@ -289,7 +290,7 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 		//Create page navigation for first page
 
 
-		$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
+		$objPaginator = new CMS\Paginator($this->in, $total_count, $intPage, $this->per_page);
 //		$objPaginator->url=sys_url.'/content/'.'settings'.'/list_translations/';
 		$this->assign('objPaginator', $objPaginator);
 
@@ -369,7 +370,7 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 					}
 
 					if($aEx) {
-						if($_POST['overwrite']) {
+						if($this->in->post['overwrite']) {
 							$sys_translations->update($arrNewRow, "ID='{$aEx->ID}'");
 							$intUpdates++;
 						}
@@ -420,14 +421,14 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 
 		$arrAvailableLanguages = $sys_languages->arr();
 
-		if($_POST) {
-			$objItem->application = $_POST['application'];
-			if(trim($_POST['code'])) {
-				$objItem->code = trim($_POST['code']);
+		if($this->in->post) {
+			$objItem->application = $this->in->post['application'];
+			if(trim($this->in->post['code'])) {
+				$objItem->code = trim($this->in->post['code']);
 			}
 
 			foreach($arrAvailableLanguages as $aLang) {
-				$objItem->{$aLang->ID} = $_POST[$aLang->ID];
+				$objItem->{$aLang->ID} = $this->in->post[$aLang->ID];
 			}
 
 			if((int)$_GET['id']) {
@@ -548,7 +549,7 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 		}
 
 		#Create page navigation for first page
-		$objPaginator      = new CMS\Paginator($this->controller->input, $sys_email_templates->count(), $intPage, $this->per_page);
+		$objPaginator      = new CMS\Paginator($this->in, $sys_email_templates->count(), $intPage, $this->per_page);
 		$objPaginator->url = sys_url . '/content/settings/' . __FUNCTION__ . '/';
 
 		$this->assign('title', $this->translate('Email templates'));
@@ -565,10 +566,10 @@ class Settings extends \Gratheon\CMS\Controller\Content\ProtectedContentControll
 		$ID = (int)$_GET['id'];
 
 		$sys_email_templates = $this->model('sys_email_templates');
-		if($_POST) {
-			$objItem->title = $_POST['title'];
-			$objItem->html  = stripslashes($_POST['html']);
-			$objItem->text  = stripslashes($_POST['text']);
+		if($this->in->post) {
+			$objItem->title = $this->in->post['title'];
+			$objItem->html  = stripslashes($this->in->post['html']);
+			$objItem->text  = stripslashes($this->in->post['text']);
 			$objItem->ID    = (int)$_GET['id'];
 
 			$sys_email_templates->update($objItem, "ID=$ID");
@@ -632,7 +633,7 @@ This way written source can be connected with changeable destination')));
 		}
 
 		#Create page navigation for first page
-		$objPaginator = new CMS\Paginator($this->controller->input, $sys_email_templates->count(), $intPage, $this->per_page);
+		$objPaginator = new CMS\Paginator($this->in, $sys_email_templates->count(), $intPage, $this->per_page);
 		//$objPaginator->url=sys_url.'/content/'.'settings'.'/'.__FUNCTION__.'/';
 
 		$this->assign('title', $this->translate('Page connections'));
@@ -654,17 +655,17 @@ This way written source can be connected with changeable destination')));
 		$tpl_links      = $this->model('tpl_links');
 		$tpl_links_page = $this->model('tpl_links_page');
 
-		if($_POST) {
+		if($this->in->post) {
 			if($ID) {
-				$objItem->description = ($_POST['description']);
-				$objItem->tag         = ($_POST['tag']);
+				$objItem->description = ($this->in->post['description']);
+				$objItem->tag         = ($this->in->post['tag']);
 
 				$tpl_links->update($objItem, "ID=$ID");
 
 				$tpl_links_page->delete("connectionID='$ID'");
 
-				if($_POST['pageIDs']) {
-					foreach($_POST['pageIDs'] as $pageID) {
+				if($this->in->post['pageIDs']) {
+					foreach($this->in->post['pageIDs'] as $pageID) {
 						$recConnection->pageID       = $pageID;
 						$recConnection->connectionID = $ID;
 						$tpl_links_page->insert($recConnection);
@@ -672,13 +673,13 @@ This way written source can be connected with changeable destination')));
 				}
 			}
 			else {
-				$objItem->description = ($_POST['description']);
-				$objItem->tag         = ($_POST['tag']);
+				$objItem->description = ($this->in->post['description']);
+				$objItem->tag         = ($this->in->post['tag']);
 
 				$ID = $tpl_links->insert($objItem);
 
-				if($_POST['pageIDs']) {
-					foreach($_POST['pageIDs'] as $pageID) {
+				if($this->in->post['pageIDs']) {
+					foreach($this->in->post['pageIDs'] as $pageID) {
 						$recConnection->pageID       = $pageID;
 						$recConnection->connectionID = $ID;
 						$tpl_links_page->insert($recConnection);
@@ -783,7 +784,7 @@ This way written source can be connected with changeable destination')));
 		);
 
 		$total_count  = $sys_user->count();
-		$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
+		$objPaginator = new CMS\Paginator($this->in, $total_count, $intPage, $this->per_page);
 
 		if($arrList) {
 			foreach($arrList as &$item) {
@@ -799,7 +800,7 @@ This way written source can be connected with changeable destination')));
 		$this->assign('title', $this->translate('Users'));
 		$this->assign('title_badge', $total_count);
 		$this->assign('objPaginator', $objPaginator);
-		$this->assign('filter', array('group' => $_POST['group']));
+		$this->assign('filter', array('group' => $this->in->post['group']));
 		$this->assign('arrData', $arrList);
 		$this->assign('groups', $sys_user_group->arr());
 		$this->assign('link_add', sys_url . '/content/settings/edit_user/');
@@ -831,23 +832,23 @@ This way written source can be connected with changeable destination')));
 		$sys_languages    = $this->model('sys_languages');
 		$iso_countries    = $this->model('iso_countries');
 
-		if($_POST) {
+		if($this->in->post) {
 			$objItem            = new stdClass();
-			$objItem->groupID   = $_POST['groupID'];
-			$objItem->langID    = $_POST['langID'];
-			$objItem->login     = $_POST['login'];
-			$objItem->firstname = $_POST['firstname'];
-			$objItem->lastname  = $_POST['lastname'];
-			$objItem->email     = $_POST['email'];
-			if($_POST['password']) {
-				$objItem->password = md5($_POST['password']);
+			$objItem->groupID   = $this->in->post['groupID'];
+			$objItem->langID    = $this->in->post['langID'];
+			$objItem->login     = $this->in->post['login'];
+			$objItem->firstname = $this->in->post['firstname'];
+			$objItem->lastname  = $this->in->post['lastname'];
+			$objItem->email     = $this->in->post['email'];
+			if($this->in->post['password']) {
+				$objItem->password = md5($this->in->post['password']);
 			}
 
 			$objContact               = new stdClass();
-			$objContact->countryID    = $_POST['country_id'];
-			$objContact->phone_mobile = $_POST['phone_mobile'];
-			$objContact->post_index   = $_POST['post_index'];
-			$objContact->home_address = $_POST['home_address'];
+			$objContact->countryID    = $this->in->post['country_id'];
+			$objContact->phone_mobile = $this->in->post['phone_mobile'];
+			$objContact->post_index   = $this->in->post['post_index'];
+			$objContact->home_address = $this->in->post['home_address'];
 
 			$ID = (int)$_GET['id'];
 
@@ -907,7 +908,7 @@ This way written source can be connected with changeable destination')));
 		}
 
 		$this->assign('title', $this->translate('User groups'));
-		$this->assign('filter', array('group' => $_POST['group']));
+		$this->assign('filter', array('group' => $this->in->post['group']));
 		$this->assign('arrData', $arrList);
 		$this->assign('groups', $sys_user_group->arr());
 		$this->assign('link_add', sys_url . '/content/settings/edit_group/');
@@ -923,9 +924,9 @@ This way written source can be connected with changeable destination')));
 		$iso_countries  = $this->model('iso_countries');
 
 
-		if($_POST) {
+		if($this->in->post) {
 			$objItem        = new stdClass();
-			$objItem->title = $_POST['title'];
+			$objItem->title = $this->in->post['title'];
 			$ID             = (int)$_GET['id'];
 
 			if($ID) {

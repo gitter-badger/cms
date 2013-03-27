@@ -30,25 +30,24 @@ class Front extends \Gratheon\Core\Controller {
     }
 
     public function handleUnknownRoutes() {
-		if(end($this->input->URI) == 'rss.xml'){
+		if(end($this->in->URI) == 'rss.xml'){
 			return $this->rss();
 		}
 
-        if ($this->input->URL) {
+        if ($this->in->URL) {
             $content_menu = $this->model('Menu');
 			$menu = new \Gratheon\CMS\Menu();
             //$content_menu->load_config();
 
-            $ID = $content_menu->int("smart_url='" . end($this->input->URL) . "'", "ID");
+            $ID = $content_menu->int("smart_url='" . end($this->in->URL) . "'", "ID");
 
             if ($ID) {
                 $this->redirect($menu->getPageURL($ID));
             }
         }
 
-        if (!in_array($this->input->URI[2], $this->arrLanguages)) {
-			global $error;
-            $error->fatal(404);
+        if (!in_array($this->in->URI[2], $this->arrLanguages)) {
+            $this->error->fatal(404);
         }
     }
 
@@ -109,11 +108,11 @@ class Front extends \Gratheon\Core\Controller {
         $objElement = $content_menu->obj("parentID=1 AND langID='" . $this->langID . "'");
 
         $arrRootChildURLs = (array)$content_menu->arrint("parentID=1 AND smart_url IS NOT NULL", "smart_url");
-        if ($this->input->URL) {
-            $this->findDeeperMenuElement($this->input->URL, $objElement, $arrRootChildURLs);
+        if ($this->in->URL) {
+            $this->findDeeperMenuElement($this->in->URL, $objElement, $arrRootChildURLs);
         }
 
-        $strObjectURL = end($this->input->URL);
+        $strObjectURL = end($this->in->URL);
         //Step 2. Using ID
         if ($objElement->parentID == 1 && is_numeric($strObjectURL)) {
             $objElement = $content_menu->obj($strObjectURL);
@@ -126,7 +125,7 @@ class Front extends \Gratheon\Core\Controller {
             }
         }
         else {
-            if ($objElement->parentID == 1 && count($this->input->URL) > 0 && !in_array(end($this->input->URL), $arrRootChildURLs)) {
+            if ($objElement->parentID == 1 && count($this->in->URL) > 0 && !in_array(end($this->in->URL), $arrRootChildURLs)) {
                 $sReturn = $this->handleUnknownRoutes($objElement);
                 if ($sReturn != '') {
                     return $sReturn;
@@ -176,7 +175,7 @@ class Front extends \Gratheon\Core\Controller {
 								if (method_exists($objModule, $strMethod)) {
 									$arrBlocks[$objModuleConnection->destination_module][$strMethod] = $objModule->$strMethod($objElement->ID);
 									$objModule->add_js($objModuleConnection->destination_module . '/' . $strMethod . '.js');
-									$objModule->add_css($objModuleConnection->destination_module . '/' . $strMethod . '.css');
+//									$objModule->add_css($objModuleConnection->destination_module . '/' . $strMethod . '.css');
 								}
 							});
                         }
@@ -193,10 +192,10 @@ class Front extends \Gratheon\Core\Controller {
                             $objModule->{$objElement->method}($objElement->ID);
 
 							$controller->add_js($objModule->name . '/' . $objModule->name . '.js');
-							$controller->add_css($objModule->name . '/' . $objModule->name . '.css');
+//							$controller->add_css($objModule->name . '/' . $objModule->name . '.css');
 
 							$controller->add_js($objModule->name . '/' . $objElement->method . '.js');
-							$controller->add_css($objModule->name . '/' . $objElement->method . '.css');
+//							$controller->add_css($objModule->name . '/' . $objElement->method . '.css');
 
                             $strContentTemplate = 'ModuleFrontend/';
 
@@ -258,8 +257,8 @@ class Front extends \Gratheon\Core\Controller {
      */
 	public function abstractModuleCall($module = null, $method = null) {
         if (!$module || !$method) {
-            $module = $this->input->URI[3];
-            $method = $this->input->URI[4];
+            $module = $this->in->URI[3];
+            $method = $this->in->URI[4];
         }
 
 		$controller = $this;
@@ -281,26 +280,22 @@ class Front extends \Gratheon\Core\Controller {
 
     //Generic search, depending on content type
 	public function search() {
-        $this->add_css('night_theme.css', 'screen');
+//        $this->add_css('night_theme.css', 'screen');
 
         $content_menu = $this->model('content_menu');
         $sys_tags = $this->model('sys_tags');
         $content_module = $this->model('content_module');
 
         $this->add_js('front.search.js');
-        $this->add_css('front.search.css');
+//        $this->add_css('front.search.css');
 
         $objElement = $content_menu->obj("parentID=1 AND langID='" . $this->langID . "'");
 
         $this->loadRecursiveMenuBySelection($objElement->ID);
-/*
-        if ($_POST['q']) {
-            $this->redirect(sys_url . 'search/' . urlencode($_POST['q']) . '/');
-        }*/
 
         //win2utf
         //$q = (urldecode($this->URI[3]));
-        $q = urldecode($_REQUEST['q']);
+        $q = urldecode($this->in->request['q']);
 
 /*
         $q = str_replace('%', '\%', $q);
@@ -314,7 +309,8 @@ class Front extends \Gratheon\Core\Controller {
             $arrModules = $content_module->arrint("is_active=1", 'ID');
             foreach ($arrModules as $module) {
                 $this->loadModule($module, function($objModule) use ($q, &$arrResults){
-                    /** @var Searchable $objModule*/
+
+                    /** @var \Gratheon\CMS\Module\Behaviour\Searchable $objModule*/
                     if (method_exists($objModule, 'search_from_public')) {
                         $results = $objModule->search_from_public(addslashes($q));
                         if ($results->count>0) {
@@ -422,10 +418,4 @@ class Front extends \Gratheon\Core\Controller {
         $menu->strFrom = '';
 
     }
-
-    public function test(){
-        echo 1;
-        die;
-    }
-
 }

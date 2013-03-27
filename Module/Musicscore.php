@@ -21,8 +21,8 @@ class Musicscore extends \Gratheon\CMS\SearchableContentModule implements \Grath
 		$content_menu = $this->model('content_menu');
 
 		$recElement             = new \Gratheon\Core\Record();
-		$recElement->service    = $_POST['service'];
-		$recElement->service_id = $content_musicscore->parseCode($recElement->service, $_POST['serviceCode']);
+		$recElement->service    = $this->controller->in->post['service'];
+		$recElement->service_id = $content_musicscore->parseCode($recElement->service, $this->controller->in->post['serviceCode']);
 		$ID                     = $content_musicscore->insert($recElement);
 
 		$content_menu->update(array('elementID' => $ID), "ID='$parentID'");
@@ -30,7 +30,7 @@ class Musicscore extends \Gratheon\CMS\SearchableContentModule implements \Grath
 		$recMenu = $content_menu->obj($parentID);
 
 		if($recMenu->title == '' && $recElement->serviceCode) {
-			$strTitle = $content_musicscore->getSlideTitleFromCode($recElement->service, $_POST['serviceCode']);
+			$strTitle = $content_musicscore->getSlideTitleFromCode($recElement->service, $this->controller->in->post['serviceCode']);
 			$strTitle = html_entity_decode($strTitle);
 
 			if(!$strTitle) {
@@ -49,8 +49,8 @@ class Musicscore extends \Gratheon\CMS\SearchableContentModule implements \Grath
 		/** @var \Gratheon\CMS\Model\Musicscore $content_musicscore*/
 
 		$recElement             = $content_musicscore->obj($ID);
-		$recElement->service    = $_POST['service'];
-		$recElement->service_id = $content_musicscore->parseCode($recElement->service, $_POST['serviceCode']);
+		$recElement->service    = $this->controller->in->post['service'];
+		$recElement->service_id = $content_musicscore->parseCode($recElement->service, $this->controller->in->post['serviceCode']);
 
 		$content_musicscore->update($recElement, 'ID=' . $ID);
 

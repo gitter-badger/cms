@@ -7,13 +7,6 @@ class Profile extends \Gratheon\Core\Controller {
 
     function main() {
         $sys_languages = $this->model('sys_languages');
-		/*
-        $this->add_css('reset.css');
-        $this->add_css('layout.css');
-
-
-        $this->add_css('profile.login.css');
-		*/
 
 		$this->add_css('/vendor/twitter/bootstrap/css/bootstrap.min.css', false);
         $this->add_js('/vendor/jquery/jqyery/jquery-1.7.2.js');
@@ -23,8 +16,8 @@ class Profile extends \Gratheon\Core\Controller {
         $this->assign('arrLanguages', $arrLanguages);
         $this->assign('title', $this->translate('Authentication'));
 
-        if (isset($_POST['login'])) {
-            $success = $this->user->login($_POST['login'], md5($_POST['pass']));
+        if (isset($this->in->post['login'])) {
+            $success = $this->user->login($this->in->post['login'], md5($this->in->post['pass']));
         }
 
         if ($success || $this->user->data['ID'] && $this->user->data['groupID'] == 2) {

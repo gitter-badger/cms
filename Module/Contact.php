@@ -7,9 +7,6 @@ namespace Gratheon\CMS\Module;
 use Gratheon\CMS;
 
 class Contact extends \Gratheon\CMS\ContentModule {
-
-    var $models = array('content_module', 'sys_email_templates',
-        'content_contact', 'content_contact_log', 'content_menu', 'content_article', 'content_image');
     var $per_page = 20;
     var $name = 'contact';
 
@@ -21,7 +18,7 @@ class Contact extends \Gratheon\CMS\ContentModule {
 
         $recElement = $content_contact->obj('parentID=' . $parentID);
 
-        if ($_POST) {
+        if ($this->controller->in->post) {
             $this->addFeedback($recElement);
         }
 
@@ -46,15 +43,15 @@ class Contact extends \Gratheon\CMS\ContentModule {
     function addFeedback($recElement) {
         global $user;
 
-        if (!$_POST['message']) {
+        if (!$this->controller->in->post['message']) {
             $arrErrors[] = $this->translate('Empty message');
         }
 
-        if (!$_POST['name']) {
+        if (!$this->controller->in->post['name']) {
             $arrErrors[] = $this->translate('Empty name');
         }
 
-        if (!$_POST['email']) {
+        if (!$this->controller->in->post['email']) {
             $arrErrors[] = $this->translate('Empty email');
         }
 
@@ -69,9 +66,9 @@ class Contact extends \Gratheon\CMS\ContentModule {
                 if ($user->data['ID']) {
                     $recLog->userID = $user->data['ID'];
                 }
-                $recLog->fullname = $_POST['name'];
-                $recLog->email = $_POST['email'];
-                $recLog->message = $_POST['message'];
+                $recLog->fullname = $this->controller->in->post['name'];
+                $recLog->email = $this->controller->in->post['email'];
+                $recLog->message = $this->controller->in->post['message'];
                 $recLog->date_added = 'NOW()';
                 $content_contact_log->insert($recLog);
                 $recElement->success[] = $this->translate('Message logged successully');
@@ -98,18 +95,18 @@ class Contact extends \Gratheon\CMS\ContentModule {
                     'from_name' => $config->front['email_notification_sender_name'],
 
                     'replace' => array(
-                        '{name}' => $_POST['name'],
-                        '{email}' => $_POST['email'],
-                        '{message}' => $_POST['message'],
+                        '{name}' => $this->controller->in->post['name'],
+                        '{email}' => $this->controller->in->post['email'],
+                        '{message}' => $this->controller->in->post['message'],
 
                         '{link_homepage}' => sys_url
                     )
                 );
 
                 $this->send_mail($arrParams);
-                //mail($recElement->email,$recElement->email_title,$_POST['message']);
+                //mail($recElement->email,$recElement->email_title,$this->controller->in->post['message']);
                 $recSuccess[] = $this->translate('Message sent successully');
-                //pre($_POST);
+                //pre($this->controller->in->post);
             }
         }
 
@@ -128,8 +125,7 @@ class Contact extends \Gratheon\CMS\ContentModule {
 
         $content_contact_log->delete('ID=' . $_GET['ID']);
 
-        global $controller;
-        $controller->redirect('/content/edit/?ID=' . $recElement->parentID);
+        $this->controller->redirect('/content/edit/?ID=' . $recElement->parentID);
     }
 
 
@@ -153,7 +149,7 @@ class Contact extends \Gratheon\CMS\ContentModule {
 
             #Create page navigation for first page
             $intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
-            $objPaginator = new CMS\Paginator($this->controller->input, $content_contact_log->count, $intPage, $this->per_page);
+            $objPaginator = new CMS\Paginator($this->controller->in, $content_contact_log->count, $intPage, $this->per_page);
             $objPaginator->url = '/content/edit/?ID=' . $_GET['id'];
 
             $this->assign('recElement', $recElement);
@@ -167,10 +163,10 @@ class Contact extends \Gratheon\CMS\ContentModule {
         $content_contact = $this->model('content_contact');
 
         $recElement = new \Gratheon\Core\Record();
-        $recElement->email_title = $_POST['email_title'];
-        $recElement->send_email = $_POST['send_email'];
-        $recElement->email = $_POST['email'];
-        $recElement->log_db = $_POST['log_db'];
+        $recElement->email_title = $this->controller->in->post['email_title'];
+        $recElement->send_email = $this->controller->in->post['send_email'];
+        $recElement->email = $this->controller->in->post['email'];
+        $recElement->log_db = $this->controller->in->post['log_db'];
         $content_contact->update($recElement, 'parentID=' . $parentID);
     }
 
@@ -179,10 +175,10 @@ class Contact extends \Gratheon\CMS\ContentModule {
 
         $recElement = new \Gratheon\Core\Record();
         $recElement->parentID = $parentID;
-        $recElement->email_title = $_POST['email_title'];
-        $recElement->send_email = $_POST['send_email'];
-        $recElement->email = $_POST['email'];
-        $recElement->log_db = $_POST['log_db'];
+        $recElement->email_title = $this->controller->in->post['email_title'];
+        $recElement->send_email = $this->controller->in->post['send_email'];
+        $recElement->email = $this->controller->in->post['email'];
+        $recElement->log_db = $this->controller->in->post['log_db'];
         $content_contact->insert($recElement);
     }
 

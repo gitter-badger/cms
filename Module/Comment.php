@@ -32,10 +32,10 @@ class Comment
         $recElement = $content_comment->obj('parentID=' . $parentID);
 
         /** @var $recElement content_comment_record */
-        $recElement->content = stripslashes($_POST['mceEditor']);
-        $recElement->author = $_POST['title'];
-        $recElement->url = $_POST['url'];
-        $recElement->show_url = (int)$_POST['show_url'];
+        $recElement->content = stripslashes($this->controller->in->post['mceEditor']);
+        $recElement->author = $this->controller->in->post['title'];
+        $recElement->url = $this->controller->in->post['url'];
+        $recElement->show_url = (int)$this->controller->in->post['show_url'];
 
         $content_comment->update($recElement);
     }
@@ -45,11 +45,11 @@ class Comment
 
         $recElement = new content_comment_record();
         $recElement->parentID = $parentID;
-        $recElement->content = stripslashes($_POST['mceEditor']);
+        $recElement->content = stripslashes($this->controller->in->post['mceEditor']);
         $recElement->date_added = 'NOW()';
-        $recElement->author = $_POST['title'];
-        $recElement->url = $_POST['url'];
-        $recElement->show_url = (int)$_POST['show_url'];
+        $recElement->author = $this->controller->in->post['title'];
+        $recElement->url = $this->controller->in->post['url'];
+        $recElement->show_url = (int)$this->controller->in->post['show_url'];
         $content_comment->insert($recElement);
     }
 
@@ -103,32 +103,32 @@ class Comment
     public function front_add() {
         global $user, $menu;
 
-        setcookie('name', $_POST['comment_name'], strtotime("+1 week"), '/');
-        setcookie('url', $_POST['comment_url'], strtotime("+1 week"), '/');
-        setcookie('email', $_POST['comment_email'], strtotime("+1 week"), '/');
+        setcookie('name', $this->controller->in->post['comment_name'], strtotime("+1 week"), '/');
+        setcookie('url', $this->controller->in->post['comment_url'], strtotime("+1 week"), '/');
+        setcookie('email', $this->controller->in->post['comment_email'], strtotime("+1 week"), '/');
 
 
         $intNodeID = (int)$_GET['nodeID'];
         $intParentID = $_GET['parentID'] ? (int)$_GET['parentID'] : $intNodeID;
-        $_POST['comment_body'] = stripslashes($_POST['reply']); // $_SESSION['front']['comment_field']
+        $this->controller->in->post['comment_body'] = stripslashes($this->controller->in->post['reply']); // $_SESSION['front']['comment_field']
 
 
-        $this->checkForDisabledJS($intNodeID, $_POST['scripter']);
-        $this->checkForSpam($_POST['robotizer']);
+        $this->checkForDisabledJS($intNodeID, $this->controller->in->post['scripter']);
+        $this->checkForSpam($this->controller->in->post['robotizer']);
 
         $recComment = new \Gratheon\Core\Record();
-        $this->fillFacebookData($_POST['facebook_id'], $_POST['facebook_access_key'], $recComment);
+        $this->fillFacebookData($this->controller->in->post['facebook_id'], $this->controller->in->post['facebook_access_key'], $recComment);
 
         //Prepare all comment data
-        if ($_POST['comment_url']) {
-            if (!preg_match('/http:/i', $_POST['comment_url'])) {
-                $_POST['comment_url'] = 'http://' . $_POST['comment_url'];
+        if ($this->controller->in->post['comment_url']) {
+            if (!preg_match('/http:/i', $this->controller->in->post['comment_url'])) {
+                $this->controller->in->post['comment_url'] = 'http://' . $this->controller->in->post['comment_url'];
             }
-            $recComment->url = $_POST['comment_url'];
+            $recComment->url = $this->controller->in->post['comment_url'];
         }
 
         $recMenu = new \Gratheon\Core\Record();
-        $recMenu->title = $_POST['comment_name'];
+        $recMenu->title = $this->controller->in->post['comment_name'];
         $recMenu->module = 'comment';
         $recMenu->date_added = 'NOW()';
         if ($user->data['ID']) {
@@ -138,7 +138,7 @@ class Comment
         $recMenu->position = $content_menu->int('parentID=' . $recMenu->parentID, 'MAX(position)+1 as pos');
         $recMenu->ID = $content_menu->insert($recMenu);
 
-        $recComment->content = strip_tags($_POST['comment_body']);
+        $recComment->content = strip_tags($this->controller->in->post['comment_body']);
 
         if ($_SESSION['facebook_visitor']) {
             /*$recComment->author = $_SESSION['facebook_visitor']['name'];
@@ -146,16 +146,16 @@ class Comment
             $recComment->userID = $_SESSION['facebook_visitor']['uid'];
         }
         else {
-            $recComment->author = $_POST['comment_name'];
-            $recComment->email = $_POST['comment_email'];
+            $recComment->author = $this->controller->in->post['comment_name'];
+            $recComment->email = $this->controller->in->post['comment_email'];
         }
 
         if ($recComment->url) {
             $recComment->show_url = $content_comment->int("url='{$recComment->url}' AND show_url=1 LIMIT 1", "ID") ? 1 : 0;
         }
 
-        if ($_POST['comment_email']) {
-            $recComment->gravatar = md5(strtolower(trim($_POST['comment_email'])));
+        if ($this->controller->in->post['comment_email']) {
+            $recComment->gravatar = md5(strtolower(trim($this->controller->in->post['comment_email'])));
         }
         $recComment->parentID = $recMenu->ID;
         $recComment->date_added = 'NOW()';
@@ -185,7 +185,7 @@ class Comment
     public function checkForDisabledJS($intNodeID, $controlField) {
         global $menu, $controller;
         if (!$controlField) {
-            $_SESSION['front']['last_comment'] = $_POST['reply'];
+            $_SESSION['front']['last_comment'] = $this->controller->in->post['reply'];
             $controller->redirect($menu->getPageURL($intNodeID) . '/?nojs=1');
         }
     }
@@ -193,23 +193,23 @@ class Comment
     private function notifyEmailSubscribers($recMenu, $content_menu, $content_comment, $intNodeID, $menu) { //Send mail to admin
 		require_once(sys_root . 'vendor/phpmailer/phpmailer/class.phpmailer.php');
         $mail = new \PHPMailer();
-        $mail->From = $_POST['comment_email'];
-        $mail->FromName = $_POST['comment_name'];
+        $mail->From = $this->controller->in->post['comment_email'];
+        $mail->FromName = $this->controller->in->post['comment_name'];
         $mail->Subject = 'Comment to your post..';
-        $mail->Body = $_POST['comment_name'] . ' writes:<br />' . $_POST['comment_body'];
+        $mail->Body = $this->controller->in->post['comment_name'] . ' writes:<br />' . $this->controller->in->post['comment_body'];
         $mail->AddAddress(comments_email, 'incoming');
         $mail->Send();
         $recParentComment = $content_menu->obj('t1.module="comment" AND t1.ID=' . $recMenu->parentID, 't2.*', $content_menu->table . ' as t1 LEFT JOIN ' . $content_comment->table . ' as t2 ON t2.parentID=t1.ID');
 
-        if (is_object($recParentComment) && $_POST['comment_email'] <> $recParentComment->email && strlen($recParentComment->email) > 5) {
+        if (is_object($recParentComment) && $this->controller->in->post['comment_email'] <> $recParentComment->email && strlen($recParentComment->email) > 5) {
             $mail = new PHPMailer();
-            $mail->From = $_POST['comment_email'];
-            $mail->FromName = $_POST['comment_name'];
+            $mail->From = $this->controller->in->post['comment_email'];
+            $mail->FromName = $this->controller->in->post['comment_name'];
             $mail->Subject = 'Comment to your post..';
-            if (!$_POST['comment_name']) {
-                $_POST['comment_name'] = 'Someone';
+            if (!$this->controller->in->post['comment_name']) {
+                $this->controller->in->post['comment_name'] = 'Someone';
             }
-            $mail->Body = $_POST['comment_name'] . ' left a comment at ' . $menu->getPageURL($intNodeID) . '/ <br />' . $_POST['comment_body'] . ' <br />';
+            $mail->Body = $this->controller->in->post['comment_name'] . ' left a comment at ' . $menu->getPageURL($intNodeID) . '/ <br />' . $this->controller->in->post['comment_body'] . ' <br />';
             $mail->AddAddress($recParentComment->email, 'incoming');
             $mail->Send();
         }
@@ -412,7 +412,7 @@ class Comment
         $content_comment = $this->model('Comment');
         $tree = new \Gratheon\CMS\Tree;
 
-        $this->add_css($this->name . '/' . __FUNCTION__ . '.css');
+//        $this->add_css($this->name . '/' . __FUNCTION__ . '.css');
         $this->add_js($this->name . '/' . __FUNCTION__ . '.js');
 
         $tree->strWhere = "module='comment' AND ";

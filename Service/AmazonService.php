@@ -18,13 +18,32 @@ class AmazonService{
         $this->link = new \AmazonS3($this->amazon_key, $this->amazon_secret);
     }
 
-    public function copyFile($subPath){
-        if($this->link->getObjectInfo($this->amazon_bucket, $subPath)){
+    public function copyFile($strSourceFile, $strTargetPath){
+        if($this->link->getObjectInfo($this->amazon_bucket, $strTargetPath)){
             return false;
         }
 
         $link = $this->link;
-        $this->link->putObjectFile( sys_root."res/".$subPath, $this->amazon_bucket, $subPath, $link::ACL_PUBLIC_READ);
+        $this->link->putObjectFile(
+			$strSourceFile,
+			$this->amazon_bucket,
+			$strTargetPath,
+			$link::ACL_PUBLIC_READ
+		);
+
+        return true;
+    }
+
+    public function copyFileFromCloud($strTargetFile, $strSourcePath){
+        if($this->link->getObjectInfo($this->amazon_bucket, $strSourcePath)){
+            return false;
+        }
+
+        $this->link->getObject(
+			$this->amazon_bucket,
+			$strSourcePath,
+			$strTargetFile
+		);
 
         return true;
     }

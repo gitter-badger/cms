@@ -40,11 +40,11 @@ class User extends \Gratheon\CMS\ContentModule {
 		$sys_user = $this->model('sys_user');
 		$sys_user_contact = $this->model('sys_user_contact');
 
-		if($_POST) {
+		if($this->controller->in->post) {
 			$regData = \stdClass();
-			$regData->login    = trim($_POST['login']);
-			$regData->email    = strtolower(trim($_POST['email']));
-			$regData->password = md5($_POST['password']);
+			$regData->login    = trim($this->controller->in->post['login']);
+			$regData->email    = strtolower(trim($this->controller->in->post['email']));
+			$regData->password = md5($this->controller->in->post['password']);
 
 			$regData->langID  = $this->controller->langID;
 			$regData->groupID = 1;
@@ -70,11 +70,11 @@ class User extends \Gratheon\CMS\ContentModule {
 			}
 
 			//Password
-			if(strlen($_POST['password']) < 5) {
+			if(strlen($this->controller->in->post['password']) < 5) {
 				$arrErrors[] = $this->translate('Password must be at least 5 symbols long');
 			}
 
-			if($_POST['password'] != $_POST['password2']) {
+			if($this->controller->in->post['password'] != $this->controller->in->post['password2']) {
 				$arrErrors[] = $this->translate('Passwords do not match');
 			}
 
@@ -85,9 +85,9 @@ class User extends \Gratheon\CMS\ContentModule {
 
 				$regContact = \stdClass();
 				$regContact->user_id      = $regData->ID;
-				$regContact->phone_mobile = $_POST['phone_mobile'];
-				$regContact->post_index   = $_POST['post_index'];
-				$regContact->home_address = $_POST['address'];
+				$regContact->phone_mobile = $this->controller->in->post['phone_mobile'];
+				$regContact->post_index   = $this->controller->in->post['post_index'];
+				$regContact->home_address = $this->controller->in->post['address'];
 
 				$userID = $sys_user_contact->insert($regContact);
 
@@ -99,7 +99,7 @@ class User extends \Gratheon\CMS\ContentModule {
 			}
 			else {
 				$this->assign('errors', $arrErrors);
-				$this->assign('user_registration', $_POST);
+				$this->assign('user_registration', $this->controller->in->post);
 			}
 		}
 
@@ -150,7 +150,7 @@ class User extends \Gratheon\CMS\ContentModule {
 
 	function reactivate() {
 
-		$strEmail = $_POST['email'];
+		$strEmail = $this->controller->in->post['email'];
 		$arrUser  = $sys_user->obj("email='$strEmail'");
 		if($arrUser->ID) {
 			$arrUser->activation_hash = md5(time() . sys_url);
@@ -164,7 +164,7 @@ class User extends \Gratheon\CMS\ContentModule {
 
 
 	function forgot() {
-		$strEmail = $_POST['email'];
+		$strEmail = $this->controller->in->post['email'];
 		$arrUser  = $sys_user->obj("email='$strEmail'");
 		if($arrUser->ID) {
 			$strPass           = $arrUser->password = substr(md5(time() . sys_url), 0, 10);
@@ -234,35 +234,35 @@ class User extends \Gratheon\CMS\ContentModule {
 			return;
 		}
 
-		if($_POST) {
+		if($this->controller->in->post) {
 			//Email
-			if(!preg_match("/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i", $_POST['email'])) {
+			if(!preg_match("/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i", $this->controller->in->post['email'])) {
 				$arrErrors[] = $this->translate("Invalid email format");
 			}
 
 			//Password
-			if(strlen($_POST['password']) > 0 && strlen($_POST['password']) < 5) {
+			if(strlen($this->controller->in->post['password']) > 0 && strlen($this->controller->in->post['password']) < 5) {
 				$arrErrors[] = $this->translate('Password must be at least 5 symbols long');
 			}
 
-			if($_POST['password'] != $_POST['password2']) {
+			if($this->controller->in->post['password'] != $this->controller->in->post['password2']) {
 				$arrErrors[] = $this->translate('Passwords do not match');
 			}
 
 			if(!$arrErrors) {
-				$regData->email = strtolower(trim($_POST['email']));
-				if($_POST['password']) {
-					$regData->password = md5($_POST['password']);
+				$regData->email = strtolower(trim($this->controller->in->post['email']));
+				if($this->controller->in->post['password']) {
+					$regData->password = md5($this->controller->in->post['password']);
 				}
-				$regData->firstname = $_POST['firstname'];
-				$regData->lastname  = $_POST['lastname'];
+				$regData->firstname = $this->controller->in->post['firstname'];
+				$regData->lastname  = $this->controller->in->post['lastname'];
 				$regData->langID    = $system->langID;
 				$regData->ID        = $user->data['ID'];
 				$sys_user->update($regData);
 
-				$regContact->phone_mobile = $_POST['phone_mobile'];
-				$regContact->post_index   = $_POST['post_index'];
-				$regContact->home_address = $_POST['address'];
+				$regContact->phone_mobile = $this->controller->in->post['phone_mobile'];
+				$regContact->post_index   = $this->controller->in->post['post_index'];
+				$regContact->home_address = $this->controller->in->post['address'];
 
 				$this->assign('saved', 1);
 				$sys_user_contact->update($regContact, 'user_id=' . $regData->ID);
@@ -287,7 +287,7 @@ class User extends \Gratheon\CMS\ContentModule {
 
 	function save_mail_templates() {
 
-		if($_POST['activate_title']) {
+		if($this->controller->in->post['activate_title']) {
 			$moduleID = $content_module->int('title="' . $this->name . '"', 'ID');
 			$langID   = $_REQUEST['langID'];
 
@@ -302,8 +302,8 @@ class User extends \Gratheon\CMS\ContentModule {
 
 	//static methods
 	function login() {
-		$strLogin = $_POST['login'];
-		$strPass  = md5($_POST['pass']);
+		$strLogin = $this->controller->in->post['login'];
+		$strPass  = md5($this->controller->in->post['pass']);
 		$objUser  = $sys_user->obj("login='$strLogin' AND password='$strPass'");
 		if(!$objUser) {
 			$_SESSION[$this->name][strtolower(__FUNCTION__)]['errors'][] = $this->translate('Wrong username or password');

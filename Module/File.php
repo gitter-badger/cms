@@ -111,26 +111,26 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			$newElement->MIME     = $_FILES['file']['type'];
 			$newElement->filename = $_FILES['file']['name'];
 		}
-		elseif(file_exists(sys_root . '/res/incoming/' . $_POST['title'])) {
-			$newElement->MIME     = CMS\Model\Image::getMimeContentType(sys_root . '/res/incoming/' . $_POST['title']);
-			$newElement->filename = $_POST['title'];
+		elseif(file_exists(sys_root . '/res/incoming/' . $this->controller->in->post['title'])) {
+			$newElement->MIME     = CMS\Model\Image::getMimeContentType(sys_root . '/res/incoming/' . $this->controller->in->post['title']);
+			$newElement->filename = $this->controller->in->post['title'];
 		}
 
 		$strExt          = strtolower(end(explode('.', $newElement->filename)));
 		$newElement->ext = $strExt;
-		$strMenuTitle    = $_POST['title'] ? $_POST['title'] : $newElement->filename;
+		$strMenuTitle    = $this->controller->in->post['title'] ? $this->controller->in->post['title'] : $newElement->filename;
 
 		$oldElement = $content_file->obj('parentID=' . $parentID);
 
 		if($oldElement->ID) {
 			$newElement->ID = $oldElement->ID;
-//			$newElement->scribd_upload = (int)$_POST['scribd_upload'];
-//			$newElement->scribd_show   = (int)$_POST['scribd_show'];
+//			$newElement->scribd_upload = (int)$this->controller->in->post['scribd_upload'];
+//			$newElement->scribd_show   = (int)$this->controller->in->post['scribd_show'];
 			$content_file->update($newElement);
 		}
 		else {
-//			$newElement->scribd_upload = (int)$_POST['scribd_upload'];
-//			$newElement->scribd_show   = (int)$_POST['scribd_show'];
+//			$newElement->scribd_upload = (int)$this->controller->in->post['scribd_upload'];
+//			$newElement->scribd_show   = (int)$this->controller->in->post['scribd_show'];
 			$newElement->date_added = 'NOW()';
 			$newElement->ID         = $content_file->insert($newElement);
 		}
@@ -139,7 +139,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$filename = $newElement->ID . '.' . $strExt;
 
 		$strFilePath        = sys_root . 'res/file/' . $filename;
-		$sourceIncomingFile = sys_root . 'res/incoming/' . $_POST['title'];
+		$sourceIncomingFile = sys_root . 'res/incoming/' . $this->controller->in->post['title'];
 
 		if($_FILES['file']['name']) {
 			$bool_added = move_uploaded_file($_FILES['file']['tmp_name'], $strFilePath);
@@ -183,7 +183,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$content_menu = $this->model('Menu');
 		$content_file = $this->model('File');
 
-		$strMenuTitle = $_POST['title'] ? $_POST['title'] : $_FILES['file']['name'];
+		$strMenuTitle = $this->controller->in->post['title'] ? $this->controller->in->post['title'] : $_FILES['file']['name'];
 		$content_menu->q('UPDATE ' . $content_menu->table . ' SET title="' . $strMenuTitle . '" WHERE ID=' . $parentID);
 
 
@@ -192,8 +192,8 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		if($oldElement->ID) {
 			$newElement                = new \Gratheon\Core\Record();
 			$newElement->ID            = $oldElement->ID;
-			$newElement->scribd_upload = (int)$_POST['scribd_upload'];
-			$newElement->scribd_show   = (int)$_POST['scribd_show'];
+			$newElement->scribd_upload = (int)$this->controller->in->post['scribd_upload'];
+			$newElement->scribd_show   = (int)$this->controller->in->post['scribd_show'];
 			$content_file->update($newElement);
 		}
 	}

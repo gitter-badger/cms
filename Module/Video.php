@@ -22,17 +22,17 @@ class Video extends \Gratheon\CMS\ContentModule
 
 		$recElement                = new \Gratheon\Core\Record();
 		$recElement->parentID      = $parentID;
-		$recElement->site          = $_POST['site'];
-		$recElement->site_id       = trim($_POST['site_id']);
-		$recElement->custom_player = $_POST['custom_player'];
-		$recElement->use_hd        = (int)$_POST['use_hd'];
-		$recElement->mode          = $_POST['mode'];
+		$recElement->site          = $this->controller->in->post['site'];
+		$recElement->site_id       = trim($this->controller->in->post['site_id']);
+		$recElement->custom_player = $this->controller->in->post['custom_player'];
+		$recElement->use_hd        = (int)$this->controller->in->post['use_hd'];
+		$recElement->mode          = $this->controller->in->post['mode'];
 
 		switch($recElement->mode) {
 			case 'service':
 				$recElement->site_id = $content_external_video->parseCode($recElement->site, $recElement->site_id);
 
-				if($_POST['title']== '' && $recElement->site_id) {
+				if($this->controller->in->post['title']== '' && $recElement->site_id) {
 					$title = $content_external_video->getVideoTitle($recElement->site, $recElement->site_id);
 
 					if($title) {
@@ -42,7 +42,7 @@ class Video extends \Gratheon\CMS\ContentModule
 				}
 				break;
 			case 'url':
-				$recElement->external_flv = $_POST['external_flv'];
+				$recElement->external_flv = $this->controller->in->post['external_flv'];
 				break;
 		}
 
@@ -55,19 +55,19 @@ class Video extends \Gratheon\CMS\ContentModule
 		$content_menu           = $this->model('content_menu');
 
 		$recElement          = $content_external_video->obj('parentID=' . $parentID);
-		$recElement->site    = $_POST['site'];
-		$recElement->site_id = trim($_POST['site_id']);
+		$recElement->site    = $this->controller->in->post['site'];
+		$recElement->site_id = trim($this->controller->in->post['site_id']);
 
-		$recElement->custom_player = $_POST['custom_player'];
-		$recElement->external_flv  = $_POST['external_flv'];
-		$recElement->use_hd        = (int)$_POST['use_hd'];
-		$recElement->mode          = $_POST['mode'];
+		$recElement->custom_player = $this->controller->in->post['custom_player'];
+		$recElement->external_flv  = $this->controller->in->post['external_flv'];
+		$recElement->use_hd        = (int)$this->controller->in->post['use_hd'];
+		$recElement->mode          = $this->controller->in->post['mode'];
 
 		switch($recElement->mode) {
 			case 'service':
 				$recElement->site_id = $content_external_video->parseCode($recElement->site, $recElement->site_id);
 
-				if($_POST['title'] == '' && $recElement->site_id) {
+				if($this->controller->in->post['title'] == '' && $recElement->site_id) {
 					$title = $content_external_video->getVideoTitle($recElement->site, $recElement->site_id);
 
 					if($title) {
@@ -77,7 +77,7 @@ class Video extends \Gratheon\CMS\ContentModule
 				}
 				break;
 			case 'url':
-				$recElement->external_flv = $_POST['external_flv'];
+				$recElement->external_flv = $this->controller->in->post['external_flv'];
 				break;
 		}
 		$content_external_video->update($recElement, 'parentID=' . $parentID);
@@ -273,7 +273,7 @@ class Video extends \Gratheon\CMS\ContentModule
 	function category_view(&$recEntry) {
 		$content_external_video = $this->model($this->model_name);
 
-		$this->add_css('video/video.css');
+//		$this->add_css('video/video.css');
 
 		$recEntry->video = $content_external_video->obj("parentID='{$recEntry->ID}'");
 		$this->getVideoParams($recEntry->video);

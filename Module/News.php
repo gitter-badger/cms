@@ -97,7 +97,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
         $this->assign('title', $this->translate('News'));
         $this->assign('filter_count', $total_count);
-        $objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
+        $objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
 
 //        $this->assign('messages', array('info' => array($this->translate('News are articles that have strong chronological dependence'))));
         $this->assign('objPaginator', $objPaginator);
@@ -130,17 +130,17 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
         $content_news_body = $this->model('NewsBody');
         $recItem = new \Gratheon\Core\Record();
 
-        if ($_POST) {
+        if ($this->controller->in->post) {
             $recItem->userID = $user->data['ID'];
 
-            if ($_POST['date_added_formatted']) {
-                $arrDate = explode('.', $_POST['date_added_formatted']);
+            if ($this->controller->in->post['date_added_formatted']) {
+                $arrDate = explode('.', $this->controller->in->post['date_added_formatted']);
 
-                if (!$_POST['time_added_formatted']) {
-                    $_POST['time_added_formatted'] = '00:00';
+                if (!$this->controller->in->post['time_added_formatted']) {
+                    $this->controller->in->post['time_added_formatted'] = '00:00';
                 }
 
-                $recItem->date_added = implode('-', array($arrDate[2], $arrDate[1], $arrDate[0])) . ' ' . $_POST['time_added_formatted'];
+                $recItem->date_added = implode('-', array($arrDate[2], $arrDate[1], $arrDate[0])) . ' ' . $this->controller->in->post['time_added_formatted'];
             }
             else {
                 $recItem->date_added = 'NOW()';
@@ -151,15 +151,15 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
                 $content_news->update($recItem, 'ID=' . $ID);
                 $content_news_body->delete("newsID='$ID'");
 
-                if ($_POST['title']) {
-                    foreach ($_POST['title'] as $sLang => $sVal) {
+                if ($this->controller->in->post['title']) {
+                    foreach ($this->controller->in->post['title'] as $sLang => $sVal) {
 
-                        if (strlen($_POST['title']) < 2 && strlen($_POST['news_editor'][$sLang]) < 2) {
+                        if (strlen($this->controller->in->post['title']) < 2 && strlen($this->controller->in->post['news_editor'][$sLang]) < 2) {
                             continue;
                         }
                         $recBody = new \Gratheon\Core\Record();
                         $recBody->title = stripslashes($sVal);
-                        $recBody->content = stripslashes($_POST['news_editor'][$sLang]);
+                        $recBody->content = stripslashes($this->controller->in->post['news_editor'][$sLang]);
                         $recBody->langID = $sLang;
                         $recBody->newsID = $ID;
 
@@ -170,16 +170,16 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
             else {
                 $ID = $content_news->insert($recItem);
 
-                if ($_POST['title']) {
-                    foreach ($_POST['title'] as $sLang => $sVal) {
+                if ($this->controller->in->post['title']) {
+                    foreach ($this->controller->in->post['title'] as $sLang => $sVal) {
                         $recBody = new  \Gratheon\Core\Record();;
 
-                        if (strlen($_POST['title']) < 2 && strlen($_POST['news_editor'][$sLang]) < 2) {
+                        if (strlen($this->controller->in->post['title']) < 2 && strlen($this->controller->in->post['news_editor'][$sLang]) < 2) {
                             continue;
                         }
 
                         $recBody->title = stripslashes($sVal);
-                        $recBody->content = stripslashes($_POST['news_editor'][$sLang]);
+                        $recBody->content = stripslashes($this->controller->in->post['news_editor'][$sLang]);
                         $recBody->langID = $sLang;
                         $recBody->newsID = $ID;
 
@@ -701,7 +701,7 @@ pre($aExportAccounts);
     public function front_view() {
 		$menu = new \Gratheon\CMS\Menu();
 
-        if (is_numeric(end($this->controller->input->URL))) {
+        if (is_numeric(end($this->controller->in->URL))) {
             return $this->view_details();
         }
 
@@ -739,7 +739,7 @@ pre($aExportAccounts);
         //Create page navigation for first page
         $intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
         $intTotalCount = $content_news->count();
-        $objPaginator = new CMS\Paginator($this->controller->input, $intTotalCount, $intPage, $intPerPage);
+        $objPaginator = new CMS\Paginator($this->controller->in, $intTotalCount, $intPage, $intPerPage);
 
         $this->assign('objPaginator', $objPaginator);
         $sBaseURL = $menu->getTplPage('news_details');
@@ -777,7 +777,7 @@ pre($aExportAccounts);
         $this->add_js('front.front.article.js');
 		$this->add_css('front.article.css');
 
-        $ID = end($this->controller->input->URI);
+        $ID = end($this->controller->in->URI);
 
         $content_news = $this->model('News');
 

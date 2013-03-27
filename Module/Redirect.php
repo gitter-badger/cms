@@ -43,14 +43,14 @@ class Redirect extends \Gratheon\CMS\ContentModule {
 
         $newElement = new \Gratheon\Core\Record();
         $newElement->parentID = $parentID;
-        $newElement->destination_type = $_POST['destination_type'];
-        $newElement->URL = $_POST['URL'];
-        if ($_POST['pageID']) {
-            $newElement->pageID = $_POST['pageID'];
+        $newElement->destination_type = $this->controller->in->post['destination_type'];
+        $newElement->URL = $this->controller->in->post['URL'];
+        if ($this->controller->in->post['pageID']) {
+            $newElement->pageID = $this->controller->in->post['pageID'];
         }
 
-        if ($_POST['connectionID']) {
-            $newElement->connectionID = $_POST['connectionID'];
+        if ($this->controller->in->post['connectionID']) {
+            $newElement->connectionID = $this->controller->in->post['connectionID'];
         }
 
         $oldElement = $content_redirect->obj('parentID=' . $parentID);
@@ -68,14 +68,14 @@ class Redirect extends \Gratheon\CMS\ContentModule {
         $content_redirect = $this->model('content_redirect');
 
         $newElement = new \Gratheon\Core\Record();
-        $newElement->destination_type = $_POST['destination_type'];
-        $newElement->URL = $_POST['URL'];
-        if ($_POST['pageID']) {
-            $newElement->pageID = $_POST['pageID'];
+        $newElement->destination_type = $this->controller->in->post['destination_type'];
+        $newElement->URL = $this->controller->in->post['URL'];
+        if ($this->controller->in->post['pageID']) {
+            $newElement->pageID = $this->controller->in->post['pageID'];
         }
 
-        if ($_POST['connectionID']) {
-            $newElement->connectionID = $_POST['connectionID'];
+        if ($this->controller->in->post['connectionID']) {
+            $newElement->connectionID = $this->controller->in->post['connectionID'];
         }
 
         $content_redirect->update($newElement, "parentID='$parentID'");

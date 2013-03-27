@@ -7,13 +7,12 @@
 namespace Gratheon\CMS\Module;
 use Gratheon\CMS;
 
-class Image extends \Gratheon\CMS\ContentModule
-	implements \Gratheon\CMS\Module\Behaviour\Searchable,
-	\Gratheon\CMS\Module\Behaviour\VisibleOnDashboard,
-	\Gratheon\CMS\Module\Behaviour\Cloudy,
-	\Gratheon\CMS\Module\Behaviour\Embeddable {
+class Image extends CMS\ContentModule
+	implements CMS\Module\Behaviour\Searchable,
+	CMS\Module\Behaviour\VisibleOnDashboard,
+	CMS\Module\Behaviour\Cloudy,
+	CMS\Module\Behaviour\Embeddable {
 
-	public $models = array('content_image', 'content_menu', 'sys_languages');
 	public $static_methods = array('front_rss', 'resized');
 	public $name = 'image';
 	public $allowedExtensions = array('jpg', 'gif', 'png', 'bmp', 'jpeg');
@@ -31,7 +30,7 @@ class Image extends \Gratheon\CMS\ContentModule
 			$filename = implode('.', $aFile);
 		}
 
-		$strMenuTitle = $_POST['title'] ? $_POST['title'] : $filename;
+		$strMenuTitle = $this->controller->in->post['title'] ? $this->controller->in->post['title'] : $filename;
 		//$content_menu->q('UPDATE '.$content_menu->table.' SET title="'.$strMenuTitle.'" WHERE ID='.$parentID);
 
 		$intElement = $this->addFile($parentID);
@@ -42,7 +41,7 @@ class Image extends \Gratheon\CMS\ContentModule
 		);
 
 
-		$this->saveImageRating($_POST['xrate'], $parentID);
+		$this->saveImageRating($this->controller->in->post['xrate'], $parentID);
 
 		$content_image = $this->model('Image');
 
@@ -60,7 +59,7 @@ class Image extends \Gratheon\CMS\ContentModule
 		$arrFile = $this->getFileArray($strField, $key);
 
 		$strExt = strtolower(end(explode('.', $arrFile['name'])));
-//		$intCutPosition = isset($_POST['cut_position']) ? $_POST['cut_position'] : 1;
+//		$intCutPosition = isset($this->controller->in->post['cut_position']) ? $this->controller->in->post['cut_position'] : 1;
 
 		if(!in_array($strExt, $this->allowedExtensions)) {
 			throw new \Exception("Unsupported image filetype");
@@ -74,9 +73,9 @@ class Image extends \Gratheon\CMS\ContentModule
 
 		$recElement->filename       = $arrFile['name'];
 		$recElement->date_added     = 'NOW()';
-		$recElement->float_position = isset($_REQUEST['float_position']) ? $_REQUEST['float_position'] : $this->config('float_position');
-		$recElement->thumbnail_size = isset($_POST['thumbnail_size']) ? $_POST['thumbnail_size'] : $this->config('thumbnail_size');
-		$recElement->thumbnail_type = isset($_POST['thumbnail_type']) ? $_POST['thumbnail_type'] : $this->config('thumbnail_type');
+		$recElement->float_position = isset($this->controller->in->request['float_position']) ? $this->controller->in->request['float_position'] : $this->config('float_position');
+		$recElement->thumbnail_size = isset($this->controller->in->post['thumbnail_size']) ? $this->controller->in->post['thumbnail_size'] : $this->config('thumbnail_size');
+		$recElement->thumbnail_type = isset($this->controller->in->post['thumbnail_type']) ? $this->controller->in->post['thumbnail_type'] : $this->config('thumbnail_type');
 		$recElement->ID             = $content_image->insert($recElement);
 
 		$filename = $recElement->ID . '.' . $strExt;
@@ -152,10 +151,10 @@ class Image extends \Gratheon\CMS\ContentModule
 				$arrFile['tmpfile'] = $strFileTmpName = & $_FILES[$strField]['tmp_name'];
 			}
 		}
-		elseif(file_exists($this->getIncomingFilePath($_POST['title']))) {
-			$arrFile['tmpfile'] = $this->getIncomingFilePath($_POST['title']);
+		elseif(file_exists($this->getIncomingFilePath($this->controller->in->post['title']))) {
+			$arrFile['tmpfile'] = $this->getIncomingFilePath($this->controller->in->post['title']);
 
-			$arrFile['name'] = $_POST['title'];
+			$arrFile['name'] = $this->controller->in->post['title'];
 			$arrFile['type'] = CMS\Model\Image::getMimeContentType($arrFile['tmpfile']);
 			$arrFile['size'] = filesize($arrFile['tmpfile']);
 		}
@@ -177,13 +176,13 @@ class Image extends \Gratheon\CMS\ContentModule
 		$recElement = $content_image->obj($recMenu->elementID);
 		$strExt     = $recElement->image_format;
 
-		$recElement->date_added     = $_POST['date_added'];
-		$recElement->float_position = $_POST['float_position'] ? $_POST['float_position'] : $this->config('float_position');
-		$recElement->thumbnail_size = $_POST['thumbnail_size'] ? $_POST['thumbnail_size'] : $this->config('thumbnail_size');
-		$recElement->thumbnail_type = $_POST['thumbnail_type'] ? $_POST['thumbnail_type'] : $this->config('thumbnail_type');
+		$recElement->date_added     = $this->controller->in->post['date_added'];
+		$recElement->float_position = $this->controller->in->post['float_position'] ? $this->controller->in->post['float_position'] : $this->config('float_position');
+		$recElement->thumbnail_size = $this->controller->in->post['thumbnail_size'] ? $this->controller->in->post['thumbnail_size'] : $this->config('thumbnail_size');
+		$recElement->thumbnail_type = $this->controller->in->post['thumbnail_type'] ? $this->controller->in->post['thumbnail_type'] : $this->config('thumbnail_type');
 		$filename                   = $recElement->ID . '.' . $strExt;
 
-		$arrCropPositions = explode(':', $_POST['crop_position']);
+		$arrCropPositions = explode(':', $this->controller->in->post['crop_position']);
 
 
 		if($this->config('cloud_hosting') && $this->config('amazon_cloudonly')) {
@@ -206,7 +205,7 @@ class Image extends \Gratheon\CMS\ContentModule
 		$content_image->update($recElement, 'parentID=' . $parentID);
 
 
-		$this->saveImageRating($_POST['xrate'], $parentID);
+		$this->saveImageRating($this->controller->in->post['xrate'], $parentID);
 	}
 
 
@@ -382,7 +381,7 @@ class Image extends \Gratheon\CMS\ContentModule
 
 		$total_count = $content_image->count();
 		$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
-		$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
+		$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
 		$objPaginator->url='#image/list_images/';
 
 		if($images) {
@@ -753,7 +752,7 @@ class Image extends \Gratheon\CMS\ContentModule
 	public function resized() {
 		$content_image = $this->model('Image');
 
-		$id     = (int)current(explode('.', $this->controller->input->URI[5]));
+		$id     = (int)current(explode('.', $this->controller->in->URI[5]));
 		$width  = (int)$_GET['w'] ? (int)$_GET['w'] : 65;
 		$height = (int)$_GET['h'] ? (int)$_GET['h'] : 65;
 		$strSrc = $_GET['src'] == 'square' ? 'square' : 'original';

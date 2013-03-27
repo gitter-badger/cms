@@ -127,15 +127,15 @@ class Article
 		$recElement = $content_article->obj('parentID=' . $parentID);
 		$recMenu    = $content_menu->obj($parentID);
 
-		if($_POST['method'] && $_POST['method'] != 'front_view') {
+		if($this->controller->in->post['method'] && $this->controller->in->post['method'] != 'front_view') {
 			return false;
 		}
 
-		if(strlen($_POST['article_content']) > 0 && $recElement) {
+		if(strlen($this->controller->in->post['article_content']) > 0 && $recElement) {
 			//delete all drafts
 			$content_article_autodraft->delete("nodeID=" . $parentID);
 
-			$recElement->content       = stripslashes($_POST['article_content']);
+			$recElement->content       = stripslashes($this->controller->in->post['article_content']);
 			$recElement->content_index = $oFilter->convert_html_to_text($recElement->content);
 			$recElement->content       = $content_article->encodeImages($recElement->content, $parentID);
 			$recElement->content       = $content_article->encodeEmbeddables($recElement->content, $parentID);
@@ -145,9 +145,9 @@ class Article
 			$content_article->update($recElement, "ID='{$recElement->ID}'");
 
 
-			$this->ping_frontpage_updates($_POST['ping']);
+			$this->ping_frontpage_updates($this->controller->in->post['ping']);
 
-			if($_POST['crosspost']['livejournal']) {
+			if($this->controller->in->post['crosspost']['livejournal']) {
 				$strContent = $content_article->decodeImages($recElement->content, $parentID);
 
 				$recArticle = $this->get_article($parentID);
@@ -172,7 +172,7 @@ class Article
 				$objExportService->postMessage($strContent, $arrExportSyncAccount, $recMenu->title);
 			}
 
-			if($_POST['download_format'] == 'docx') {
+			if($this->controller->in->post['download_format'] == 'docx') {
 				require_once 'external_libraries/docxgen/phpDocx.php';
 				$phpdocx         = new phpdocx(sys_root . "cms/external_libraries/docxgen/template.docx");
 				$phpdocx->tmpDir = sys_root . 'app/content/cache/docx/word/';
@@ -182,10 +182,10 @@ class Article
 
 				$wordContent = str_replace('<br />', "\n", $oFilter->convert_html_to_text($recElement->content));
 
-				$phpdocx->assign("#TITLE#", $_POST['title']);
+				$phpdocx->assign("#TITLE#", $this->controller->in->post['title']);
 				$phpdocx->assign('INFO', $wordContent);
 
-				$file = $parentID . '_' . $_POST['title'] . ".docx";
+				$file = $parentID . '_' . $this->controller->in->post['title'] . ".docx";
 				$phpdocx->save(sys_root . 'app/content/cache/docx/word/' . $file);
 
 				return array(
@@ -215,7 +215,7 @@ class Article
 
 		$oFilter                   = new \Gratheon\Core\TextFilter();
 
-		if($_POST['method'] && $_POST['method'] != 'front_view') {
+		if($this->controller->in->post['method'] && $this->controller->in->post['method'] != 'front_view') {
 			return false;
 		}
 
@@ -223,7 +223,7 @@ class Article
 
 		$recElement                = new \Gratheon\Core\Record();
 		$recElement->parentID      = $parentID;
-		$recElement->content       = stripslashes($_POST['article_content']);
+		$recElement->content       = stripslashes($this->controller->in->post['article_content']);
 		$recElement->date_added    = 'NOW()';
 		$recElement->content_index = $oFilter->convert_html_to_text($recElement->content);
 		$recElement->content       = $content_article->encodeImages($recElement->content, $parentID);
@@ -231,7 +231,10 @@ class Article
 
 		$recMenu = $content_menu->obj($parentID);
 
-		if($_POST['post_lj']) {
+		/** @var $objExportService LivejournalService */
+
+		/*
+		if($this->controller->in->post['post_lj']) {
 			global $menu;
 
 			$module     = $this;
@@ -258,7 +261,7 @@ class Article
 
 			$content_news = new \Gratheon\CMS\Model\News();
 
-			/** @var $objExportService LivejournalService */
+
 			$objExportService     = $content_news->getServiceObject('livejournal');
 			$arrExportSyncAccount = (array)$sys_sync_account->obj("service='livejournal'", "*, DECODE(`password`,'".\SiteConfig::db_encrypt_salt."') decrypted_password");
 			$objExportService->postMessage($strContent, $arrExportSyncAccount, $recMenu->title);
@@ -279,6 +282,7 @@ class Article
 		if($_POST['ping_feedburner']) {
 			$oRemoteService->ping('ping.feedburner.com');
 		}
+*/
 	}
 
 
@@ -329,11 +333,11 @@ class Article
 
 
 	// Other admin methods
-	public function save_draft() {
-		$content_article_autodraft = new content_article_autodraft();
-		$content_article_autodraft->add_draft((int)$_GET['id'], $_POST['title'], $_POST['article_content']);
-		die(1);
-	}
+//	public function save_draft() {
+//		$content_article_autodraft = new content_article_autodraft();
+//		$content_article_autodraft->add_draft((int)$_GET['id'], $_POST['title'], $_POST['article_content']);
+//		die(1);
+//	}
 
 
 	private function ping_frontpage_updates($aServicesToNotify) {
@@ -417,7 +421,7 @@ class Article
 		//$intPage=isset($_GET['page'])? (int)$_GET['page']:0;
 
 		$this->assign('title', $this->translate('Articles') . ' (' . $total_count . ')');
-		$objPaginator = new CMS\Paginator($this->controller->input, $total_count, $intPage, $this->per_page);
+		$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
 
 		$this->assign('objPaginator', $objPaginator);
 		$this->assign('title', $this->translate('Articles'));
@@ -432,23 +436,6 @@ class Article
 
 		return $this->controller->view('ModuleBackend/' . $this->name . '/' . __FUNCTION__ . '.tpl');
 	}
-
-
-	public function edit_article() {
-		global $controller;
-
-		if($_POST) {
-			if($_GET['id']) {
-
-			}
-			else {
-
-			}
-		}
-
-		return $controller->view('ModuleFrontend/' . $this->name . '/' . __FUNCTION__ . '.tpl');
-	}
-
 
 	public function setAmazon(&$content_image){
 		if($this->config('amazon_key', 'Image')) {
@@ -794,13 +781,9 @@ class Article
 
 
 	public function category_view(&$recEntry) {
-		global $menu, $user;
-
 		$tree = new \Gratheon\CMS\Tree;
 
-		$this->add_css('image/category_view.css');
 		$this->add_js('image/image.js');
-		$this->add_css($this->name . '/' . $this->name . '.css');
 
 		$recEntry = $this->get_article($recEntry->ID);
 		//$recEntry->element=$content_article->obj('parentID='.$recEntry->ID);
@@ -816,24 +799,22 @@ class Article
 			}
 		}
 
+		$menu = new \Gratheon\CMS\Menu();
 
 		$arrSelected          = $tree->buildSelected($recEntry->ID);
 		$recEntry->navigation = $tree->buildLevels($arrSelected);
 
-		if($this->config('public_editing_enabled') && $recEntry->userID == $user->data['ID']) {
+		if($this->config('public_editing_enabled') && $recEntry->userID == $this->user->data['ID']) {
 			$recEntry->link_edit = $menu->getTplPage('article_adding') . '?ID=' . $recEntry->ID;
 		}
 	}
 
 
 	public function category_tile(&$recEntry) {
-		global $menu, $user;
-
+		$menu = new \Gratheon\CMS\Menu();
 		$tree = new \Gratheon\CMS\Tree;
 
-		$this->add_css('image/category_view.css');
 		$this->add_js('image/image.js');
-		$this->add_css($this->name . '/' . $this->name . '.css');
 
 		$recEntry = $this->get_article($recEntry->ID);
 
@@ -873,7 +854,7 @@ class Article
 		$arrSelected          = $tree->buildSelected($recEntry->ID);
 		$recEntry->navigation = $tree->buildLevels($arrSelected);
 
-		if($this->config('public_editing_enabled') && $recEntry->userID == $user->data['ID']) {
+		if($this->config('public_editing_enabled') && $recEntry->userID == $this->user->data['ID']) {
 			$recEntry->link_edit = $menu->getTplPage('article_adding') . '?ID=' . $recEntry->ID;
 		}
 	}

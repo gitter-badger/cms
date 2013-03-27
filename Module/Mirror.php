@@ -27,7 +27,7 @@ class Mirror extends \Gratheon\CMS\ContentModule {
     }
 
     function update($parentID) {
-        $intDestinationID = (int)$_POST['destinationID'];
+        $intDestinationID = (int)$this->controller->in->post['destinationID'];
 
         $content_menu = $this->model('content_menu');
 
@@ -36,7 +36,7 @@ class Mirror extends \Gratheon\CMS\ContentModule {
     }
 
     function insert($parentID) {
-        $intDestinationID = (int)$_POST['destinationID'];
+        $intDestinationID = (int)$this->controller->in->post['destinationID'];
 
         $content_menu = $this->model('content_menu');
 
@@ -44,8 +44,6 @@ class Mirror extends \Gratheon\CMS\ContentModule {
     }
 
     function category_view(&$recEntry) {
-        /** @var Controller $controller */
-        global $controller;
         $parentID = $recEntry->ID;
 
         $content_menu = $this->model('content_menu');
@@ -56,7 +54,7 @@ class Mirror extends \Gratheon\CMS\ContentModule {
         if ($objElement->module) {
 
 
-            $controller->loadModule($objElement->module, function($objModule) use ($objElement, $objMirror, $parentID, &$recEntry) {
+            $this->controller->loadModule($objElement->module, function($objModule) use ($objElement, $objMirror, $parentID, &$recEntry) {
 				$menu = new \Gratheon\CMS\Menu();
                 $objModule->init($objElement->method);
 
@@ -73,10 +71,6 @@ class Mirror extends \Gratheon\CMS\ContentModule {
     }
 
     function front_view($parentID) {
-
-        /** @var Controller $controller */
-        global $controller;
-
         $content_menu = $this->model('content_menu');
 
         $objMirror = $content_menu->obj($parentID);
@@ -84,7 +78,7 @@ class Mirror extends \Gratheon\CMS\ContentModule {
         $module = $this;
 
         if ($objElement->module) {
-            $objElement = $controller->loadModule($objElement->module, function($objModule) use($objElement, $objMirror, $module, &$controller){
+            $objElement = $this->controller->loadModule($objElement->module, function($objModule) use($objElement, $objMirror, $module, &$controller){
                 $objModule->init($objElement->method);
 
                 if (method_exists($objModule, $objElement->method)) {

@@ -37,12 +37,12 @@ class Faq extends \Gratheon\CMS\ContentModule {
 
         $position = 1;
 
-        if ($_POST['questions']) {
-            foreach ((array)$_POST['questions'] as $key => $strQuestion) {
+        if ($this->controller->in->post['questions']) {
+            foreach ((array)$this->controller->in->post['questions'] as $key => $strQuestion) {
                 if (strlen($strQuestion) > 0) {
                     $recAnswer = new \Gratheon\Core\Record();
                     $recAnswer->question = $strQuestion;
-                    $recAnswer->answer = $_POST['answers'][$key];
+                    $recAnswer->answer = $this->controller->in->post['answers'][$key];
                     $recAnswer->orderID = $position;
                     $recAnswer->parentID = $parentID;
                     $content_faq->insert($recAnswer);
@@ -75,12 +75,12 @@ class Faq extends \Gratheon\CMS\ContentModule {
 
         $position = 1;
 
-        if ($_POST['questions']) {
-            foreach ((array)$_POST['questions'] as $key => $strQuestion) {
+        if ($this->controller->in->post['questions']) {
+            foreach ((array)$this->controller->in->post['questions'] as $key => $strQuestion) {
                 if (strlen($strQuestion) > 0) {
                     $recAnswer = new \Gratheon\Core\Record();
                     $recAnswer->question = $strQuestion;
-                    $recAnswer->answer = stripslashes($_POST['answers'][$key]);
+                    $recAnswer->answer = stripslashes($this->controller->in->post['answers'][$key]);
                     $recAnswer->orderID = $position;
                     $recAnswer->parentID = $parentID;
                     $content_faq->insert($recAnswer);

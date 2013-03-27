@@ -32,14 +32,14 @@ class Person extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module
 	public function insert($parentID) {
 		$content_menu = $this->model('content_menu');
 
-		$content_menu->q("UPDATE " . $content_menu->table . " SET elementID='" . (int)$_POST['person_id'] . "' WHERE ID='$parentID'");
+		$content_menu->q("UPDATE " . $content_menu->table . " SET elementID='" . (int)$this->controller->in->post['person_id'] . "' WHERE ID='$parentID'");
 	}
 
 
 	public function update($parentID) {
 		$content_menu = $this->model('content_menu');
 
-		$content_menu->q("UPDATE " . $content_menu->table . " SET elementID='" . (int)$_POST['person_id'] . "' WHERE ID='$parentID'");
+		$content_menu->q("UPDATE " . $content_menu->table . " SET elementID='" . (int)$this->controller->in->post['person_id'] . "' WHERE ID='$parentID'");
 	}
 
 

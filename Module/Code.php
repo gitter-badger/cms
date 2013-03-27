@@ -60,9 +60,9 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	public function update($parentID) {
 		$content_code = $this->model('content_code');
 		$recElement   = $content_code->obj('parentID=' . $parentID);
-		$recElement->language = stripslashes($_POST['language']);
+		$recElement->language = stripslashes($this->controller->in->post['language']);
 
-		$recElement->content = ($_POST['content']);
+		$recElement->content = ($this->controller->in->post['content']);
 		if($recElement->language == 'php') {
 			$recElement->content = substr($recElement->content, 5);
 		}
@@ -76,8 +76,8 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		$recElement           = new \Gratheon\Core\Record();
 		$recElement->parentID = $parentID;
-		$recElement->language = stripslashes($_POST['language']);
-		$recElement->content  = ($_POST['content']);
+		$recElement->language = stripslashes($this->controller->in->post['language']);
+		$recElement->content  = ($this->controller->in->post['content']);
 
 		$content_code->insert($recElement);
 	}
@@ -109,8 +109,8 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		$record->content = '<pre><code class="' . $record->language . '">' . htmlentities($record->content, null, 'UTF-8') . '</code></pre>';
 
-		$this->add_css('/vendor/Gratheon/CMS/assets/css/modules/code/default.min.css', false);
-		$this->add_css('/vendor/Gratheon/CMS/assets/css/modules/code/tomorrow-night.css', false);
+//		$this->add_css('/vendor/Gratheon/CMS/assets/css/modules/code/default.min.css', false);
+//		$this->add_css('/vendor/Gratheon/CMS/assets/css/modules/code/tomorrow-night.css', false);
 		$this->add_js('modules/code/highlight.min.js', false);
 
 		return $record->content;
