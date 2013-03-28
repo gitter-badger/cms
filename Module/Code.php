@@ -68,6 +68,7 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$recElement->language = $this->controller->in->post['language'];
 		$recElement->escape('content', $this->controller->in->post['content']);
 
+
 		if($recElement->language == 'php') {
 			$recElement->content = substr($recElement->content, 5);
 		}

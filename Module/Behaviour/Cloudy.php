@@ -10,6 +10,6 @@ use \Gratheon\CMS;
 interface Cloudy{
 
 	public function copyToCloud($filename);
-	public function copyFromCloud($filename);
+	public function copyFromCloud($fileSubPath);
 	public function deleteFromCloud($filename);
 }

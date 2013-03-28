@@ -15,7 +15,7 @@ class File extends \Gratheon\Core\Model {
 
 
 	/**
-	 * @return content_file
+	 * @return \Gratheon\CMS\Model\File
 	 */
 	public static function singleton() {
 		if(!isset(self::$instance)) {

@@ -35,7 +35,8 @@ class AmazonService{
     }
 
     public function copyFileFromCloud($strTargetFile, $strSourcePath){
-        if($this->link->getObjectInfo($this->amazon_bucket, $strSourcePath)){
+		$fileinfo = $this->link->getObjectInfo($this->amazon_bucket, $strSourcePath);
+        if(!$fileinfo){
             return false;
         }
 

@@ -13,10 +13,22 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	public $models = array('content_file', 'content_menu', 'content_file_scribd', 'content_image');
 	private $document_scribd_extensions = array('pdf', 'ps', 'docx', 'doc', 'ppt', 'pps', 'pptx', 'xls', 'xlsx', 'odt', 'sxw', 'odp', 'sxi', 'ods', 'sxc', 'txt', 'rtf');
 
+	private function getFileModel() {
+		/** @var CMS\Model\File $content_file */
+		$content_file = $this->model('File');
+		if($this->config('amazon_key','image')) {
+			$content_file->setAmazonData(
+				$this->config('amazon_bucket','image'),
+				$this->config('amazon_host','image'),
+				$this->config('amazon_key','image'),
+				$this->config('amazon_secret','image')
+			);
+		}
+		return $content_file;
+	}
 
 	function edit($recMenu = null) {
-		/** @var $content_file \Gratheon\CMS\Model\File */
-		$content_file        = $this->model('File');
+		$content_file        = $this->getFileModel();
 		$content_file_scribd = $this->model('content_file_scribd');
 
 //		$this->add_js('/ext/audio_player/player.js');
@@ -28,7 +40,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			$recElement = $content_file->obj('parentID=' . $parentID);
 			if($recElement) {
 				$recElement->scribd = $content_file_scribd->obj("fileID='{$recElement->ID}'");
-				$recElement->url    = $content_file->getFileURL($recElement);
+				$recElement->url    = $content_file->getURL($recElement);
 				//$recElement->root_path     = sys_root . '/res/file/' . $recElement->ID . '.' . $recElement->ext;
 				$recElement->scribd_source = 'http://d.scribd.com/ScribdViewer.swf?document_id=' . $recElement->scribd->docID . '&amp;access_key=' . $recElement->scribd->access_key . '&amp;page=1&amp;version=1&amp;viewMode=';
 
@@ -102,7 +114,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	function insert($parentID) {
 		/** @var $content_file \Gratheon\CMS\Model\File */
 		$content_menu = $this->model('Menu');
-		$content_file = $this->model('File');
+		$content_file        = $this->getFileModel();
 
 		$newElement           = new \Gratheon\Core\Record();
 		$newElement->parentID = $parentID;
@@ -181,7 +193,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	function update($parentID) {
 		/** @var $content_file \Gratheon\CMS\Model\File */
 		$content_menu = $this->model('Menu');
-		$content_file = $this->model('File');
+		$content_file        = $this->getFileModel();
 
 		$strMenuTitle = $this->controller->in->post['title'] ? $this->controller->in->post['title'] : $_FILES['file']['name'];
 		$content_menu->q('UPDATE ' . $content_menu->table . ' SET title="' . $strMenuTitle . '" WHERE ID=' . $parentID);
@@ -201,7 +213,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 	function delete($parentID) {
 		/** @var $content_file \Gratheon\CMS\Model\File */
-		$content_file = $this->model('File');
+		$content_file        = $this->getFileModel();
 
 		$arrFile     = $content_file->obj("parentID='$parentID'");
 		$strFilePath = sys_root . '/res/file/' . $arrFile->ID . '.' . $arrFile->ext;
@@ -217,8 +229,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 
 	function front_view($ID) {
-		/** @var $content_file \Gratheon\CMS\Model\File */
-		$content_file = $this->model('content_file');
+		$content_file        = $this->getFileModel();
 		$item         = $content_file->obj("parentID=" . $ID);
 
 		$url = sys_url . "res/file/" . $item->ID . "." . $item->ext;
@@ -228,9 +239,8 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 
 	function get_adminpanel_box_list() {
-		/** @var $content_file \Gratheon\CMS\Model\File */
+		$content_file        = $this->getFileModel();
 		$content_menu = $this->model('Menu');
-		$content_file = $this->model('File');
 
 		$objLastData['data']  = $content_file->arr("1=1 ORDER BY date_added DESC LIMIT 20", "t1.ext, t2.*",
 				$content_file->table . ' t1 LEFT JOIN ' . $content_menu->table . ' t2 ON t1.parentID=t2.ID');
@@ -244,36 +254,34 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 
 	function category_view(&$recEntry) {
-		/** @var $content_file \Gratheon\CMS\Model\File */
-		$content_file = $this->model('File');
+		$content_file        = $this->getFileModel();
 
 		$recEntry->file = $content_file->obj("parentID='" . $recEntry->ID . "'");
 
-		if($recEntry->file->ext == 'mp3') {
-			$this->add_js('/ext/audio_player/player.js');
-		}
+//		if($recEntry->file->ext == 'mp3') {
+//			$this->add_js('/ext/audio_player/player.js');
+//		}
 
-		if($this->config('amazon_key', 'Image')) {
-			$content_file->setAmazonData(
-				$this->config('amazon_bucket', 'Image'),
-				$this->config('amazon_host', 'Image'),
-				$this->config('amazon_key', 'Image'),
-				$this->config('amazon_secret', 'Image')
-			);
-		}
+//		if($this->config('amazon_key', 'Image')) {
+//			$content_file->setAmazonData(
+//				$this->config('amazon_bucket', 'Image'),
+//				$this->config('amazon_host', 'Image'),
+//				$this->config('amazon_key', 'Image'),
+//				$this->config('amazon_secret', 'Image')
+//			);
+//		}
 
 		//$arrFile->url=sys_url."res/file/".$arrFile->ID.".".$arrFile->ext;
 		$recEntry->url = $content_file->getURL($recEntry->file);
-		$this->getFile($recEntry->file);
+//		$this->getFile($recEntry->file);
 
 
 	}
 
 
 	function search_from_public($q) {
-		/** @var $content_file \Gratheon\CMS\Model\File */
+		$content_file        = $this->getFileModel();
 		$content_menu = $this->model('Menu');
-		$content_file = $this->model('File');
 
 		$menu = new \Gratheon\CMS\Menu();
 
@@ -305,9 +313,8 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 	//Custom private methods
 	function getArticleData($nodeID) {
-		/** @var $content_file \Gratheon\CMS\Model\File */
+		$content_file        = $this->getFileModel();
 		$content_menu = $this->model('Menu');
-		$content_file = $this->model('File');
 
 		$arrFiles = $content_menu->q(
 			"SELECT t1.title,t2.MIME, t1.ID AS nodeID,
@@ -330,57 +337,58 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		if($arrFiles) {
 			foreach($arrFiles as &$item) {
 				$item->url = $content_file->getURL($item);
-				$this->getFile($item);
+//				$this->getFile($item);
 			}
 		}
 
 		return $arrFiles;
 	}
 
+//
+//	function getFile(&$item) {
+//		$content_file        = $this->getFileModel();
+//
+//		$content_menu        = $this->model('Menu');
+//		$content_file_scribd = $this->model('content_file_scribd');
+//		$content_image       = $this->model('Image');
+//
+//
+//		if($item->ext == 'flv') {
+//			$item->flash_path = sys_url . '/ext/jwplayer/player-viral.swf';
+//			$item->FlashVars  = 'autoHideOther=true';
+//			$item->width      = 448;
+//			$item->height     = 336;
+//			//$item->FlashVars.='&amp;defaultMedia=1';
+//			$item->FlashVars .= '&amp;file=' . $item->url;
+//
+//			$strFile = $content_menu->int(
+//				't1.parentID="' . $item->nodeID . '" AND module="image" LIMIT 1',
+//				'CONCAT(t2.ID,".",t2.image_format) file ',
+//					$content_menu->table . " t1 LEFT JOIN " .
+//							$content_image->table . " t2 ON t2.parentID=t1.ID");
+//			if($strFile) {
+//				$item->FlashVars .= '&amp;image=' . urlencode(sys_url . 'res/image/original/' . $strFile);
+//			}
+//		}
+//
+//		$item->scribd = $content_file_scribd->obj("fileID='{$item->ID}'");
+//	}
 
-	function getFile(&$item) {
-		/** @var $content_file \Gratheon\CMS\Model\File */
-		$content_menu        = $this->model('Menu');
-		$content_file_scribd = $this->model('content_file_scribd');
-		$content_image       = $this->model('Image');
-
-
-		if($item->ext == 'flv') {
-			$item->flash_path = sys_url . '/ext/jwplayer/player-viral.swf';
-			$item->FlashVars  = 'autoHideOther=true';
-			$item->width      = 448;
-			$item->height     = 336;
-			//$item->FlashVars.='&amp;defaultMedia=1';
-			$item->FlashVars .= '&amp;file=' . $item->url;
-
-			$strFile = $content_menu->int(
-				't1.parentID="' . $item->nodeID . '" AND module="image" LIMIT 1',
-				'CONCAT(t2.ID,".",t2.image_format) file ',
-					$content_menu->table . " t1 LEFT JOIN " .
-							$content_image->table . " t2 ON t2.parentID=t1.ID");
-			if($strFile) {
-				$item->FlashVars .= '&amp;image=' . urlencode(sys_url . 'res/image/original/' . $strFile);
-			}
-		}
-
-		$item->scribd = $content_file_scribd->obj("fileID='{$item->ID}'");
-	}
-
-
-	function file_download() {
-		/** @var $content_file \Gratheon\CMS\Model\File */
-
-		$content_file = $this->model('File');
-		$intFileID    = (int)$this->URI[3];
-
-		$recFile    = $content_file->obj($intFileID);
-		$this->MIME = $recFile->MIME;
-		$this->headers('attachment', $recFile->filename);
-		$fp = fopen(sys_url_resource . 'file/' . $recFile->ID, 'rb');
-		fpassthru($fp);
-		fclose($fp);
-		exit();
-	}
+//
+//	function file_download() {
+//		/** @var $content_file \Gratheon\CMS\Model\File */
+//
+//		$content_file        = $this->getFileModel();
+//		$intFileID    = (int)$this->URI[3];
+//
+//		$recFile    = $content_file->obj($intFileID);
+//		$this->MIME = $recFile->MIME;
+//		$this->headers('attachment', $recFile->filename);
+//		$fp = fopen(sys_url_resource . 'file/' . $recFile->ID, 'rb');
+//		fpassthru($fp);
+//		fclose($fp);
+//		exit();
+//	}
 
 //
 //	//Scribd functions

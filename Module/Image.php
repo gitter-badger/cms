@@ -179,9 +179,9 @@ class Image extends CMS\ContentModule
 		$strExt     = $recElement->image_format;
 
 		$recElement->date_added     = $this->controller->in->post['date_added'];
-		$recElement->float_position = $this->controller->in->post['float_position'] ? $this->controller->in->post['float_position'] : $this->config('float_position');
-		$recElement->thumbnail_size = $this->controller->in->post['thumbnail_size'] ? $this->controller->in->post['thumbnail_size'] : $this->config('thumbnail_size');
-		$recElement->thumbnail_type = $this->controller->in->post['thumbnail_type'] ? $this->controller->in->post['thumbnail_type'] : $this->config('thumbnail_type');
+		$recElement->float_position = $this->controller->in->post['float_position'] ? : $this->config('float_position');
+		$recElement->thumbnail_size = $this->controller->in->post['thumbnail_size'] ? : $this->config('thumbnail_size');
+		$recElement->thumbnail_type = $this->controller->in->post['thumbnail_type'] ? : $this->config('thumbnail_type');
 		$filename                   = $recElement->ID . '.' . $strExt;
 
 		$arrCropPositions = explode(':', $this->controller->in->post['crop_position']);
@@ -216,7 +216,7 @@ class Image extends CMS\ContentModule
 	}
 
 
-	public function copyFromCloud($filename) {
+	public function copyFromCloud($file) {
 		if($this->config('amazon_key')) {
 			$cloudAdapter = new \Gratheon\CMS\Service\AmazonService(
 				$this->config('amazon_bucket'),
@@ -224,14 +224,15 @@ class Image extends CMS\ContentModule
 				$this->config('amazon_secret')
 			);
 
-			$targetPath = sys_root.'res/image/original/' . $filename;
-
 			$cloudAdapter->copyFileFromCloud(
-				$targetPath,
-				$this->getOriginalFilePath($filename)
+				$this->getOriginalFilePath($file),
+				'image/original/'.$file
 			);
 
-			return is_file($targetPath);
+			if(!is_file($this->getOriginalFilePath($file))){
+				throw new \Exception('Failed to copy file from the cloud to '.$file);
+			}
+			return true;
 		}
 		return false;
 	}
@@ -510,6 +511,10 @@ class Image extends CMS\ContentModule
 		$strThumbFile    = $this->getThumbFilePath($filename);
 		$strSquareFile   = $this->getSquareFilePath($filename);
 		$strInlineFile   = $this->getInlineFilePath($filename);
+
+		if(!is_file($strOriginalFile)){
+			throw new \Exception('Original image was not found for file '.$filename);
+		}
 
 		$oConvertor = new \Gratheon\CMS\Model\ImageConvertor();
 
