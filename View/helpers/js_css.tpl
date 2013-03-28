@@ -1,4 +1,5 @@
 <script language="Javascript" type="text/javascript">
+	{$translations}
 	{foreach from=$controller->arrJSVars key=key item=item}
 		var {$key}={$item};
 	{/foreach}

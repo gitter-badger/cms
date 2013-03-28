@@ -19,6 +19,8 @@ class Image extends CMS\ContentModule
 	public $exifExtensions = array('jpg', 'jpeg', 'tiff');
 	public $per_page = 40;
 
+	protected $arrFolders = array('square', 'thumb', 'original');
+
 
 	public function insert($parentID) {
 		$content_menu = $this->model('Menu');
@@ -35,9 +37,9 @@ class Image extends CMS\ContentModule
 
 		$intElement = $this->addFile($parentID);
 		$content_menu->q(
-			"UPDATE " . $content_menu->table . "
-			SET title='" . $strMenuTitle . "',elementID='$intElement'
-			WHERE ID='$parentID'"
+			"UPDATE content_menu
+			SET title='{$strMenuTitle}', elementID='{$intElement}'
+			WHERE ID='{$parentID}'"
 		);
 
 
@@ -185,8 +187,9 @@ class Image extends CMS\ContentModule
 		$arrCropPositions = explode(':', $this->controller->in->post['crop_position']);
 
 
+		$copiedFromCloud = false;
 		if($this->config('cloud_hosting') && $this->config('amazon_cloudonly')) {
-			$this->copyFromCloud($filename);
+			$copiedFromCloud = $this->copyFromCloud($filename);
 		}
 
 		$this->resizeImage($filename, $recElement->thumbnail_size, array(), $arrCropPositions);
@@ -197,10 +200,14 @@ class Image extends CMS\ContentModule
 
 		//Copy to cloud
 
-		if($this->config('cloud_hosting')) {
+		if($copiedFromCloud) {
 			$this->deleteFromCloud($filename);
 			$this->copyToCloud($filename);
 			$recElement->cloud_storage = 'amazon';
+
+			if($this->config('cloud_hosting')){
+				$this->deleteLocalFiles($filename, $this->arrFolders);
+			}
 		}
 		$content_image->update($recElement, 'parentID=' . $parentID);
 
@@ -217,12 +224,14 @@ class Image extends CMS\ContentModule
 				$this->config('amazon_secret')
 			);
 
+			$targetPath = sys_root.'res/image/original/' . $filename;
 
 			$cloudAdapter->copyFileFromCloud(
-				'image/original/' . $filename,
+				$targetPath,
 				$this->getOriginalFilePath($filename)
 			);
-			return true;
+
+			return is_file($targetPath);
 		}
 		return false;
 	}
@@ -330,7 +339,8 @@ class Image extends CMS\ContentModule
 		$filename   = $recElement->ID . '.' . $recElement->image_format;
 
 
-		$arrFolders = array('square', 'thumb', 'original');
+
+		$arrFolders = $this->arrFolders;
 		if($arrExtraFolders) {
 			$arrFolders = array_merge($arrFolders, $arrExtraFolders);
 		}

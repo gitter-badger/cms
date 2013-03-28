@@ -11,6 +11,12 @@ use Gratheon\Core;
 class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\Behaviour\Embeddable {
 	public $name = 'code';
 
+	protected $supportedLanguages =  array(
+				'shell', 'php', 'java', 'javascript', 'css', 'mysql', 'clojure', 'coffeescript', 'erlang', 'go',
+				'groovy', 'haskell', 'less', 'lua', 'pascal', 'perl', 'plsql', 'python', 'rpm',
+				'ruby', 'scheme', 'smalltalk', 'assign', 'sparql', 'yaml',
+			);
+
 
 	public function edit($recMenu = null) {
 		$content_code = $this->model('content_code');
@@ -18,6 +24,9 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$parentID = $recMenu->ID;
 		if($parentID) {
 			$recElement = $content_code->obj('parentID=' . $parentID);
+			if(!$recElement){
+				throw new \Exception('Code entry for editing was not found');
+			}
 
 			if($recElement->language == 'php') {
                 $recElement->content = "<?php\n".$recElement->content;
@@ -26,11 +35,7 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
             $this->assign('recElement', $recElement);
         }
 
-		$this->assign('supportedLanguages', array(
-			'shell', 'php', 'java', 'javascript', 'css', 'mysql', 'clojure', 'coffeescript', 'erlang', 'go',
-			'groovy', 'haskell', 'less', 'lua', 'pascal', 'perl', 'plsql', 'python', 'rpm',
-			'ruby', 'scheme', 'smalltalk', 'assign', 'sparql', 'yaml',
-		));
+		$this->assign('supportedLanguages', $this->supportedLanguages);
 
 		$this->add_css('/vendor/codemirror/codemirror/lib/codemirror.css', false);
 		$this->add_css('/vendor/codemirror/codemirror/theme/ambiance.css', false);
@@ -60,9 +65,9 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	public function update($parentID) {
 		$content_code = $this->model('content_code');
 		$recElement   = $content_code->obj('parentID=' . $parentID);
-		$recElement->language = stripslashes($this->controller->in->post['language']);
+		$recElement->language = $this->controller->in->post['language'];
+		$recElement->escape('content', $this->controller->in->post['content']);
 
-		$recElement->content = ($this->controller->in->post['content']);
 		if($recElement->language == 'php') {
 			$recElement->content = substr($recElement->content, 5);
 		}
@@ -76,8 +81,8 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		$recElement           = new \Gratheon\Core\Record();
 		$recElement->parentID = $parentID;
-		$recElement->language = stripslashes($this->controller->in->post['language']);
-		$recElement->content  = ($this->controller->in->post['content']);
+		$recElement->language = $this->controller->in->post['language'];
+		$recElement->escape('content', $this->controller->in->post['content']);
 
 		$content_code->insert($recElement);
 	}
@@ -116,26 +121,26 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		return $record->content;
 	}
 
-
-	public function addCodeHightlight($str) {
-		preg_match_all('/<code class=["\']+php["\']+>(.*)<\/code>/Uis', $str, $matches);
-
-		require_once 'ext/hyperlight/hyperlight.php';
-
-		foreach($matches[1] as $match) {
-			//$code = hyperlight(html_entity_decode($match),'php');
-			$highlighter = new HyperLight('iphp');
-			$code        = $highlighter->render(htmlspecialchars_decode(str_replace(
-				array('<br />', '&nbsp;', "<br>", '<span class="Apple-tab-span" style="white-space:pre">  </span>'),
-				array("\n", ' ', "\n", "\t"),
-				$match
-			)));
-
-			//$code = ((php_highlight(html_entity_decode($match))));
-			//pre($code);
-			$str = str_replace($match, $code, $str);
-		}
-
-		return $str; //$parser->HighlightPHP($str);
-	}
+//
+//	public function addCodeHightlight($str) {
+//		preg_match_all('/<code class=["\']+php["\']+>(.*)<\/code>/Uis', $str, $matches);
+//
+//		require_once 'ext/hyperlight/hyperlight.php';
+//
+//		foreach($matches[1] as $match) {
+//			//$code = hyperlight(html_entity_decode($match),'php');
+//			$highlighter = new HyperLight('iphp');
+//			$code        = $highlighter->render(htmlspecialchars_decode(str_replace(
+//				array('<br />', '&nbsp;', "<br>", '<span class="Apple-tab-span" style="white-space:pre">  </span>'),
+//				array("\n", ' ', "\n", "\t"),
+//				$match
+//			)));
+//
+//			//$code = ((php_highlight(html_entity_decode($match))));
+//			//pre($code);
+//			$str = str_replace($match, $code, $str);
+//		}
+//
+//		return $str; //$parser->HighlightPHP($str);
+//	}
 }

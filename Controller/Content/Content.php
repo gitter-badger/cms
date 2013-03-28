@@ -260,6 +260,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$this->assign('arrModules', $arrModules);
 		$this->assign('strType', $strType);
 		$this->assign('title', $this->config('title'));
+		$this->assign('translations', $this->getTranslationsAsJS());
 
 		return $this->view('layout/' . __FUNCTION__ . '.tpl');
 	}

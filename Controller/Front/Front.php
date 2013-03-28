@@ -226,6 +226,7 @@ class Front extends \Gratheon\Core\Controller {
         }
 
         $this->assign('arrLinks', $menu->getTemplateLinks());
+		$this->assign('translations', $this->getTranslationsAsJS());
 
 
         //Debug
