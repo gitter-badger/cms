@@ -714,7 +714,7 @@ This way written source can be connected with changeable destination')));
 
 
 	function getFilterValue($value, $strFunction) {
-		if(isset($_REQUEST[$value])) {
+		if(isset($this->in->request[$value])) {
 			$strValue = $_SESSION['settings'][$strFunction]['filter'][$value] = $_REQUEST[$value];
 		}
 		elseif($_SESSION['settings'][$strFunction][$value]) {

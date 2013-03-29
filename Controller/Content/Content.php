@@ -12,30 +12,6 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 	const NAME = 'content';
 
-	public $models = array(
-		'content_menu',
-		'content_article',
-		'content_comment',
-		'content_file',
-		'content_image',
-		'content_poll',
-		'content_poll_answers',
-		'content_tags',
-		'content_menu_rights',
-		'content_article_autodraft',
-		'content_module_menu',
-		'content_module',
-
-		'sys_banned',
-		'sys_languages',
-		'sys_tags',
-		'sys_user_group',
-		'sys_rights',
-		'sys_templates',
-
-		'iso_languages'
-	);
-
 	private $image_extensions = array('jpg', 'gif', 'png', 'bmp', 'jpeg', 'tiff');
 
 
@@ -91,8 +67,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$tpl_links_page = $this->model('tpl_links_page');
 		$tpl_links      = $this->model('tpl_links');
 
-		$src = (int)$_GET['ID'];
-		$dst = (int)$_GET['target'];
+		$src = (int)$this->in->get['ID'];
+		$dst = (int)$this->in->get['target'];
 
 		$iConnection = $tpl_links_page->int("pageID='$src' OR pageID='$dst'", "connectionID");
 		if(!$iConnection) {
@@ -111,8 +87,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 	public function find_connection() {
 		$content_menu = content_menu::singleton();
-		$sWord        = $_GET['q'];
-		$ID           = (int)$_GET['ID'];
+		$sWord        = $this->in->get['q'];
+		$ID           = (int)$this->in->get['ID'];
 		if(strlen($sWord) > 2) {
 			$arrSrc     = $content_menu->obj($ID);
 			$arrResults = $content_menu->arrint("ID<>'$ID' AND title LIKE '%{$sWord}%' AND module = '{$arrSrc->module}' AND langID<>'{$arrSrc->langID}'", "CONCAT(title,'|',ID)");
@@ -125,8 +101,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$tpl_links_page = $this->model('tpl_links_page');
 		$tpl_links      = $this->model('tpl_links');
 
-		$src = (int)$_GET['ID'];
-		$dst = (int)$_GET['target'];
+		$src = (int)$this->in->get['ID'];
+		$dst = (int)$this->in->get['target'];
 
 		$iConnection = $tpl_links->q("SELECT t1.connectionID FROM tpl_links_page t1 INNER JOIN tpl_links_page t2 ON t1.connectionID=t2.connectionID WHERE t1.pageID = '$src' AND t2.pageID='$dst' ", "int");
 		$tpl_links_page->delete("connectionID='{$iConnection}' AND pageID='{$dst}'");
@@ -393,7 +369,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	//General content management
 	public function save() {
 
-		$ID = (int)$_GET['ID'];
+		$ID = (int)$this->in->get['ID'];
 
 		$content_menu        = $this->model('content_menu');
 		$sys_languages       = $this->model('sys_languages');
@@ -405,7 +381,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			return json_encode($output);
 		}
 
-		$recMenu = new \stdClass;
+		$recMenu = new \Gratheon\Core\Record;
 
 		if($ID) {
 			$recMenu = $content_menu->obj('ID=' . $ID);
@@ -423,16 +399,14 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				$this->batch_ftp_file_move($strFile);
 			}
 
-			$output['ID']  = $_GET['parentID'];
+			$output['ID']  = $this->in->get['parentID'];
 			$output['msg'] = $this->translate('Article not found, cannot update it');
 			return json_encode($output);
 		}
 
 		$recMenu->title = stripslashes($this->in->post['title']);
-		//$recMenu->visible		= isset($this->in->post['visible'])?1:0;
-		//$recMenu->accessible	= isset($this->in->post['accessible'])?1:0;
-		$recMenu->module     = $_REQUEST['module'] ? $_REQUEST['module'] : $recMenu->module;
-		$recMenu->method     = $_REQUEST['method'] ? $_REQUEST['method'] : $recMenu->method;
+		$recMenu->module     = $this->in->request['module'] ? : $recMenu->module;
+		$recMenu->method     = $this->in->request['method'] ? : $recMenu->method;
 		$arrDate             = explode(' ', $this->in->post['date_added']);
 		$strTime             = $arrDate[1];
 		$arrDate             = explode('.', $arrDate[0]);
@@ -440,7 +414,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$recMenu->date_added = $this->in->post['date_added'] <> '' ? $strDate . ' ' . $strTime : 'NOW()';
 
 		//changing language moves node back to root
-		if($ID && $recMenu->langID != $_REQUEST['langID']) {
+		if($ID && $recMenu->langID != $this->in->request['langID']) {
 			$recMenu->parentID = 1;
 		}
 
@@ -451,20 +425,20 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 		$recMenu->langID           = $this->in->post['langID'] ? $this->in->post['langID'] : $recMenu->langID;
 		$recMenu->smart_url        = $this->in->post['url'];
-		$recMenu->meta_title       = stripslashes($this->in->post['meta_title']);
-		$recMenu->meta_description = stripslashes($this->in->post['meta_description']);
-		$recMenu->meta_keywords    = stripslashes($this->in->post['meta_keywords']);
+//		$recMenu->meta_title       = stripslashes($this->in->post['meta_title']);
+//		$recMenu->meta_description = stripslashes($this->in->post['meta_description']);
+//		$recMenu->meta_keywords    = stripslashes($this->in->post['meta_keywords']);
+//
+//		if($this->in->post['meta_latitude']) {
+//			$recMenu->meta_latitude = $this->in->post['meta_latitude'];
+//		}
+//
+//		if($this->in->post['meta_longitude']) {
+//			$recMenu->meta_longitude = $this->in->post['meta_longitude'];
+//		}
 
-		if($this->in->post['meta_latitude']) {
-			$recMenu->meta_latitude = $this->in->post['meta_latitude'];
-		}
-
-		if($this->in->post['meta_longitude']) {
-			$recMenu->meta_longitude = $this->in->post['meta_longitude'];
-		}
-
-		if($_REQUEST['container_template']) {
-			$recMenu->container_template = $_REQUEST['container_template'];
+		if($this->in->request['container_template']) {
+			$recMenu->container_template = $this->in->request['container_template'];
 		}
 
 		//$this->transformSmartURL
@@ -502,7 +476,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$intReloadID = $ID;
 		}
 		else {
-			$recMenu->parentID = $_GET['parentID'] ? $_GET['parentID'] : $recMenu->parentID;
+			$recMenu->parentID = $this->in->get['parentID'] ? $this->in->get['parentID'] : $recMenu->parentID;
 			$recMenu->position = $content_menu->int('parentID=' . $recMenu->parentID, 'MAX(position)+1');
 
 			//use parent's langID
@@ -516,7 +490,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 			//check url to be unique
-			if($recMenu->smart_url && $content_menu->int("smart_url='" . $recMenu->smart_url . "' && ID<>" . $_GET['parentID'])) {
+			if($recMenu->smart_url && $content_menu->int("smart_url='" . $recMenu->smart_url . "' && ID<>" . $this->in->get['parentID'])) {
 				$output['msg'] = $this->translate('URL already exists') . ': ' . $recMenu->smart_url;
 				return json_encode($output);
 			}
@@ -574,16 +548,16 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 		$tpl_links_page = $this->model('tpl_links_page');
 
-		$ID       = isset($_GET['ID']) ? $_GET['ID'] : $ID;
-		$parentID = isset($_GET['parentID']) ? $_GET['parentID'] : '';
+		$ID       = isset($this->in->get['ID']) ? $this->in->get['ID'] : $ID;
+		$parentID = isset($this->in->get['parentID']) ? $this->in->get['parentID'] : '';
 		if(!$ID && !$parentID) {
 			$parentID = 1;
 		}
 
 		$arrModules    = $content_module->arr('is_active=1 ORDER BY adminpanel_box_order DESC');
-		$strFormAction = sys_url . "/content/content/save/?ID=$ID&parentID=$parentID&module=" . $_REQUEST['module']; //."&langID=".$lang;
+		$strFormAction = sys_url . "/content/content/save/?ID=$ID&parentID=$parentID&module=" . $this->in->request['module']; //."&langID=".$lang;
 		$arrRights     = $sys_rights->arr();
-		$strModule     = $_REQUEST['module'] ? $_REQUEST['module'] : $arrModules[0]->ID;
+		$strModule     = $this->in->request['module'] ? $this->in->request['module'] : $arrModules[0]->ID;
 
 		if(in_array($strModule, array('poll', 'article'))) {
 			$arrDefRights = $sys_rights->arrint("ID NOT IN (1,5)", "ID");
@@ -665,7 +639,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		else {
 			$recMenu         = new \Gratheon\Core\Record();
 			$recMenu->method = 'view';
-			$recMenu->module = $_GET['module'];
+			$recMenu->module = $this->in->get['module'];
 			$recMenu->langID = $content_menu->int("ID='$parentID'", "langID");
 			$this->add_js_var('menu_id', 0);
 			$this->assign('title', 'New ' . $strModule);
@@ -700,7 +674,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$this->assign('is_translateable', false);
 		}
 
-		if($_GET['modal']) {
+		if($this->in->get['modal']) {
 			return $this->view('controller_page/edit.modal.tpl');
 		}
 		else {
@@ -715,7 +689,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$sys_tags     = $this->model('sys_tags');
 
 		if(!$ID) {
-			$ID = (int)$_GET['ID'];
+			$ID = (int)$this->in->get['ID'];
 		}
 
 		$recMenu = $content_menu->obj($ID);
@@ -755,8 +729,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	public function paste() {
 		$content_menu = $this->model('content_menu');
 
-		$arrIDs      = explode(',', $_GET['ids']);
-		$intParentID = (int)$_GET['parentID'];
+		$arrIDs      = explode(',', $this->in->get['ids']);
+		$intParentID = (int)$this->in->get['parentID'];
 		if($arrIDs) {
 			foreach($arrIDs as $srcID) {
 				$dstMenu = $srcMenu = $content_menu->obj($srcID);
@@ -791,7 +765,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				/** @var \Gratheon\Core\Module $objModule */
 				$objModule->init($strFunction);
 
-				if($_GET['static']) {
+				if($this->in->get['static']) {
 					$objModule->strWrapperTpl = 'layout/main.tpl';
 				}
 				else {
@@ -870,7 +844,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 	public function batch_file_insert() {
-		$_GET['parentID'] = $_REQUEST['parentID'] = ($_REQUEST['parentID'] ? $_REQUEST['parentID']
+		$this->in->get['parentID'] = $this->in->request['parentID'] = ($this->in->request['parentID'] ? $this->in->request['parentID']
 				: $this->getDefaultParentID());
 
 		if(!is_array($_FILES['file']['name'])) {
@@ -881,13 +855,13 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$strExt      = strtolower(end($arrFile));
 
 			if(in_array($strExt, $this->image_extensions)) {
-				$_REQUEST['module']    = 'image';
+				$this->in->request['module']    = 'image';
 				$this->in->post['cut_position'] = 2;
 
 			}
 			else {
 				$this->in->post['title']     = $strFilename;
-				$_REQUEST['module'] = 'file';
+				$this->in->request['module'] = 'file';
 			}
 
 			$this->save();
@@ -903,15 +877,15 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				$strExt         = strtolower(end($arrFile));
 
 				if(in_array($strExt, $this->image_extensions)) {
-					$_REQUEST['module'] = 'image';
+					$this->in->request['module'] = 'image';
 
 					$this->in->post['cut_position'] = 2;
 
 				}
 				else {
-					$_REQUEST['module'] = 'file';
+					$this->in->request['module'] = 'file';
 				}
-				//		mail('artkurapov@gmail.com','test',print_r($_REQUEST,true).print_r($_FILES,true));
+				//		mail('artkurapov@gmail.com','test',print_r($this->in->request,true).print_r($_FILES,true));
 
 				$_FILES['file']['name']     = $tmpFiles['file']['name'][$fileKey];
 				$_FILES['file']['tmp_name'] = $tmpFiles['file']['tmp_name'][$fileKey];
@@ -962,7 +936,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 		//$content_menu->obj("parentID=1 AND langID='" . $this->langID . "'");
 
-		$q = (urldecode($_GET['q']));
+		$q = (urldecode($this->in->get['q']));
 		$q = str_replace('%', '\%', $q);
 		$q = str_replace('_', '\_', $q);
 
@@ -1086,12 +1060,12 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	public function menu_precise_move() {
 		$content_menu = $this->model('content_menu');
 
-		$ID       = (int)$_GET['ID'];
-		$parentID = (int)$_GET['parentID'];
+		$ID       = (int)$this->in->get['ID'];
+		$parentID = (int)$this->in->get['parentID'];
 		if(!$parentID) {
 			$parentID = 1;
 		}
-		$position = (int)$_GET['pos'];
+		$position = (int)$this->in->get['pos'];
 
 		$item            = $content_menu->obj($ID);
 		$intRealPosition = (int)$content_menu->int("parentID='$parentID' AND ID<>'$ID' ORDER BY position ASC LIMIT $position,1", 'position');
@@ -1113,9 +1087,9 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$this->MIME = 'application/json';
 		$this->initialize();
 
-		$intParentNode = $_GET['ID'];
-		//$tree->strWhere=' langID='.(int)$_GET['langID'].' AND ';
-		//$strLimit=isset($_GET['limit']) ? $_GET['limit'] : '0,30';
+		$intParentNode = $this->in->get['ID'];
+		//$tree->strWhere=' langID='.(int)$this->in->get['langID'].' AND ';
+		//$strLimit=isset($this->in->get['limit']) ? $this->in->get['limit'] : '0,30';
 		$tree->strOrder .= ',date_added ';
 
 		$arrSelNodes    = $tree->buildSelected($intParentNode);
@@ -1144,7 +1118,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 		$tree         = new \Gratheon\CMS\Tree;
 		$system->MIME = 'application/json';
-		$ID           = $_GET['ID'];
+		$ID           = $this->in->get['ID'];
 		$arrParents   = $tree->buildSelected($ID);
 		$oConvertor   = new \Gratheon\Core\ObjectCovertor();
 
@@ -1155,7 +1129,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	public function embed_info() {
 		$content_menu = $this->model('content_menu');
 
-		$ID      = (int)$_GET['id'];
+		$ID      = (int)$this->in->get['id'];
 		$objMenu = $content_menu->obj($ID, "ID,module,elementID,title");
 
 		$this->loadModule($objMenu->module, function ($objModule) use (&$objMenu, $ID) {

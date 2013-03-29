@@ -163,7 +163,7 @@ class Tree extends \Gratheon\Core\Model
                 $arrlevels[] = $recParent;
             }
             else{
-                $arrlevels[] = $this->arr("ID='$ID'", 1, "title,ID");
+                $arrlevels[] = (array)$this->obj("ID='$ID'", "title,ID");
             }
         }
         return $arrlevels;

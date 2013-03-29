@@ -322,8 +322,8 @@ class Front extends \Gratheon\Core\Controller {
             }
         }
 
-        $this->assign('title', $this->translate('Search') . ' : ' . $_REQUEST['q']);
-        $this->assign('search_query', $_REQUEST['q']);
+        $this->assign('title', $this->translate('Search') . ' : ' . $this->in->request['q']);
+        $this->assign('search_query', $this->in->request['q']);
         $this->assign('arrResults', $arrResults);
 
         $this->assign('content_template', 'element.search.tpl');

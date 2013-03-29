@@ -289,11 +289,11 @@ class User extends \Gratheon\CMS\ContentModule {
 
 		if($this->controller->in->post['activate_title']) {
 			$moduleID = $content_module->int('title="' . $this->name . '"', 'ID');
-			$langID   = $_REQUEST['langID'];
+			$langID   = $this->controller->in->request['langID'];
 
-			$recEmail->title = $_REQUEST['activate_title'];
-			$recEmail->text  = $_REQUEST['activate_text'];
-			$recEmail->html  = $_REQUEST['activate_html'];
+			$recEmail->title = $this->controller->in->request['activate_title'];
+			$recEmail->text  = $this->controller->in->request['activate_text'];
+			$recEmail->html  = $this->controller->in->request['activate_html'];
 
 			$sys_email_templates->update($recEmail, "tag='activation_mail' AND moduleID='$moduleID' AND langID='$langID'");
 		}
@@ -538,14 +538,14 @@ class User extends \Gratheon\CMS\ContentModule {
 				  * Do it
 				  */
 		// Decide which runmode, based on user request or default
-		$run_mode = (isset($_REQUEST['openid_mode'])
-				&& in_array($_REQUEST['openid_mode'], (array)$known['openid_modes']))
-				? $_REQUEST['openid_mode']
+		$run_mode = (isset($this->controller->in->request['openid_mode'])
+				&& in_array($this->controller->in->request['openid_mode'], (array)$known['openid_modes']))
+				? $this->controller->in->request['openid_mode']
 				: 'no';
 
 		// Run in the determined runmode
 		debug("Run mode: $run_mode at: " . time());
-		debug($_REQUEST, 'Request params');
+		debug($this->controller->in->request, 'Request params');
 
 		switch($run_mode) {
 			case 'no':
@@ -677,7 +677,7 @@ class User extends \Gratheon\CMS\ContentModule {
 
 		if(!$_SESSION['facebook_visitor']) {
 			$service = new \Gratheon\CMS\Service\FacebookService();
-			$service->setAccess($_REQUEST['accessToken']);
+			$service->setAccess($this->controller->in->request['accessToken']);
 			$facebookUser = $service->getUser();
 
 			//pre($facebookUser);
@@ -753,7 +753,7 @@ class User extends \Gratheon\CMS\ContentModule {
 			$client->setAccessToken($_SESSION['token']);
 		}
 
-		if(isset($_REQUEST['logout'])) {
+		if(isset($this->controller->in->request['logout'])) {
 			unset($_SESSION['token']);
 			unset($_SESSION['google_visitor']);
 			$client->revokeToken();

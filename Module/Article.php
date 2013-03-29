@@ -365,9 +365,9 @@ class Article
 
 		//Filter on top
 		$strFilter = '1=1';
-		if($_REQUEST['date_from']) {
-			$_SESSION[$this->name][$strFunction]['date_from'] = $_REQUEST['date_from'];
-			$arrDate                                          = explode('.', $_REQUEST['date_from']);
+		if($this->controller->in->request['date_from']) {
+			$_SESSION[$this->name][$strFunction]['date_from'] = $this->controller->in->request['date_from'];
+			$arrDate                                          = explode('.', $this->controller->in->request['date_from']);
 			$strFromDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
 		}
 		elseif($_SESSION[$this->name][$strFunction]['date_from']) {
@@ -379,9 +379,9 @@ class Article
 			$strFilter .= " AND t1.date_added>='$strFromDate 00:00:00'";
 		}
 
-		if($_REQUEST['date_to']) {
-			$_SESSION[$this->name][$strFunction]['date_to'] = $_REQUEST['date_to'];
-			$arrDate                                        = explode('.', $_REQUEST['date_to']);
+		if($this->controller->in->request['date_to']) {
+			$_SESSION[$this->name][$strFunction]['date_to'] = $this->controller->in->request['date_to'];
+			$arrDate                                        = explode('.', $this->controller->in->request['date_to']);
 			$strToDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
 		}
 		elseif($_SESSION[$this->name][$strFunction]['date_to']) {

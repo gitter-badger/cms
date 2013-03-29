@@ -70,8 +70,9 @@ class Formula extends \Gratheon\CMS\ContentModule
         $content_formula = $this->model('content_formula');
         $content_menu = $this->model('content_menu');
 
+
         //$menu = $content_menu->obj($ID);
-        $record = $content_formula->obj("parentID=".$ID);
+        $record = $content_formula->obj("parentID='$ID'");
 
         if($record->format=='latex'){
             $record->content = '<div class="formula">

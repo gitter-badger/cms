@@ -356,14 +356,14 @@ class Comment
         $content_comment = $this->model('Comment');
         $content_menu = $this->model('Menu');
 
-        global $menu;
-
-        $tree = new \Gratheon\CMS\Tree;
+		$menu = new \Gratheon\CMS\Menu();
+        $tree = new \Gratheon\CMS\Tree();
 
         $iLimit = $this->config('list_last_comment_count') ? $this->config('list_last_comment_count') : 9;
 
-        $arrLastComments = $content_comment->arr('c.userID IS NULL OR c.userID IS NOT NULL AND u.groupID<>2 ORDER BY m.date_added DESC',
-            $iLimit, 'u.*, m.*, c.*,p.*, m.parentID as articleID,c.ID commentID',
+        $arrLastComments = $content_comment->arr(
+			'c.userID IS NULL OR c.userID IS NOT NULL AND u.groupID<>2 ORDER BY m.date_added DESC LIMIT '.$iLimit,
+            'u.*, m.*, c.*,p.*, m.parentID as articleID,c.ID commentID',
             'content_comment as c
             LEFT JOIN content_menu as m ON c.parentID=m.ID
             LEFT JOIN sys_user as u ON c.userID = u.ID
@@ -394,7 +394,7 @@ class Comment
         $content_comment = $this->model('Comment');
 
         $arrLastUsers = $content_comment->q(
-            'SELECT COUNT(userID) cnt, t3.firstname, t3.lastname, t2.url
+            'SELECT COUNT(userID) cnt, t3.firstname, t3.lastname
             FROM content_comment t1
             INNER JOIN sys_user t2 ON t2.ID=t1.userID
             INNER JOIN content_person t3 ON t3.ID=t2.personID

@@ -11,7 +11,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	public $name = 'file';
 
 	public $models = array('content_file', 'content_menu', 'content_file_scribd', 'content_image');
-	private $document_scribd_extensions = array('pdf', 'ps', 'docx', 'doc', 'ppt', 'pps', 'pptx', 'xls', 'xlsx', 'odt', 'sxw', 'odp', 'sxi', 'ods', 'sxc', 'txt', 'rtf');
+//	private $document_scribd_extensions = array('pdf', 'ps', 'docx', 'doc', 'ppt', 'pps', 'pptx', 'xls', 'xlsx', 'odt', 'sxw', 'odp', 'sxi', 'ods', 'sxc', 'txt', 'rtf');
 
 	private function getFileModel() {
 		/** @var CMS\Model\File $content_file */
@@ -29,7 +29,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 	function edit($recMenu = null) {
 		$content_file        = $this->getFileModel();
-		$content_file_scribd = $this->model('content_file_scribd');
+//		$content_file_scribd = $this->model('content_file_scribd');
 
 //		$this->add_js('/ext/audio_player/player.js');
 		$this->add_js($this->name . '/' . __FUNCTION__ . '.js');
@@ -39,7 +39,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		if($parentID) {
 			$recElement = $content_file->obj('parentID=' . $parentID);
 			if($recElement) {
-				$recElement->scribd = $content_file_scribd->obj("fileID='{$recElement->ID}'");
+//				$recElement->scribd = $content_file_scribd->obj("fileID='{$recElement->ID}'");
 				$recElement->url    = $content_file->getURL($recElement);
 				//$recElement->root_path     = sys_root . '/res/file/' . $recElement->ID . '.' . $recElement->ext;
 				$recElement->scribd_source = 'http://d.scribd.com/ScribdViewer.swf?document_id=' . $recElement->scribd->docID . '&amp;access_key=' . $recElement->scribd->access_key . '&amp;page=1&amp;version=1&amp;viewMode=';
