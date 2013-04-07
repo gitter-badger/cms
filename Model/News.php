@@ -6,15 +6,7 @@
 namespace Gratheon\CMS\Model;
 
 class News extends \Gratheon\Core\Model{
-	private static $instance;
-
-	public static function singleton(){
-		if(!isset(self::$instance)){
-			$c = __CLASS__;
-            self::$instance = new $c;
-		}
-		return self::$instance;
-	}
+	use ModelSingleton;
 
 	final function __construct(){
 		parent::__construct('content_news');

@@ -6,18 +6,7 @@
 namespace Gratheon\CMS\Model;
 
 class Comment extends \Gratheon\Core\Model {
-    private static $instance;
-
-    /**
-     * @return Comment
-     */
-    public static function singleton() {
-        if (!isset(self::$instance)) {
-            $c = __CLASS__;
-            self::$instance = new $c;
-        }
-        return self::$instance;
-    }
+	use ModelSingleton;
 
     final function __construct() {
         parent::__construct('content_comment');

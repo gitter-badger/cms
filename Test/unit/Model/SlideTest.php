@@ -1,15 +1,16 @@
 <?php
-
+namespace Gratheon\CMS\Test\Unit\Model;
 /**
- * @property content_slide $object
+ * Class SlideTest
+ * @package Gratheon\CMS\Test\Unit\Model
+ * @property \Gratheon\CMS\Model\Slide $object
  */
-class slide_test extends PHPUnit_Framework_TestCase{
+class SlideTest extends \PHPUnit_Framework_TestCase{
     public function setUp(){
-        //$this->getMock('Model', array('q','__construct','Model'),array(),'',false,false,false);
         $this->getMock('\Gratheon\Core\Record');
         $this->getMock('\Gratheon\Core\Model');
 
-        require_once '../Model/slide.php';
+        require_once sys_test_root.'../Model/Slide.php';
         $this->object = new \Gratheon\CMS\Model\Slide(false);
     }
 

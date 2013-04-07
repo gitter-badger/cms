@@ -1,11 +1,6 @@
 <?php
 namespace Gratheon\CMS\Model;
 
-/**
- * @author Artjom Kurapov
- * @since 19.09.11 19:54
- */
-
 class ImageConvertor {
 
 	protected $original_image_resource;
@@ -364,8 +359,8 @@ class ImageConvertor {
 	     if ($OutOfSpec!=0 && $TotalPixelsWithColors!=0)
 	          {
 	          $PercentOut = ($OutOfSpec/$TotalPixelsWithColors)*100;
-	          $RET['PercentDifference']=$PercentOut;
-	          if ($PercentOut>=$WarningTolerance) //difference triggers WARNINGTOLERANCE%
+	          $RET['PercentDifference'] = $PercentOut;
+				  if($PercentOut >= $WarningTolerance) //difference triggers WARNINGTOLERANCE%
 	               $RET['WarningLevel']=TRUE;
 	          if ($PercentOut>=$ErrorTolerance) //difference triggers ERRORTOLERANCE%
 	               $RET['ErrorLevel']=TRUE;
@@ -373,49 +368,4 @@ class ImageConvertor {
 
 	     RETURN $RET;
      }
-/*
-	function OutputResized($src, $new_width = 0, $new_height = 0)
-	{
-		list($orig_width, $orig_height, $fileExt) = getimagesize($src);
-
-		$width = $orig_width;
-		$height = $orig_height;
-
-		$ratio = (float)($orig_width / $orig_height);
-		if ($new_width) {
-			$width = $new_width;
-			$height = (int)($width / $ratio);
-		}
-
-		if ($new_height && $height > $new_height) {
-
-			$height = $new_height;
-			$width = (int)($height * $ratio);
-
-
-		}
-
-
-		$image_p = imagecreatetruecolor($width, $height);
-		switch (strtolower($fileExt)) {
-			//case 'jpg'  : $image = imagecreatefromjpeg($strFile); break;
-			case 2 :
-				$image = imagecreatefromjpeg($src);
-				break;
-			case 3  :
-				$image = imagecreatefrompng($src);
-				break;
-			case 1  :
-				$image = imagecreatefromgif($src);
-				break;
-			default:
-				return NULL;
-		}
-		imagecopyresampled($image_p, $image, 0, 0, 0, 0, $width, $height, $orig_width, $orig_height);
-
-		header("Content-type: image/jpeg");
-		imagejpeg($image_p);
-
-	}
-*/
 }

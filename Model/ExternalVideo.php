@@ -2,8 +2,11 @@
 namespace Gratheon\CMS\Model;
 
 class ExternalVideo extends \Gratheon\Core\Model {
-	private static $instance;
+	use ModelSingleton;
 
+	final function __construct() {
+		parent::__construct('content_external_video');
+	}
 
 	public function getSupportedServices() {
 		return array(
@@ -31,21 +34,6 @@ class ExternalVideo extends \Gratheon\Core\Model {
 	}
 
 
-	/**
-	 * @return content_external_video
-	 */
-	public static function singleton() {
-		if (!isset(self::$instance)) {
-			$c              = __CLASS__;
-			self::$instance = new $c;
-		}
-		return self::$instance;
-	}
-
-
-	final function __construct() {
-		parent::__construct('content_external_video');
-	}
 
 
 	public function getVideoTitle($service, $code) {

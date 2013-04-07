@@ -6,20 +6,11 @@
 namespace Gratheon\CMS\Model;
 
 class NewsExternal extends \Gratheon\Core\Model{
-	private static $instance;
+	use ModelSingleton;
+
 	public $defaultImportLanguage = 'rus';
 	public $sLastError;
 
-	/**
-	 * @return content_news_external
-	 */
-	public static function singleton(){
-		if(!isset(self::$instance)){
-			$c = __CLASS__;
-            self::$instance = new $c;
-		}
-		return self::$instance;
-	}
 
 	final function __construct(){
 		parent::__construct('content_news_external');

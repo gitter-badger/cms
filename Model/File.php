@@ -8,33 +8,19 @@
 namespace Gratheon\CMS\Model;
 
 class File extends \Gratheon\Core\Model {
-	private static $instance;
+	use ModelSingleton;
+
+	public final function __construct() {
+		parent::__construct('content_file');
+	}
 
 	private $amazon_bucket;
 	private $amazon_host;
 
-
-	/**
-	 * @return \Gratheon\CMS\Model\File
-	 */
-	public static function singleton() {
-		if(!isset(self::$instance)) {
-			$c              = __CLASS__;
-			self::$instance = new $c;
-		}
-		return self::$instance;
-	}
-
-
-	function __construct() {
-		parent::__construct('content_file');
-	}
-
-
 	public function getURL($file) {
 		$subpath = 'file/' . $file->ID . '.' . $file->ext;
 
-		if($this->amazon_host != '' && $this->amazon_bucket != '') {
+		if($file->cloud_storage=='amazon' && $this->amazon_host != '' && $this->amazon_bucket != '') {
 			return 'https://' . $this->amazon_host . '/' . $this->amazon_bucket . '/' . $subpath;
 		}
 

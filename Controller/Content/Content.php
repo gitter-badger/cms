@@ -15,46 +15,14 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	private $image_extensions = array('jpg', 'gif', 'png', 'bmp', 'jpeg', 'tiff');
 
 
-	public function getModuleMenu() {
-		$content_module_menu = $this->model('content_module_menu');
-
-		$arrModuleMenu = array();
-		$arrModules    = $content_module_menu->arr('parentID=0 ORDER BY position');
-		foreach($arrModules as $item) {
-
-			$arrNode = array(
-				'name'   => $item->module,
-				'rel'    => $item->module . '/' . $item->method,
-				'title'  => $this->translate($item->title),
-				'link'   => sys_url . 'content/call/' . $item->module . '/' . $item->method,
-				'active' => ($this->in->URI[3] == $item->module) ? 1 : 0
-			);
-
-			//add second level menu
-			$arrChildren = $content_module_menu->arr('parentID=' . $item->ID . ' ORDER BY position');
-			foreach($arrChildren as $item2) {
-				$arrNode['children'][] = array(
-					'name'   => $item2->file,
-					'rel'    => $item2->module . '/' . $item2->method,
-					'title'  => $this->translate($item2->title),
-					'link'   => sys_url . 'content/call/' . $item2->module . '/' . $item2->method . '/',
-					'active' => (in_array($this->in->URI[4], $content_module_menu->arrint('parentID=' . $item->ID, 'module')))
-							? 1 : 0,
-				);
-			}
-
-			$arrModuleMenu[] = $arrNode;
-		}
-
-		return $arrModuleMenu;
-	}
-
-
 	public function loadWrapper() {
-		$sys_languages = $this->model('sys_languages');
+		/** @var $adminMenu \Gratheon\CMS\Model\AdminMenu */
+		/** @var $sys_languages \Gratheon\CMS\Model\Language */
+		$sys_languages = $this->model('Language');
+		$adminMenu = $this->model('AdminMenu');
 
-		$arrLanguages  = $sys_languages->map("1=1 ORDER BY is_default DESC");
-		$arrModuleMenu = $this->getModuleMenu();
+		$arrLanguages  = $sys_languages->getLanguages();
+		$arrModuleMenu = $adminMenu->getHierarchicalArray();
 
 		$this->assign('sys_url', sys_url);
 		$this->assign('link_jsmode', sys_url . 'content/profile/toggle_jsmode/');
@@ -157,7 +125,6 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 		$this->add_js('/vendor/jquery/jquery/jquery-1.7.2.js', false);
-
 		$this->add_js('/vendor/jquery/cookie/jquery.cookie.js');
 		$this->add_js('/vendor/backbonejs/underscorejs/underscore-min.js', false);
 		$this->add_js('/vendor/backbonejs/backbonejs/backbone-min.js', false);
@@ -170,20 +137,12 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.mouse.js');
 		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.draggable.js');
 		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.datepicker.js');
+		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.autocomplete.js');
+		$this->add_js('/vendor/jquery/jquery-ui/external/jquery.metadata.js');
 
 		$this->add_js('/vendor/jquery/form/jquery.form.js');
 		$this->add_js('/vendor/padolsey/sonic/src/sonic.js');
-
-
-		$this->add_js('/cms/external_libraries/jquery/plugins/jquery.metadata.js');
-		$this->add_js('/cms/external_libraries/jquery/plugins/jquery.autocomplete.js');
-
-
-		//$this->add_js('/ext/jquery/fancybox/jquery.fancybox-1.0.0.js');
-		//$this->add_js('/ext/jquery/jquery.hotkeys.js');
 		$this->add_js('/vendor/desandro/masonry/jquery.masonry.min.js');
-		//$this->add_js('paginator.js');
-
 
 		$this->add_js(self::NAME . '/' . __FUNCTION__ . '.menu.js');
 		$this->add_js(self::NAME . '/' . __FUNCTION__ . '.js');
@@ -191,13 +150,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$this->add_js(self::NAME . '/' . __FUNCTION__ . '.note.js');
 
 		$this->add_js('/vendor/Gratheon/upload5/upload5.js');
-		//$this->add_js('/vendor/jquery/timer/jquery.timer.js', false);
-
 		$this->add_js('/vendor/jquery/maskedinput/jquery.maskedinput-1.3.min.js');
 		$this->add_js('/vendor/swfupload/swfupload/swfupload.js');
-		$this->add_js('/cms/external_libraries/swfupload2/swfupload.queue.js');
-
-
 		$this->add_js('/vendor/twitter/bootstrap/js/bootstrap.js', false);
 
 		$this->add_js_var('image_list_url', sys_url . 'content/call/image/list_last_images/');
@@ -476,8 +430,12 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$intReloadID = $ID;
 		}
 		else {
-			$recMenu->parentID = $this->in->get['parentID'] ? $this->in->get['parentID'] : $recMenu->parentID;
-			$recMenu->position = $content_menu->int('parentID=' . $recMenu->parentID, 'MAX(position)+1');
+			$recMenu->parentID = $this->in->get['parentID'] ? : $recMenu->parentID;
+			$recMenu->position = $content_menu->int("parentID='". $recMenu->parentID."'", 'MAX(position)+1');
+
+			if($recMenu->position===null){
+				$recMenu->position = 0;
+			}
 
 			//use parent's langID
 			if(!$this->in->post['langID']) {
@@ -969,8 +927,6 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 	//Menu
-
-
 	public function initialize() {
 		$tree = new \Gratheon\CMS\Tree;
 		$tree->initialize();
@@ -984,53 +940,6 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	}
 
 
-	/*
-	 public function menu_change() {
-		 $content_menu = $this->model('content_menu');
-
-		 $oConvertor = new \Gratheon\Core\ObjectCovertor();
-		 $element    = $oConvertor->arrayToObject($this->in->post, 'menu_');
-
-
-		 if ($element->pack <> 'cms') {
-			 $element->accessible = (int)$this->in->post['menu_accessible'];
-			 $element->visible    = (int)$this->in->post['menu_visible'];
-		 }
-
-		 if (!(int)$this->in->post['elementID']) {
-			 $element->date_added = 'NOW()';
-			 $recMax              = $content_menu->fnSoftRow('parentID=' . $element->parentID, '(MAX(position)+1) as newpos');
-			 $element->position   = $recMax->newpos;
-			 $element->ID         = $content_menu->insert($element);
-
-			 if ($element->pack <> 'cms') {
-				 $objElementPack = $this->loadApplication($element->pack);
-				 $objElementPack->change($element->ID);
-			 }
-		 }
-		 else {
-			 if ($element->pack <> 'cms') {
-				 $oldMenu = $content_menu->find((int)$this->in->post['elementID']);
-
-				 if ($oldMenu->visible <> $element->visible) {
-					 $element->date_added = 'NOW()';
-				 }
-			 }
-
-			 $element->ID = (int)$this->in->post['elementID'];
-			 $content_menu->update($element);
-
-			 if ($element->pack <> 'cms') {
-				 $objElementPack = $this->loadApplication($element->pack);
-				 $objElementPack->change($element->ID);
-			 }
-		 }
-
-		 //$this->close_window();
-		 exit();
-	 }
-
- */
 	public function close_window() {
 		echo "<script>top.menu_load(" . $this->in->post['menu_parentID'] . ",1);</script>";
 	}
@@ -1058,26 +967,29 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 	public function menu_precise_move() {
-		$content_menu = $this->model('content_menu');
+		/** @var \Gratheon\CMS\Model\Menu $content_menu  */
+		$content_menu = $this->model('Menu');
 
 		$ID       = (int)$this->in->get['ID'];
-		$parentID = (int)$this->in->get['parentID'];
-		if(!$parentID) {
-			$parentID = 1;
-		}
 		$position = (int)$this->in->get['pos'];
+		$newParentID = (int)$this->in->get['parentID'];
+		if(!$newParentID) {
+			$newParentID = 1;
+		}
 
 		$item            = $content_menu->obj($ID);
-		$intRealPosition = (int)$content_menu->int("parentID='$parentID' AND ID<>'$ID' ORDER BY position ASC LIMIT $position,1", 'position');
+		if($item){
+			$content_menu->increaseChildPositionsAfterEq($newParentID, $position);
 
-		//remove from old place
-		$content_menu->update("position=position-1", "parentID='$ID' AND position>" . $item->position);
+			$oldParentID = $item->parentID;
+			$item->position = $position;
+			$item->parentID = $newParentID;
+			$content_menu->update($item);
 
-		//make space in new place
-		$content_menu->update("position=position+1", "parentID='$parentID' AND position>='$intRealPosition'");
 
-		//update item
-		$content_menu->update("position='$intRealPosition', parentID='$parentID'", 'ID=' . $ID);
+			$content_menu->reorderChildPositions($oldParentID);
+			$content_menu->reorderChildPositions($newParentID);
+		}
 	}
 
 

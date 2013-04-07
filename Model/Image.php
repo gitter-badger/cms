@@ -8,23 +8,12 @@
 namespace Gratheon\CMS\Model;
 
 class Image extends \Gratheon\Core\Model {
-    private static $instance;
+	use ModelSingleton;
 
     private $amazon_key = '';
     private $amazon_secret = '';
     private $amazon_bucket ='';
     private $amazon_host = '';
-
-    /**
-     * @return Image
-     */
-    public static function singleton() {
-        if (!isset(self::$instance)) {
-            $c = __CLASS__;
-            self::$instance = new $c;
-        }
-        return self::$instance;
-    }
 
     function __construct() {
         parent::__construct('content_image');

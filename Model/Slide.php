@@ -2,19 +2,7 @@
 namespace Gratheon\CMS\Model;
 
 class Slide extends \Gratheon\Core\Model {
-	private static $instance;
-
-
-	/**
-	 * @return content_slide
-	 */
-	public static function singleton() {
-		if (!isset(self::$instance)) {
-			$c              = __CLASS__;
-			self::$instance = new $c;
-		}
-		return self::$instance;
-	}
+	use ModelSingleton;
 
 
 	final function __construct($callParent=true) {

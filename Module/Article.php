@@ -97,11 +97,11 @@ class Article
 				'title'    => 'Semantics',
 				'template' => 'ModuleBackend/article/' . __FUNCTION__ . '.tab_semantic.tpl'
 			),
-
-			'integration' => array(
-				'title'    => 'Integration',
-				'template' => 'ModuleBackend/article/' . __FUNCTION__ . '.tab_integration.tpl'
-			),
+//
+//			'integration' => array(
+//				'title'    => 'Integration',
+//				'template' => 'ModuleBackend/article/' . __FUNCTION__ . '.tab_integration.tpl'
+//			),
 		));
 		$this->assign('show_URL', true);
 		$this->assign('show_LJ', $this->config('lj_login') ? 1 : 0);

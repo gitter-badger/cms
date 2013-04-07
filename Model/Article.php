@@ -7,36 +7,20 @@
 namespace Gratheon\CMS\Model;
 
 class Article extends \Gratheon\Core\Model {
-	private static $instance;
 	public $imagemodel;
 
-
-	/**
-	 * @return \Gratheon\CMS\Model\Article
-	 */
-	public static function singleton() {
-		if(!isset(self::$instance)) {
-			$c              = __CLASS__;
-			self::$instance = new $c;
-		}
-		return self::$instance;
-	}
-
+	use ModelSingleton;
 
 	final function __construct($test=false) {
 		if(!$test)
 		parent::__construct('content_article');
 	}
 
-
-	function encodeImages($str, $parentID) {
+	public function encodeImages($str, $parentID) {
 		$content_image = new \Gratheon\Core\Model('content_image');
 
 		preg_match_all('/<img (style="([^"]*)" )?rel="([0-9]*)" src="([^"]*)"([^>]*)>/i', $str, $arrMatches);
-		/*
-						$arrInlineImages = $content_menu->arrint("t1.module='image' AND t1.parentID='$parentID'",
-						"t2.ID",$content_menu->table.' AS t1 LEFT JOIN '.$content_image->table.' t2 ON t2.parentID=t1.ID');
-				*/
+
 		//Set inline later
 		if(count($arrMatches[2]) > 0) {
 			foreach($arrMatches[2] as $item) {
@@ -49,8 +33,7 @@ class Article extends \Gratheon\Core\Model {
 		return $str;
 	}
 
-
-	function decodeImages($str, $links = false, $publicView = false, $imageCallback) {
+	public function decodeImages($str, $links = false, $publicView = false, $imageCallback) {
 		$content_menu        = new \Gratheon\Core\Model('content_menu');
 		$content_image       = $this->imagemodel;
 		$content_menu_rating = new \Gratheon\Core\Model('content_menu_rating');
@@ -105,8 +88,6 @@ class Article extends \Gratheon\Core\Model {
 		return $str;
 	}
 
-
-
 	public function encodeEmbeddables($article) {
 
      preg_match_all('/<span rel="([0-9]*)" class="embed([^"]*)">(.*?)\<\/span\>/is', $article, $arrMatches);
@@ -132,7 +113,6 @@ class Article extends \Gratheon\Core\Model {
 		return $str;
 	}
 
-
 	public function decodeEmbeddableForAdmin($str, $moduleHandler) {
 		preg_match_all('/<!--embed\[([0-9]*)\]-->/i', $str, $arrMatches);
 
@@ -149,8 +129,7 @@ class Article extends \Gratheon\Core\Model {
 		return $str;
 	}
 
-
-	function search($q, $intGroupID) {
+	public function search($q, $intGroupID) {
 		$arrArticles = $this->q(
 			"SELECT t2.title,t2.ID
 			FROM content_article as t1
@@ -170,43 +149,3 @@ class Article extends \Gratheon\Core\Model {
 		return $arrArticles;
 	}
 }
-
-class content_article_record extends \Gratheon\Core\Record {
-
-}
-/*
-function php_highlight($source, $classes = true) {
-    $r1 = $r2 = '##';
-
-    // adds required PHP tags (at least with vers. 5.0.5 this is required)
-    if (strpos($source, ' ?>') === false) // xml is not THAT important ;-)
-    {
-        $source = "<?php " . $source . " ?>";
-        $r1 = '#&lt;\?.*?(php)?.*?&nbsp;#s';
-        $r2 = '#\?&gt;#s';
-    }
-    elseif (strpos($source, '<? ') !== false)
-    {
-        $r1 = '--';
-        $source = str_replace('<? ', '<?php ', $source);
-    }
-
-    $source = highlight_string($source, true);
-
-    if ($r1 == '--') $source = preg_replace('#(&lt;\?.*?)(php)?(.*?&nbsp;)#s', '\\1\\3', $source);
-
-    $source = preg_replace (array ( '/.*<code>\s*<span style="color: #000000">/',    //
-                                    '#</span>\s*</code>#',                          //  <code><span black>
-                                    $r1, $r2,                 // php tags
-                                    '/<span[^>]*><\/span>/'   // empty spans
-                                  ),'',$source);
-
-    if ($classes) $source = str_replace(
-        array('style="color: #0000BB"', 'style="color: #007700"',
-            'style="color: #DD0000"', 'style="color: #FF8000"'),
-
-        array('class="default"', 'class="keyword"',
-            'class="string"', 'class="comment"',), $source);
-    return $source;
-}
-*/

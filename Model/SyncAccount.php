@@ -7,18 +7,7 @@
 namespace Gratheon\CMS\Model;
 
 class SyncAccount extends \Gratheon\Core\Model{
-	private static $instance;
-
-	/**
-	 * @return sys_sync_account
-	 */
-	public static function singleton(){
-		if(!isset(self::$instance)){
-			$c = __CLASS__;
-            self::$instance = new $c;
-		}
-		return self::$instance;
-	}
+	use ModelSingleton;
 
 	final function __construct(){
 		parent::__construct('sys_sync_account');

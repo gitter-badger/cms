@@ -2,20 +2,7 @@
 namespace Gratheon\CMS\Model;
 
 class Musicscore extends \Gratheon\Core\Model {
-	private static $instance;
-
-
-	/**
-	 * @return \Gratheon\CMS\Model\Musicscore
-	 */
-	public static function singleton() {
-		if (!isset(self::$instance)) {
-			$c              = __CLASS__;
-			self::$instance = new $c;
-		}
-		return self::$instance;
-	}
-
+	use ModelSingleton;
 
 	final function __construct($callParent=true) {
 		if($callParent){
