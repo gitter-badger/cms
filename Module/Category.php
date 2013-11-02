@@ -142,7 +142,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 
 		//Query
-		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t1.*,DATEDIFF(NOW(),t1.date_added) as diff,DATE_FORMAT(t1.date_added,'%d.%m %H:%i') as date_added2
+		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t1.*,DATEDIFF(NOW(),t1.date_added) AS diff,DATE_FORMAT(t1.date_added,'%d.%m %H:%i') AS date_added2
 				FROM content_menu t1
 				LEFT JOIN content_menu_rights t2 ON t2.pageID=t1.ID
 				WHERE 1=1";
@@ -282,8 +282,8 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 		//Query
 		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t3.*,
-					DATEDIFF(NOW(),t1.date_added) as diff,
-					DATE_FORMAT(t1.date_added,'%d.%m %H:%i') as date_added2
+					DATEDIFF(NOW(),t1.date_added) AS diff,
+					DATE_FORMAT(t1.date_added,'%d.%m %H:%i') AS date_added2
 				FROM content_menu t1
 				LEFT JOIN content_menu_rights t2 ON t2.pageID=t1.ID
 				INNER JOIN content_image t3 ON t3.ID=t1.elementID
@@ -293,8 +293,8 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 		if($arrList) {
 			foreach($arrList as &$item) {
-				$item->url_square = $content_image->getSquareURL($item);
-				$item->url_original = $content_image->getOriginalURL($item);
+				$item->url_square    = $content_image->getSquareURL($item);
+				$item->url_original  = $content_image->getOriginalURL($item);
 				$item->url_rectangle = $content_image->getRectangleURL($item);
 			}
 		}
@@ -333,9 +333,11 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 
 		// Load RSS module
-		require_once('vendor/tot-ra/feedcreator/feedcreator.class.php');
-		$rss           = new \UniversalFeedCreator();
-		$rss->encoding = 'UTF-8';
+//		require_once('vendor/tot-ra/feedcreator/feedcreator.class.php');
+//		$rss           = new \UniversalFeedCreator();
+//		$rss->encoding = 'UTF-8';
+//
+		$rss = new \Gratheon\Core\View\RSSProxy();
 
 		// Find category
 		$arrCategory = $content_category->obj('parentID=' . $parentID);
@@ -359,27 +361,18 @@ class Category extends \Gratheon\CMS\ContentModule {
 			$langID = $sys_languages->int("is_default=1", 'ID');
 		}
 
-		$rss->title                     = $content_menu->int("ID=" . $parentID, 'title');
-		$rss->description               = ''; //$rss->title; //"Personal Blog";
-		$rss->descriptionTruncSize      = 500;
-		$rss->descriptionHtmlSyndicated = true;
-		$rss->link                      = sys_url;
+		$rss->setTitle($content_menu->int("ID=" . $parentID, 'title'));
+		$rss->setLogoImage(sys_url . 'res/avatar.jpg');
 
-		$rss->image          = new \stdClass;
-		$rss->image->title   = ''; //$rss->title;
-		$rss->image->link    = sys_url;
-		$rss->image->url     = sys_url . 'res/avatar.jpg';
-		$rss->syndicationURL = sys_url . substr($_SERVER["PHP_SELF"], 1);
 
 		//Query all images
 		//That have parent article viewable
 		//and that support rss
 		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t1.*,
-					DATEDIFF(NOW(),t1.date_added) as diff,
-					UNIX_TIMESTAMP(t1.date_added) as date_added_unix,
-					DATE_FORMAT(t1.date_added,'%d.%m %H:%i') as date_added2
+					DATEDIFF(NOW(),t1.date_added) AS diff,
+					UNIX_TIMESTAMP(t1.date_added) AS date_added_unix,
+					DATE_FORMAT(t1.date_added,'%d.%m %H:%i') AS date_added2
 				FROM content_menu t1
-
 				INNER JOIN content_module t3 ON t3.ID=t1.module AND t3.supports_rss=1
 				LEFT JOIN content_menu_rights  t2 ON t2.pageID=t1.ID
 				WHERE 
@@ -406,39 +399,39 @@ class Category extends \Gratheon\CMS\ContentModule {
 				$menu = new \Gratheon\CMS\Menu();
 				$menu->loadLanguageCount();
 
+				/** @var \Gratheon\CMS\Module\Behaviour\CategoryRSSyndication $objModule */
+
 				if(method_exists($objModule, 'category_view')) {
 					$objModule->category_view($item);
 
 					$item->comment_count = $content_menu->int('parentID=' . $item->ID . " AND module='comment'", 'COUNT(*)');
 					$item->arrTags       = $sys_tags->arr('t1.ID=t2.tagID AND t2.contentID=' . $item->ID, 't1.ID, t1.pop, t1.title', $sys_tags->table . ' t1 LEFT JOIN ' . $content_tags->table . ' t2 ON t1.ID=t2.tagID');
 
-					$recEntry               = new \FeedItem();
-					$recEntry->link         = $recEntry->guid = $menu->getPageURL($item->ID); //sys_url.'article/'.$item->ID;
-					$recEntry->title        = $item->title;
-					$recEntry->files        = $item->arrFiles;
-					$recEntry->flash_videos = $item->flash_videos;
-					$recEntry->images       = $item->images;
-					$recEntry->description  = $item->element->content; //$data->short;
+
+					$recEntry['link']         = $recEntry['guid'] = $menu->getPageURL($item->ID); //sys_url.'article/'.$item->ID;
+					$recEntry['title']        = $item->title;
+					$recEntry['files']        = $item->arrFiles;
+					$recEntry['flash_videos'] = $item->flash_videos;
+					$recEntry['images']       = $item->images;
+					$recEntry['date']         = date('r', $item->date_added_unix);
+
+					$recEntry['description'] = $item->element->content; //$data->short;
 
 					/** @var \Gratheon\CMS\Model\Image $content_image */
-					foreach((array)$item->images as $image) {
-						$recEntry->description .= '<a href="' . $content_image->getURL($image, 'original', false) . '"><img src="' . $content_image->getURL($image, 'square', false) . '" alt="' . $image->title . '"/></a>';
+					foreach((array)$recEntry['images'] as $image) {
+						$recEntry['description'] .= '<a href="' . $content_image->getURL($image, 'original', false) . '"><img src="' . $content_image->getURL($image, 'square', false) . '" alt="' . $image->title . '"/></a>';
 					}
 
-					$recEntry->description = str_replace("href='/", "href='" . sys_url . "/", $recEntry->description); //relative to absolute urls
-					$recEntry->description = str_replace('href="/', 'href="' . sys_url . '/', $recEntry->description); //relative to absolute urls
+					$recEntry['description'] = str_replace("href='/", "href='" . sys_url . "/", $recEntry['description']); //relative to absolute urls
+					$recEntry['description'] = str_replace('href="/', 'href="' . sys_url . '/', $recEntry['description']); //relative to absolute urls
 
-					//optional
-					$recEntry->descriptionTruncSize      = 500;
-					$recEntry->descriptionHtmlSyndicated = true;
-					$recEntry->date                      = date('r', $item->date_added_unix);
 
-					$rss->addItem($recEntry);
+					$rss->addArticle($recEntry);
 				}
 			});
 		}
 
-		return $rss->createFeed("RSS2.0");
+		return $rss->getResultRSSFeed();
 		//		return $rss->saveFeed("RSS2.0", sys_root."app/front/view/bin/category_{$arrCategory->ID}.rss");
 	}
 }

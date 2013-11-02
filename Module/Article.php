@@ -11,6 +11,7 @@ use Gratheon\Core;
 class Article
 	extends \Gratheon\CMS\ContentModule
 	implements \Gratheon\CMS\Module\Behaviour\Searchable,
+	\Gratheon\CMS\Module\Behaviour\CategoryRSSyndication,
 	\Gratheon\CMS\Module\Behaviour\VisibleOnDashboard {
 
 	public $name = 'article';
@@ -906,8 +907,6 @@ class Article
 
 
 	public function category_rss(&$item) {
-		$tempData           = $this->category_view($item);
-		$item->content      = $item->element->content;
-		$item->flash_videos = $item->element->flash_videos;
+		return $this->category_view($item);
 	}
 }
