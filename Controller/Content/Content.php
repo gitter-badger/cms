@@ -19,7 +19,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		/** @var $adminMenu \Gratheon\CMS\Model\AdminMenu */
 		/** @var $sys_languages \Gratheon\CMS\Model\Language */
 		$sys_languages = $this->model('Language');
-		$adminMenu = $this->model('AdminMenu');
+		$adminMenu     = $this->model('AdminMenu');
 
 		$arrLanguages  = $sys_languages->getLanguages();
 		$arrModuleMenu = $adminMenu->getHierarchicalArray();
@@ -99,27 +99,25 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			}
 		}
 
-		if($this->in->post['langID']) {
+		if(isset($this->in->post['langID'])) {
 			$_SESSION['content']['lang_content'] = $this->in->post['lang_content'];
 		}
 
 		$strLangAlpha2 = $sys_languages->int(
 			"t1.ID='$this->langID'", "t2.id_1",
 				$sys_languages->table . " t1 INNER JOIN " .
-						$iso_languages->table . " t2 ON t1.ID=t2.id_2B");
+				$iso_languages->table . " t2 ON t1.ID=t2.id_2B");
 
 		$this->add_css('/vendor/twitter/bootstrap/css/bootstrap.min.css', false);
 		$this->add_css('/vendor/twitter/bootstrap/css/bootstrap-responsive.min.css', false);
 
 		$this->add_css('/vendor/jquery/jquery-ui/themes/base/jquery.ui.all.css', false);
 		$this->add_css('main.css');
-		//$this->add_css($this->skin.'/reset.css');
+
 		$this->add_css('layout.css');
 		$this->add_css('desktop.css');
 		$this->add_css('menu.css');
-		//$this->add_css('/cms/app/content/css/'.$this->skin.'/twitter_extension.css', false);
-		//$this->add_css($this->skin.'/forms.css');
-		//$this->add_css($this->skin.'/datepicker.css');
+
 		$this->add_css('fancybox.css');
 		$this->add_css('jquery.autocomplete.css');
 
@@ -128,10 +126,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$this->add_js('/vendor/jquery/cookie/jquery.cookie.js');
 		$this->add_js('/vendor/backbonejs/underscorejs/underscore-min.js', false);
 		$this->add_js('/vendor/backbonejs/backbonejs/backbone-min.js', false);
-		/*
-				$this->add_css('/ext/jquery/imgAreaSelect 0.9.8/css/imgareaselect-default.css', false);
-				$this->add_js('/ext/jquery/imgAreaSelect 0.9.8/jquery.imgareaselect.min.js');
-				*/
+
 		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.core.js');
 		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.widget.js');
 		$this->add_js('/vendor/jquery/jquery-ui/ui/jquery.ui.mouse.js');
@@ -156,21 +151,19 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 		$this->add_js_var('image_list_url', sys_url . 'content/call/image/list_last_images/');
 		$this->add_js_var('file_upload_url', sys_url . 'content/content/batch_file_insert/');
+		$this->add_js_var('file_upload_moduleonly_url', sys_url . 'content/content/upload_module_files/');
 		$this->add_js_var('swfu_flash_url', sys_url . 'cms/external_libraries/swfupload2/swfupload.swf');
 		$this->add_js_var('link_embed_info', sys_url . 'content/content/embed_info/');
 		$this->add_js_var('phpsessid', session_id());
 		$this->add_js_var('sys_url', sys_url);
 		$this->add_js_var('session_id', session_id());
+
 		$this->add_js_var('autologout_passive', $this->config('autologout_passive') ? $this->config('autologout_passive') : 5 * 60);
 		$this->add_js_var('autologout_active', $this->config('autologout_active') ? $this->config('autologout_active') : 5 * 60);
 		$this->add_js_var('autologout_ping', $this->config('autologout_ping') ? $this->config('autologout_ping') : 30);
 
 		$this->loadWrapper();
 
-		/*
-				$this->add_css('/cms/external_libraries/imperavi_redactor_7.6.3/css/redactor.css', false);
-				$this->add_js('/cms/external_libraries/imperavi_redactor_7.6.3/redactor.min.js',false);
-				*/
 		$this->add_css('/vendor/imperavi/redactorjs/css/redactor.css', false);
 		$this->add_js('/vendor/imperavi/redactorjs/redactor.js', false);
 
@@ -224,7 +217,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 						$arrData['name'] = $strModule;
 
-						if(!$arrData['template']) {
+						if(!isset($arrData['template'])) {
 
 							$sTemplate = 'ModuleBackend/' . $objModule->name . '/get_adminpanel_box_list.tpl';
 
@@ -284,11 +277,11 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		#Insert only new tags to avoid long cycles
 		$arrExTags = $sys_tags->arrint("t1.title IN (" . $strTmp . ") AND t2.contentID=" . $intPageID, 't1.title',
 				$sys_tags->table . ' t1 LEFT JOIN ' .
-						$content_tags->table . ' t2 ON t1.ID=t2.tagID');
+				$content_tags->table . ' t2 ON t1.ID=t2.tagID');
 
 		$arrAllExTags = $sys_tags->arrint("t2.contentID=" . $intPageID, 't1.title',
 				$sys_tags->table . ' t1 LEFT JOIN ' .
-						$content_tags->table . ' t2 ON t1.ID=t2.tagID');
+				$content_tags->table . ' t2 ON t1.ID=t2.tagID');
 
 		foreach($arrModTags as $item) {
 			if(!in_array($item, $arrExTags) && strlen($item) > 1) {
@@ -358,7 +351,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			return json_encode($output);
 		}
 
-		$recMenu->title = stripslashes($this->in->post['title']);
+		$recMenu->title      = stripslashes($this->in->post['title']);
 		$recMenu->module     = $this->in->request['module'] ? : $recMenu->module;
 		$recMenu->method     = $this->in->request['method'] ? : $recMenu->method;
 		$arrDate             = explode(' ', $this->in->post['date_added']);
@@ -377,8 +370,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$recMenu->elementID = (int)$this->in->post['elementID'];
 		}
 
-		$recMenu->langID           = $this->in->post['langID'] ? $this->in->post['langID'] : $recMenu->langID;
-		$recMenu->smart_url        = $this->in->post['url'];
+		$recMenu->langID    = $this->in->post['langID'] ? $this->in->post['langID'] : $recMenu->langID;
+		$recMenu->smart_url = $this->in->post['url'];
 //		$recMenu->meta_title       = stripslashes($this->in->post['meta_title']);
 //		$recMenu->meta_description = stripslashes($this->in->post['meta_description']);
 //		$recMenu->meta_keywords    = stripslashes($this->in->post['meta_keywords']);
@@ -431,9 +424,9 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		}
 		else {
 			$recMenu->parentID = $this->in->get['parentID'] ? : $recMenu->parentID;
-			$recMenu->position = $content_menu->int("parentID='". $recMenu->parentID."'", 'MAX(position)+1');
+			$recMenu->position = $content_menu->int("parentID='" . $recMenu->parentID . "'", 'MAX(position)+1');
 
-			if($recMenu->position===null){
+			if($recMenu->position === null) {
 				$recMenu->position = 0;
 			}
 
@@ -513,7 +506,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		}
 
 		$arrModules    = $content_module->arr('is_active=1 ORDER BY adminpanel_box_order DESC');
-		$strFormAction = sys_url . "/content/content/save/?ID=$ID&parentID=$parentID&module=" . $this->in->request['module']; //."&langID=".$lang;
+		$strFormAction = sys_url . "/content/content/save/?ID=$ID&parentID=$parentID&module=" . $this->in->request['module'];
 		$arrRights     = $sys_rights->arr();
 		$strModule     = $this->in->request['module'] ? $this->in->request['module'] : $arrModules[0]->ID;
 
@@ -619,7 +612,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		$namespaces = $this->namespaces;
 
 		foreach($namespaces as $namespace) {
-			$templateFile = sys_root . 'vendor' . str_replace('\\','/',$namespace) . '/View/ModuleBackend/' . $strModule . '/edit.tpl';
+			$templateFile = sys_root . 'vendor' . str_replace('\\', '/', $namespace) . '/View/ModuleBackend/' . $strModule . '/edit.tpl';
 			if(file_exists($templateFile)) {
 				$this->assign('contentTemplate', $templateFile);
 			}
@@ -632,7 +625,7 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$this->assign('is_translateable', false);
 		}
 
-		if($this->in->get['modal']) {
+		if($this->in->get('modal')) {
 			return $this->view('controller_page/edit.modal.tpl');
 		}
 		else {
@@ -723,18 +716,19 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				/** @var \Gratheon\Core\Module $objModule */
 				$objModule->init($strFunction);
 
-				if($this->in->get['static']) {
-					$objModule->strWrapperTpl = 'layout/main.tpl';
+				$objModule->strWrapperTpl = sys_root . 'vendor/Gratheon/CMS/View/layout/';
+				if($controller->in->get['static']) {
+					$objModule->strWrapperTpl .= 'main.tpl';
 				}
 				else {
-					$objModule->strWrapperTpl = 'layout/ajax.tpl';
+					$objModule->strWrapperTpl .= 'ajax.tpl';
 				}
 
 				$objModule->add_css('modules/' . $objModule->name . '/' . $strFunction . '.css');
 				$objModule->add_js('modules/' . $objModule->name . '/' . $strFunction . '.js');
 
 				$contentTemplate = sys_root . 'vendor' . $objModule->route . '/View/ModuleBackend/' . $objModule->name . '/' . $strFunction . '.tpl';
-				if(!is_file($contentTemplate)){
+				if(!is_file($contentTemplate)) {
 					$contentTemplate = sys_root . 'vendor/Gratheon/CMS/View/ModuleBackend/' . $objModule->name . '/' . $strFunction . '.tpl';
 				}
 
@@ -747,14 +741,25 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 //				$controller->cache_css();
 
 				if(method_exists($objModule, $strFunction)) {
-					if(isset($this->in->URI[5])){
-						$id = $this->in->URI[5];
+
+					if(isset($controller->in->URI[5])) {
+						$id = $controller->in->URI[5];
 					}
-					else{
+					else {
 						$id = null;
 					}
 					$objModule->$strFunction($id);
+
+//					if(strlen($result)>5){
+//						return $controller->view($result);
+//					}
+//					else{
 					return $controller->view($objModule->strWrapperTpl);
+					//echo $return;
+//					}
+				}
+				else {
+					print_r('Method ' . $strFunction . ' in module ' . $objModule->name . ' doesnt exist');
 				}
 			});
 			return $view;
@@ -765,7 +770,10 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 	public function redirect($url) {
 
 		if($this->useScriptedRedirect) {
-			echo "<script>top.location = '" . $url . "';</script>";
+			echo "<script>
+			Content.router.navigate('/', false);
+			Content.router.navigate('" . $url . "', true);
+			</script>";
 			exit();
 		}
 		else {
@@ -802,48 +810,96 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 	public function batch_file_insert() {
-		$this->in->get['parentID'] = $this->in->request['parentID'] = ($this->in->request['parentID'] ? $this->in->request['parentID']
-				: $this->getDefaultParentID());
 
-		if(!is_array($_FILES['file']['name'])) {
-			/*$this->in->post['title'] = */
+		if(is_numeric($this->in->get('parentID'))) {
 
-			$strFilename = $_FILES['file']['name'];
-			$arrFile     = explode('.', $strFilename);
-			$strExt      = strtolower(end($arrFile));
+			$this->in->get['parentID'] = $this->in->request['parentID'] = ($this->in->request['parentID'] ? $this->in->request['parentID']
+					: $this->getDefaultParentID());
 
-			if(in_array($strExt, $this->image_extensions)) {
-				$this->in->request['module']    = 'image';
-				$this->in->post['cut_position'] = 2;
+			if(!is_array($_FILES['file']['name'])) {
+				/*$this->in->post['title'] = */
 
-			}
-			else {
-				$this->in->post['title']     = $strFilename;
-				$this->in->request['module'] = 'file';
-			}
-
-			$this->save();
-		}
-		else {
-
-			$tmpFiles = $_FILES;
-			unset($_FILES);
-
-			foreach($tmpFiles['file']['name'] as $fileKey => $strFilename) {
-				$this->in->post['title'] = $strFilename;
-				$arrFile        = explode('.', $strFilename);
-				$strExt         = strtolower(end($arrFile));
+				$strFilename = $_FILES['file']['name'];
+				$arrFile     = explode('.', $strFilename);
+				$strExt      = strtolower(end($arrFile));
 
 				if(in_array($strExt, $this->image_extensions)) {
-					$this->in->request['module'] = 'image';
-
+					$this->in->request['module']    = 'image';
 					$this->in->post['cut_position'] = 2;
 
 				}
 				else {
+					$this->in->post['title']     = $strFilename;
 					$this->in->request['module'] = 'file';
 				}
-				//		mail('artkurapov@gmail.com','test',print_r($this->in->request,true).print_r($_FILES,true));
+
+				$this->save();
+			}
+			else {
+
+				$tmpFiles = $_FILES;
+				unset($_FILES);
+
+				foreach($tmpFiles['file']['name'] as $fileKey => $strFilename) {
+					$this->in->post['title'] = $strFilename;
+					$arrFile                 = explode('.', $strFilename);
+					$strExt                  = strtolower(end($arrFile));
+
+					if(in_array($strExt, $this->image_extensions)) {
+						$this->in->request['module'] = 'image';
+
+						$this->in->post['cut_position'] = 2;
+
+					}
+					else {
+						$this->in->request['module'] = 'file';
+					}
+					//		mail('artkurapov@gmail.com','test',print_r($this->in->request,true).print_r($_FILES,true));
+
+					$_FILES['file']['name']     = $tmpFiles['file']['name'][$fileKey];
+					$_FILES['file']['tmp_name'] = $tmpFiles['file']['tmp_name'][$fileKey];
+					$_FILES['file']['size']     = $tmpFiles['file']['size'][$fileKey];
+					$_FILES['file']['error']    = $tmpFiles['file']['error'][$fileKey];
+					$_FILES['file']['type']     = $tmpFiles['file']['type'][$fileKey];
+
+					$this->save();
+				}
+				echo 1;
+			}
+		}
+	}
+
+
+	public function upload_module_files() {
+		pre($_FILES);
+		if(!is_array($_FILES['file']['name'])) {
+			$strFilename = $_FILES['file']['name'];
+			$arrFile                 = explode('.', $strFilename);
+			$strExt                  = strtolower(end($arrFile));
+
+			if(in_array($strExt, $this->image_extensions)) {
+				$this->loadModule('image', function ($objModule) {
+					/** @var \Gratheon\CMS\Module\Image $objModule */
+					$objModule->addFile();
+				});
+			}
+			else {
+
+				$this->loadModule('file', function ($objModule) {
+					/** @var \Gratheon\CMS\Module\File $objModule */
+					$objModule->addFile();
+				});
+			}
+		}
+
+		else {
+			$tmpFiles = $_FILES;
+			unset($_FILES);
+
+			foreach($tmpFiles['file']['name'] as $fileKey => $strFilename) {
+				$arrFile                 = explode('.', $strFilename);
+				$strExt                  = strtolower(end($arrFile));
+
 
 				$_FILES['file']['name']     = $tmpFiles['file']['name'][$fileKey];
 				$_FILES['file']['tmp_name'] = $tmpFiles['file']['tmp_name'][$fileKey];
@@ -851,9 +907,20 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 				$_FILES['file']['error']    = $tmpFiles['file']['error'][$fileKey];
 				$_FILES['file']['type']     = $tmpFiles['file']['type'][$fileKey];
 
-				$this->save();
+				if(in_array($strExt, $this->image_extensions)) {
+					$this->loadModule('image', function ($objModule) {
+						/** @var \Gratheon\CMS\Module\Image $objModule */
+						$objModule->addFile();
+					});
+				}
+				else {
+
+					$this->loadModule('file', function ($objModule) {
+						/** @var \Gratheon\CMS\Module\File $objModule */
+						$objModule->addFile();
+					});
+				}
 			}
-			echo 1;
 		}
 	}
 
@@ -868,8 +935,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 		set_time_limit(300);
 
 		$this->in->post['title'] = $strFilename = $strFile;
-		$arrFile        = explode('.', $strFilename);
-		$strExt         = strtolower(end($arrFile));
+		$arrFile                 = explode('.', $strFilename);
+		$strExt                  = strtolower(end($arrFile));
 
 		if(in_array($strExt, $this->image_extensions)) {
 			$this->in->post['module'] = 'image';
@@ -906,8 +973,8 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 			$this->loadModule($module, function ($objModule) use ($module, &$arrLastContent, $q, &$arrResults) {
 
 				if(method_exists($objModule, 'search_from_admin')) {
-					$arrResults[$module]        = $objModule->search_from_admin($q);
-					if($arrResults[$module]){
+					$arrResults[$module] = $objModule->search_from_admin($q);
+					if($arrResults[$module]) {
 						$arrResults[$module]->name  = $module;
 						$arrResults[$module]->isCMS = $objModule->isCMS;
 						if(!isset($arrResults[$module]->count) || isset($arrResults[$module]->count) && !$arrResults[$module]->count) {
@@ -967,25 +1034,26 @@ class Content extends \Gratheon\CMS\Controller\Content\ProtectedContentControlle
 
 
 	public function menu_precise_move() {
-		/** @var \Gratheon\CMS\Model\Menu $content_menu  */
+		/** @var \Gratheon\CMS\Model\Menu $content_menu */
 		$content_menu = $this->model('Menu');
 
-		$ID       = (int)$this->in->get['ID'];
-		$position = (int)$this->in->get['pos'];
+		$ID          = (int)$this->in->get['ID'];
+		$position    = (int)$this->in->get['pos'];
 		$newParentID = (int)$this->in->get['parentID'];
 		if(!$newParentID) {
 			$newParentID = 1;
 		}
 
-		$item            = $content_menu->obj($ID);
-		if($item){
+		$item = $content_menu->obj($ID);
+		if($item) {
 			$content_menu->increaseChildPositionsAfterEq($newParentID, $position);
 
 			$oldParentID = $item->parentID;
-			$item->position = $position;
-			$item->parentID = $newParentID;
-			$content_menu->update($item);
 
+			$data           = new \Gratheon\Core\Record();
+			$data->position = $position;
+			$data->parentID = $newParentID;
+			$content_menu->update($data, "ID='$ID' LIMIT 1");
 
 			$content_menu->reorderChildPositions($oldParentID);
 			$content_menu->reorderChildPositions($newParentID);

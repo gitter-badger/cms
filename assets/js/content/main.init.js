@@ -12,6 +12,7 @@ $(document).ready(function () {
 	Content.searchView = new Content.Views.NavBar();
 	Content.menuPanel = new Content.Views.MenuPanel();
 	Content.modalPage = new Content.Views.ModalPage();
+	Content.sideTagList = new Content.Views.SideTagList();
 
 	Content.strUrl = sys_url;
 	Content.inactivity = 0;
@@ -111,19 +112,6 @@ $(document).ready(function () {
 			$('#context_menu').css('top', mouse_position.y + scroll_position.y + 'px');
 			$('#context_menu').removeClass('hidden').show();
 
-			$("#swfuploader").css('width', 100);
-			$("#swfuploader").css('height', 15);
-			$('#swfuploader').css('left', mouse_position.x + scroll_position.x);
-			$('#swfuploader').css('top', mouse_position.y + scroll_position.y + $('#context_menu').height() - $('#swfuploader').height());
-			$('#swfuploader').show();
-
-
-			$("#swfuploader").hover(function () {
-				$('#context_menu li.menu_upload').addClass('selected');
-			}, function () {
-				$('#context_menu li.menu_upload').removeClass('selected');
-			});
-
 			Content.page.ID = ID;
 
 		},
@@ -134,68 +122,16 @@ $(document).ready(function () {
 
 	Content.router = new Content.Routers.Main();
 	Backbone.history.start();
-/*
-	$("#swfuploader").click(function () {
-		$('#context_menu').hide();
-		$("#swfuploader").css('left', 0);
-		$("#swfuploader").css('top', 0);
-		$("#swfuploader").css('width', 1);
-		$("#swfuploader").css('height', 1);
-		$("#swfuploader").blur();
-	});
 
-	//Context menu file upload
-	Content.flash_upload_handler = new SWFUpload({
-		upload_url: file_upload_url,
-		flash_url: swfu_flash_url,
-		file_size_limit: "5 MB",
-		post_params: {
-			"parentID": Content.parentID,
-			"PHPSESSID": session_id//,
-			//"langID":Content.langID//$('#lang_content option:selected').val()
-		},
-		file_types_description: "Files",
-		file_types: "*.*",
-		file_post_name: "file",
-
-		button_placeholder_id: "swfupload_prototype",
-		button_width: 100,
-		button_height: 18,
-		button_window_mode: SWFUpload.WINDOW_MODE.TRANSPARENT,
-		button_cursor: SWFUpload.CURSOR.DEFAULT,
-
-		file_dialog_complete_handler: function () {
-			this.startUpload();
-		},
-
-		upload_start_handler: function (file) {
-			this.addFileParam(file.id, "parentID", Content.page.ID);
-			//this.addFileParam(file.id, "langID"	  , Content.langID);
-
-			Content.notePanel.set(t('Starting upload') + ': ' + file.name, '');
-		},
-
-		upload_success_handler: function (file) {
-			Content.notePanel.set(t('Upload finished') + ': ' + file.name, '');
-		},
-		upload_progress_handler: function (file, bytesLoaded, bytesTotal) {
-			var percent = Math.ceil((bytesLoaded / bytesTotal) * 100);
-			//var progress = new FileProgress(file, this.customSettings.progressTarget);
-			Content.notePanel.set(t('Uploading ') + ': ' + file.name + ' (' + percent + '%)', '');
-
-		},
-		upload_error_handler: function (file) {
-			Content.notePanel.set(t('Upload failed') + ': ' + file.name, 'error');
-		},
-		queue_complete_handler: function () {
-			$('#swfuploader').hide();
-			MenuTree.Load(Content.page.ID);
-		}
-	});
-*/
-	$('#content_menu').upload5({
+	$('#upload_area').upload5({
 		beforeLoad: function () {
-			this.gate = file_upload_url + '?parentID=' + Content.page.ID;
+			if (Content.page.ID >= 0) {
+				this.gate = file_upload_url;// + '?parentID=' + Content.page.ID;
+				this.gate += '?parentID=' + Content.page.ID;
+			}
+			else {
+				this.gate = file_upload_moduleonly_url;
+			}
 			this.can_proceed = true;
 			/*
 			 if(Content.openMenu=='dashboard'){
@@ -226,7 +162,6 @@ $(document).ready(function () {
 	});
 
 
-
 //		if($(this).hasClass('modal_trigger')){
 //		}
 //		else{
@@ -234,31 +169,34 @@ $(document).ready(function () {
 //		}
 //	});
 
-//	if (1 * $.cookie("panel_resize_left") > 0) {
-//		var pos = 1 * $.cookie("panel_resize_left");
-//
-//		$('#panel_resize').css({
-//			left: pos
-//		});
-//
-//		if(pos>50 && pos <1600){
-//			$('#panel').width(pos);
-//			$('#top').css('left', pos + 'px');
-//			$('#content').css('left', (pos + 26) + 'px');
-//		}
-//	}
+	if (1 * $.cookie("panel_resize_left") > 0) {
+		var pos = 1 * $.cookie("panel_resize_left");
+
+		$('#panel_resize').css({
+			left: pos
+		});
+
+		if (pos > 50 && pos < 1600) {
+			$('#panel').width(pos);
+			$('#top').css('left', pos + 'px');
+			$('#content').css('left', (pos + 26) + 'px');
+		}
+	}
+
 	$('#panel_resize').draggable({
 		axis: 'x',
 		iframeFix: true,
+
 		drag: function (e, ui) {
-			pos = ui.position.left
+			var pos = ui.position.left
 			$('#panel').width(pos);
 			$('#top').css('left', pos + 'px');
 			$('#content').css('left', (pos + 5) + 'px');
 		},
+
 		stop: function (e, ui) {
 			$.cookie("panel_resize_left", ui.position.left);
-			pos = ui.position.left
+			var pos = ui.position.left
 			$('#panel').width(pos);
 			$('#top').css('left', pos + 'px');
 			$('#content').css('left', (pos + 5) + 'px');

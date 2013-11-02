@@ -13,10 +13,17 @@ class Menu extends \Gratheon\CMS\Tree {
 
 
 	function __construct() {
-		$sys_languages      = new \Gratheon\Core\Model('sys_languages');
-		$this->intLangCount = $sys_languages->int('1=1', 'COUNT(*)');
+//		$sys_languages      = new \Gratheon\Core\Model('sys_languages');
+//		$this->intLangCount = $sys_languages->int('1=1', 'COUNT(*)');
 
 		parent::__construct();
+	}
+
+
+	function loadLanguageCount() {
+		$sys_languages      = new \Gratheon\Core\Model('sys_languages');
+		$this->intLangCount = $sys_languages->int('1=1', 'COUNT(*)');
+		return $this->intLangCount;
 	}
 
 
@@ -39,12 +46,15 @@ class Menu extends \Gratheon\CMS\Tree {
 			$arrPath[] = strlen($strPath) > 0 ? $strPath : $ID;
 			unset($strPath);
 		}
+
+		$url = defined('sys_url_rel') ? sys_url_rel : sys_url;
+
 		if($this->intLangCount > 1 && $arrPath) {
-			$strPage = sys_url . join('/', $arrPath) . '/'; //.$system->language
+			$strPage = $url . join('/', $arrPath) . '/'; //.$system->language
 		}
 		elseif($arrPath) {
 			unset($arrPath[0]);
-			$strPage = sys_url;
+			$strPage = $url;
 
 			if($arrPath) {
 				$strPage .= join('/', $arrPath) . '/';
@@ -70,7 +80,7 @@ class Menu extends \Gratheon\CMS\Tree {
 
 		$intPage = $tpl_links_page->int("t1.connectionID='$intTemplateLink'", 't1.pageID',
 				$tpl_links_page->table . " t1 INNER JOIN " .
-				$content_menu->table . " t2 ON t2.ID=t1.pageID AND t2.langID='{$langID}'");
+						$content_menu->table . " t2 ON t2.ID=t1.pageID AND t2.langID='{$langID}'");
 
 		if($this->intLangCount > 1) {
 			$strPage = $this->getPageURL($intPage);
@@ -99,12 +109,33 @@ class Menu extends \Gratheon\CMS\Tree {
 	}
 
 
+	private $buildFullTree = false;
+
+
+	public function buildFullTree(&$arrTree, $arrSelected, $intParentID) {
+
+		$this->buildFullTree = true;
+//		echo '<pre>';
+		$list                = $this->buildTree($arrTree, $arrSelected, $intParentID);
+		$this->buildFullTree = false;
+
+//		print_r($arrSelected);
+//		print_r($list);
+//		echo '</pre>';
+		return $list;
+	}
+
+
 	public function buildTree(&$arrTree = null, $arrSelected = array(1), $intParentID = 0, $intMaxLevel = 0, $intLevel = 0) {
 		if(!isset($arrTree)) {
 			$arrTree = array();
 		}
 
 		$arrLevel = $this->buildLevel($intParentID);
+//		print_r($intParentID."<br/>");
+//		print_r($arrLevel);
+//		print_r($this->strWhere);
+
 		if(is_array($arrLevel)) {
 			foreach($arrLevel as $node) {
 				$node->level = $intLevel;
@@ -112,13 +143,25 @@ class Menu extends \Gratheon\CMS\Tree {
 				$node->front_link = $this->getPageURL($node->ID);
 
 				$node->subnodes = array();
-				$arrTree[]      = $node;
-				if(!$arrSelected || in_array($node->ID, $arrSelected)) {
+
+
+				if($this->buildFullTree) {
+//					print_r($arrLevel);
+
+//					print_r($arrSelected);
+//					$arrSelected = array_merge($arrSelected, $node->children);
+					$this->buildTree($node->subnodes, $arrSelected, $node->ID, $intMaxLevel, $node->level + 1);
+				}
+				else if(!$arrSelected || in_array($node->ID, $arrSelected)) {
 					$this->buildTree($node->subnodes, $arrSelected, $node->ID, $intMaxLevel, $node->level + 1);
 				}
 
+				$arrTree[]      = $node;
+
 			}
 		}
+
+//		print_r($arrTree);
 		return $arrTree;
 	}
 }

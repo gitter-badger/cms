@@ -113,6 +113,7 @@ class User extends \Gratheon\CMS\ContentModule {
 		$sys_email_templates = $this->model('sys_email_templates');
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$arrUser  = $sys_user->obj($userID);
 		$moduleID = $content_module->int('title="' . $this->name . '"', 'ID');

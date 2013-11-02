@@ -3,20 +3,20 @@
  */
 var Content = {
 	Routers: [],
-	Views: [],
-	Models: [],
+	Views  : [],
+	Models : [],
 
 	contextMenuView: null,
 
 
-	openMenu: 'dashboard',
-	strUrl: '',
+	openMenu       : 'dashboard',
+	strUrl         : '',
 	autosaveEnabled: false,
-	inactivity: 0,
+	inactivity     : 0,
 
-	ID: 1,
-	parentID: 1,
-	langID: 'rus',
+	ID        : 1,
+	parentID  : 1,
+	langID    : 'rus',
 	copyBuffer: [],
 
 	Dialog: function (id) {
@@ -30,11 +30,13 @@ var Content = {
 
 	resizeEditor: function () {
 
+		var topSide = ($('#tabs-1').outerHeight() - $('#article_value').outerHeight());
+
 		$('#article_value iframe').height(
-				$('#content').height() - 400
+				$('#content').height() - 214 - topSide
 		);
 		$('#article_value textarea').height(
-				$('#content').height() - 400
+				$('#content').height() - 214 - topSide
 		);
 	},
 
@@ -49,7 +51,7 @@ var Content = {
 	AddElement: function (parentID, module) {
 		//Content.Frame('content');
 		//MenuTree.Select(parentID);
-		if(typeof(module)=='undefined'){
+		if (typeof(module) == 'undefined') {
 			module = 'article';
 		}
 
@@ -83,7 +85,6 @@ var Content = {
 			else {
 				Content.page.editors[0].execCommand('inserthtml', " <span rel='" + id + "' class='embed embed_" + responce.module + "'>" + responce.html + "</span> ");
 			}
-console.log(responce);
 		});
 	},
 
@@ -97,13 +98,16 @@ console.log(responce);
 Content.Routers.Main = Backbone.Router.extend({
 
 	routes: {
-		"": "dashboard",
-		"dashboard": "dashboard",
-		"search/:q": "search",
-		"page/:id": "page",
-		"settings/*path": "settings",
+		""                          : "dashboard",
+		"dashboard"                 : "dashboard",
+		"search/:q"                 : "search",
+		"page/:id"                  : "page",
+		"tag/*path"                 : "tag",
+		"settings/*path"            : "settings",
+		"install/updates/"            : "install",
+		"translation/*path"         : "translation",
 		"add/:module/:parent/:lang/": "add",
-		"*path": "other"
+		"*path"                     : "other"
 	},
 
 	dashboard: function () {
@@ -123,13 +127,21 @@ Content.Routers.Main = Backbone.Router.extend({
 		Content.page.load(sys_url + 'content/content/edit/?parentID=' + parent + '&lang=' + lang + '&module=' + module);
 	},
 
-	settings: function (path) {
+	install   : function () {
+		Content.page.load(sys_url + 'content/install/updates');
+	},
+	settings   : function (path) {
 		Content.page.load(sys_url + 'content/settings/' + path);
+	},
+	translation: function (path) {
+		Content.page.load(sys_url + 'content/translation/' + path);
+	},
+	tag        : function (path) {
+		Content.page.load(sys_url + 'content/tag/' + path);
 	},
 
 	other: function (path) {
 		var anchor = path.split('/');
-		console.log('other');
 
 		Content.openMenu = anchor[0];
 
@@ -217,7 +229,7 @@ Content.Views.Note = Backbone.View.extend({
 		$('#note_panel').fadeIn('slow');
 	},
 
-	set: function (message, message_class, fadeout_sec) {
+	set        : function (message, message_class, fadeout_sec) {
 
 		if (!message && message_class == 'error') {
 			message = t('Error') + '!';
@@ -242,7 +254,7 @@ Content.Views.Note = Backbone.View.extend({
 		}
 		$(this.el).show();
 
-		setTimeout("Content.notePanel.dismissNote();", 4500);
+		setTimeout("Content.notePanel.dismissNote();", 5000);
 	},
 	/*
 	 requestDesktopPermissions:function() {
@@ -258,11 +270,11 @@ Content.Views.Note = Backbone.View.extend({
 });
 
 Content.Views.BodyView = Backbone.View.extend({
-	el: 'body',
+	el    : 'body',
 	events: {
-		'click': 'clickBody',
+		'click'  : 'clickBody',
 		'keydown': 'keyboardInput',
-		'resize': 'resize'
+		'resize' : 'resize'
 	},
 
 	resize: function () {
@@ -285,8 +297,10 @@ Content.Views.BodyView = Backbone.View.extend({
 Content.Views.Menu = Backbone.View.extend({
 	id: '#content_menu',
 
-	initialize: function () {},
-	resize: function () {}
+	initialize: function () {
+	},
+	resize    : function () {
+	}
 });
 
 Content.Views.ContextMenu = Backbone.View.extend({
@@ -299,7 +313,7 @@ Content.Views.ContextMenu = Backbone.View.extend({
 
 Content.Views.ContentPage = Backbone.View.extend({
 
-	addTabbing: function(){
+	addTabbing: function () {
 		var me = this;
 
 		$('ul.nav-tabs li', me.el).live('click', function () {
@@ -314,34 +328,35 @@ Content.Views.ContentPage = Backbone.View.extend({
 
 	},
 
-	addEditor: function(){
+	addEditor: function () {
 		var me = this;
 		if (navigator.userAgent.match(/iPad/i) == null) {
 			$('.wysiwyg', me.el).each(function (i, o) {
 				Content.page.editors[i] = $(this).redactor({
-					focus: true,
-					css: sys_url + 'vendor/Gratheon/CMS/assets/css/modules/article/edit.wysiwyg.css',
-					cleanUp: false,
-					autoformat: false,
-					convertDivs: false,
-					removeClasses: false,
-					removeStyles: false,
-					imageUpload: file_upload_url,
-					fileUpload: file_upload_url,
-					resize: true,
-					imageUploadFunction: function () {}
+					focus              : true,
+					css                : sys_url + 'vendor/Gratheon/CMS/assets/css/modules/article/edit.wysiwyg.css',
+					cleanUp            : false,
+					autoformat         : false,
+					convertDivs        : false,
+					removeClasses      : false,
+					removeStyles       : false,
+					imageUpload        : file_upload_url,
+					fileUpload         : file_upload_url,
+					resize             : true,
+					imageUploadFunction: function () {
+					}
 				});
 			});
 		}
 	},
 
-	addDynamicForms: function(){
+	addDynamicForms: function () {
 		var me = this;
 
-		$('form.json', me.el).ajaxForm({
-			type: 'post',
+		$('form.json').ajaxForm({
+			type    : 'post',
 			dataType: 'json',
-			success: function (json) {
+			success : function (json) {
 				if (json.msg) {
 					Content.notePanel.set(json.msg, json['class'], 10);
 				}
@@ -356,12 +371,12 @@ Content.Views.ContentPage = Backbone.View.extend({
 		});
 
 
-		$('form.ajax', me.el).ajaxForm({
+		$('form.ajax').ajaxForm({
 			dataType: 'html',
-			success: function (responce) {
+			success : function (responce) {
 				me.attachPageEvents(responce);
 			},
-			error: function (response) {
+			error   : function (response) {
 				$(me.el).html(response);
 			}
 		});
@@ -414,24 +429,24 @@ Content.Views.ContentPage = Backbone.View.extend({
 
 		Content.resizeEditor();
 
-		$('img.modal_trigger').click(function(){
+		$('img.modal_trigger').click(function () {
 			Content.modalPage.addPage(Content.page.ID, $(this).data('module'));
 		});
 
 		$('.module_select', me.el).change(function () {
 			if (Content.page.ID) {
-				Content.page.load( '/content/edit/?ID=' + Content.page.ID + '&module=' + $(this).val() + '&langID=' + Content.langID );
+				Content.page.load('/content/edit/?ID=' + Content.page.ID + '&module=' + $(this).val() + '&langID=' + Content.langID);
 			}
 			else {
-				Content.page.load( '/content/edit/?parentID=' + Content.parentID + '&module=' + $(this).val() + '&langID=' + Content.langID );
+				Content.page.load('/content/edit/?parentID=' + Content.parentID + '&module=' + $(this).val() + '&langID=' + Content.langID);
 			}
 		});
 	}
 });
 
 Content.Views.ModalPage = Content.Views.ContentPage.extend({
-	el: '#pageModal',
-	events:{
+	el    : '#pageModal',
+	events: {
 		'.close': 'hide'
 	},
 
@@ -440,8 +455,8 @@ Content.Views.ModalPage = Content.Views.ContentPage.extend({
 		$(this.el).html('');
 	},
 
-	addPage: function(parentID, module){
-		if(typeof(module)=='undefined'){
+	addPage: function (parentID, module) {
+		if (typeof(module) == 'undefined') {
 			module = 'article';
 		}
 
@@ -451,10 +466,10 @@ Content.Views.ModalPage = Content.Views.ContentPage.extend({
 		var src = sys_url + 'content/content/edit/?parentID=' + parentID + '&langID=' + Content.langID + '&module=' + module;
 
 		var me = this;
-		$.get(src+'&modal=1', function(r){
+		$.get(src + '&modal=1', function (r) {
 			$(me.el).html(r);
 			$(me.el).fadeIn();
-			$('.close', me.el).live('click',function(){
+			$('.close', me.el).live('click', function () {
 				me.hide();
 			});
 			me.attachPageEvents(r);
@@ -464,7 +479,7 @@ Content.Views.ModalPage = Content.Views.ContentPage.extend({
 
 Content.Views.Page = Content.Views.ContentPage.extend({
 
-	editors: [],
+	editors        : [],
 	autosaveEnabled: false,
 
 	initialize: function () {
@@ -476,7 +491,7 @@ Content.Views.Page = Content.Views.ContentPage.extend({
 		}, 15000);
 	},
 
-	hide: function(){
+	hide: function () {
 		$(this.el).hide();
 	},
 
@@ -491,7 +506,6 @@ Content.Views.Page = Content.Views.ContentPage.extend({
 		if (window.localStorage !== null) {
 			window.localStorage.setItem('article_draft_content', article_content);
 			window.localStorage.setItem('article_draft_timestamp', (new Date()).getTime());
-			//console.log(aSerializedData.article_content);
 		}
 
 		var aSerializedData = $('#content_form').formSerialize();
@@ -517,12 +531,12 @@ Content.Views.Page = Content.Views.ContentPage.extend({
 
 			var square = new Sonic({
 
-				width: 100,
-				height: 50,
+				width  : 100,
+				height : 50,
 				padding: 10,
 
 				stepsPerFrame: 10,
-				trailLength: 1,
+				trailLength  : 1,
 				pointDistance: .03,
 
 				strokeColor: '#FF7B24',
@@ -555,9 +569,6 @@ Content.Views.Page = Content.Views.ContentPage.extend({
 			var me = this;
 			$.get(url, function (responce) {
 				me.attachPageEvents(responce);
-
-
-
 
 
 				if (typeof(callback) == 'function') {
@@ -605,5 +616,31 @@ Content.Views.MenuPanel = Backbone.View.extend({
 	selectByRel: function (rel) {
 		$("li", this.el).removeClass('active');
 		$("a[rel='" + rel + "']", this.el).parents('li').addClass('active');
+	}
+});
+
+Content.Views.SideTagList = Backbone.View.extend({
+	'el': '#side_tag_list',
+
+//	events: {
+//		'click li a': 'selectMenuItem'
+//	},
+
+	initialize: function () {
+		this.updateTagList();
+	},
+
+	updateTagList: function () {
+		var self = this;
+
+		self.$el.html('');
+		$.getJSON(sys_url + 'content/tag/listPopTags', function (results) {
+			_.each(results, function (v) {
+				self.$el.append('<span class="label tag">' + v.title + '</span>');
+				if (!_.isNull(v.color)) {
+					self.$el.find('span:last-child').css('background-color', v.color);
+				}
+			});
+		});
 	}
 });

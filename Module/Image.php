@@ -47,7 +47,7 @@ class Image extends CMS\ContentModule
 
 		$content_image = $this->model('Image');
 
-		if($_GET['returnHTML']) {
+		if($this->controller->in->get('returnHTML')) {
 			echo '<img rel="' . $parentID . '" src="' . $content_image->getURL($content_image->obj($intElement), 'thumb') . '" />';
 		}
 	}
@@ -205,7 +205,7 @@ class Image extends CMS\ContentModule
 			$this->copyToCloud($filename);
 			$recElement->cloud_storage = 'amazon';
 
-			if($this->config('cloud_hosting')){
+			if($this->config('cloud_hosting')) {
 				$this->deleteLocalFiles($filename, $this->arrFolders);
 			}
 		}
@@ -226,11 +226,11 @@ class Image extends CMS\ContentModule
 
 			$cloudAdapter->copyFileFromCloud(
 				$this->getOriginalFilePath($file),
-				'image/original/'.$file
+					'image/original/' . $file
 			);
 
-			if(!is_file($this->getOriginalFilePath($file))){
-				throw new \Exception('Failed to copy file from the cloud to '.$file);
+			if(!is_file($this->getOriginalFilePath($file))) {
+				throw new \Exception('Failed to copy file from the cloud to ' . $file);
 			}
 			return true;
 		}
@@ -340,7 +340,6 @@ class Image extends CMS\ContentModule
 		$filename   = $recElement->ID . '.' . $recElement->image_format;
 
 
-
 		$arrFolders = $this->arrFolders;
 		if($arrExtraFolders) {
 			$arrFolders = array_merge($arrFolders, $arrExtraFolders);
@@ -381,19 +380,19 @@ class Image extends CMS\ContentModule
 
 		$content_image = $this->getImageModel();
 
-		$offset = $_GET['page'] > 0 ? $this->per_page * ((int)$_GET['page'] - 1) : 0;
+		$offset     = $this->controller->in->get('page') > 0 ? $this->per_page * ((int)$this->controller->in->get('page') - 1) : 0;
 		$intPerPage = $this->per_page;
-		$images        = $content_image->q(
+		$images     = $content_image->q(
 			"SELECT SQL_CALC_FOUND_ROWS *
 			FROM content_image
 			ORDER BY date_added DESC, ID DESC
-			LIMIT {$offset},{$intPerPage}", "array"
+			LIMIT $offset , $intPerPage", "array"
 		);
 
-		$total_count = $content_image->count();
-		$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+		$total_count  = $content_image->count();
+		$intPage      = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 0;
 		$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
-		$objPaginator->url='#image/list_images/';
+//		$objPaginator->url='#image/list_images/';
 
 		if($images) {
 			foreach($images as &$item) {
@@ -419,15 +418,15 @@ class Image extends CMS\ContentModule
 	}
 
 
-	public function edit_image($id){
-		$id = intval($id);
+	public function edit_image($id) {
+		$id            = intval($id);
 		$content_image = $this->getImageModel();
-		$image = $content_image->obj($id);
+		$image         = $content_image->obj($id);
 		$image->source = $content_image->getOriginalURL($image);
 		$this->assign('image', $image);
 
 		$content_menu = $this->model('Menu');
-		$pages = $content_menu->arr("(elementID='$id' OR ID='{$image->parentID}') AND module='image'");
+		$pages        = $content_menu->arr("(elementID='$id' OR ID='{$image->parentID}') AND module='image'");
 		$this->assign('pages', $pages);
 
 
@@ -435,9 +434,9 @@ class Image extends CMS\ContentModule
 	}
 
 
-	public function delete_image($id){
+	public function delete_image($id) {
 		$this->deleteByID($id);
-		$this->controller->redirect('#image/list_images/&page='.$_GET['page']);
+		$this->controller->redirect('#image/list_images/&page=' . $this->controller->in->get('page'));
 	}
 
 
@@ -457,26 +456,32 @@ class Image extends CMS\ContentModule
 
 		$recElement->filename       = end(explode('/', $strURL));
 		$recElement->date_added     = 'NOW()';
+		$recElement->image_format   = $strExt;
 		$recElement->thumbnail_size = $this->config('thumbnail_size'); //100;
 		$recElement->thumbnail_type = $this->config('thumbnail_type'); //'square';
 		$recElement->ID             = $content_image->insert($recElement);
 
 		$filename = $recElement->ID . '.' . $recElement->image_format;
 
+
 		//Add file to res folder
 		$strOriginalFile = $this->getOriginalFilePath($filename);
 
-		$arrImageData = getimagesize($strOriginalFile);
-
-		$recElement->image_format = $strExt; //$ArrImageTypes[$arrImageData[2]];
-		$recElement->width        = $arrImageData[0];
-		$recElement->height       = $arrImageData[1];
-		$content_image->update($recElement);
-
-
-		$copied = copy($strURL, $strOriginalFile);
+		try {
+			$copied = copy($strURL, $strOriginalFile);
+		} catch(\Exception $e) {
+			$copied = false;
+		}
 
 		if($copied) {
+
+			$arrImageData = getimagesize($strOriginalFile);
+
+			$recElement->image_format = $strExt; //$ArrImageTypes[$arrImageData[2]];
+			$recElement->width        = $arrImageData[0];
+			$recElement->height       = $arrImageData[1];
+			$content_image->update($recElement);
+
 			$this->resizeImage($filename, $recElement->thumbnail_size, $arrExtraSizes);
 
 			if($this->config('amazon_key') && $this->copyToCloud($filename, $arrExtraSizes)) {
@@ -512,8 +517,8 @@ class Image extends CMS\ContentModule
 		$strSquareFile   = $this->getSquareFilePath($filename);
 		$strInlineFile   = $this->getInlineFilePath($filename);
 
-		if(!is_file($strOriginalFile)){
-			throw new \Exception('Original image was not found for file '.$filename);
+		if(!is_file($strOriginalFile)) {
+			throw new \Exception('Original image was not found for file ' . $filename);
 		}
 
 		$oConvertor = new \Gratheon\CMS\Model\ImageConvertor();
@@ -715,7 +720,7 @@ class Image extends CMS\ContentModule
 
 		require_once('vendor/tot-ra/feedcreator/feedcreator.class.php');
 
-		$langID = (int)$_GET['lang'];
+		$langID = (int)$this->controller->in->get('lang');
 		if(!$langID) {
 			$langID = $sys_languages->int("is_default=1", 'ID');
 		}
@@ -768,9 +773,9 @@ class Image extends CMS\ContentModule
 		$content_image = $this->model('Image');
 
 		$id     = (int)current(explode('.', $this->controller->in->URI[5]));
-		$width  = (int)$_GET['w'] ? (int)$_GET['w'] : 65;
-		$height = (int)$_GET['h'] ? (int)$_GET['h'] : 65;
-		$strSrc = $_GET['src'] == 'square' ? 'square' : 'original';
+		$width  = (int)$this->controller->in->get('w') ? (int)$this->controller->in->get('w') : 65;
+		$height = (int)$this->controller->in->get('h') ? (int)$this->controller->in->get('h') : 65;
+		$strSrc = $this->controller->in->get('src') == 'square' ? 'square' : 'original';
 
 		if(!$id) {
 			die('no image id set');
@@ -778,7 +783,7 @@ class Image extends CMS\ContentModule
 
 		$this->controller->MIME = 'image/jpeg';
 
-		//$id = $_GET['id'];
+		//$id = $this->controller->in->get('id');
 		$objImage    = $content_image->obj($id);
 		$link_square = sys_root . 'res/image/' . $strSrc . '/' . $objImage->ID . '.' . $objImage->image_format;
 
@@ -802,12 +807,11 @@ class Image extends CMS\ContentModule
 
 		$images = $content_menu->q(
 			"SELECT t1.title, t2.ID,t2.float_position,t2.image_format,t2.thumbnail_type, t1.ID parentID, t2.cloud_storage
-			FROM content_menu as t1
-			LEFT JOIN content_image as t2 ON t1.ID=t2.parentID
+			FROM content_menu AS t1
+			LEFT JOIN content_image AS t2 ON t1.ID=t2.parentID
 			WHERE t2.float_position IN ('bottom','right') AND t1.parentID='$parentID' AND t1.module='image'
 			ORDER BY t1.position"
 		);
-
 
 		$return = array();
 		if($images) {

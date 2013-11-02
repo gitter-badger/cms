@@ -10,7 +10,7 @@
 </div>
 
 {if !$is_translateable && $recMenu->ID}
-	<div class="control-group" style="margin-top:10px;">
+	<div class="control-group">
 		<label class="control-label">{t code='translated_pages'}Translated pages{/t}</label>
 
 		<div class="controls">

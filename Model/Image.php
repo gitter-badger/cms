@@ -99,7 +99,6 @@ class Image extends \Gratheon\Core\Model {
         return move_uploaded_file($strFileTmpName, $strOriginalFile);
     }
 
-
 	public static function getMimeContentType($filename) {
 
         $mime_types = array(
@@ -172,4 +171,23 @@ class Image extends \Gratheon\Core\Model {
             return 'application/octet-stream';
         }
     }
+
+	public function getLastImages($count) {
+		$images        = $this->q(
+			"SELECT SQL_CALC_FOUND_ROWS *
+					FROM content_image
+					ORDER BY date_added DESC, ID DESC
+					LIMIT  $count", "array"
+		);
+
+		//		$objPaginator->url='#image/list_images/';
+
+		if($images) {
+			foreach($images as &$item) {
+				$item->image_link = $this->getURL($item, 'square');
+			}
+		}
+		return $images;
+	}
+
 }

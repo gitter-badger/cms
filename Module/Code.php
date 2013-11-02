@@ -11,11 +11,11 @@ use Gratheon\Core;
 class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\Behaviour\Embeddable {
 	public $name = 'code';
 
-	protected $supportedLanguages =  array(
-				'shell', 'php', 'java', 'javascript', 'css', 'mysql', 'clojure', 'coffeescript', 'erlang', 'go',
-				'groovy', 'haskell', 'less', 'lua', 'pascal', 'perl', 'plsql', 'python', 'rpm',
-				'ruby', 'scheme', 'smalltalk', 'assign', 'sparql', 'yaml',
-			);
+	protected $supportedLanguages = array(
+		'shell', 'php', 'java', 'javascript', 'css', 'mysql', 'clojure', 'coffeescript', 'erlang', 'go',
+		'groovy', 'haskell', 'less', 'lua', 'pascal', 'perl', 'plsql', 'python', 'rpm',
+		'ruby', 'scheme', 'smalltalk', 'assign', 'sparql', 'yaml',
+	);
 
 
 	public function edit($recMenu = null) {
@@ -24,16 +24,16 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$parentID = $recMenu->ID;
 		if($parentID) {
 			$recElement = $content_code->obj('parentID=' . $parentID);
-			if(!$recElement){
+			if(!$recElement) {
 				throw new \Exception('Code entry for editing was not found');
 			}
 
 			if($recElement->language == 'php') {
-                $recElement->content = "<?php\n".$recElement->content;
+				$recElement->content = "<?php\n" . $recElement->content;
 			}
 
-            $this->assign('recElement', $recElement);
-        }
+			$this->assign('recElement', $recElement);
+		}
 
 		$this->assign('supportedLanguages', $this->supportedLanguages);
 
@@ -63,14 +63,14 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 
 	public function update($parentID) {
-		$content_code = $this->model('content_code');
-		$recElement   = $content_code->obj('parentID=' . $parentID);
+		$content_code         = $this->model('content_code');
+		$recElement           = $content_code->obj('parentID=' . $parentID);
 		$recElement->language = $this->controller->in->post['language'];
-		$recElement->escape('content', $this->controller->in->post['content']);
+		$recElement->content  = trim($this->controller->in->post['content']);
 
 
 		if($recElement->language == 'php') {
-			$recElement->content = substr($recElement->content, 5);
+			$recElement->content = substr($recElement->content, 7);
 		}
 
 		$content_code->update($recElement);
@@ -83,8 +83,10 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$recElement           = new \Gratheon\Core\Record();
 		$recElement->parentID = $parentID;
 		$recElement->language = $this->controller->in->post['language'];
-		$recElement->escape('content', $this->controller->in->post['content']);
-
+		$recElement->content  = trim($this->controller->in->post['content']);
+		if($recElement->language == 'php' && substr($recElement->content, 2, 3) != 'php') {
+			$recElement->content = substr($recElement->content, 7);
+		}
 		$content_code->insert($recElement);
 	}
 
@@ -98,7 +100,7 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 	//Embeddable
 	public function getPlaceholder($menu) {
 		$parentID = $menu->ID;
-		$ID = $menu->elementID;
+		$ID       = $menu->elementID;
 
 		$content_code = $this->model('content_code');
 		$record       = $content_code->obj('parentID=' . $parentID);
@@ -108,7 +110,7 @@ class Code extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 	public function decodeEmbeddable($menu) {
 		$parentID = $menu->ID;
-		$ID = $menu->elementID;
+		$ID       = $menu->elementID;
 
 		$content_code = $this->model('content_code');
 		$record       = $content_code->obj("parentID=" . $parentID);

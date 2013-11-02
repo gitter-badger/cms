@@ -24,9 +24,9 @@
 				<li><a href="{$sys_url}"><i class="icon-white icon-home"></i></a></li>
 				<li><a href="{$sys_url}content/dashboard/" rel="dashboard" class="ajax">{t code="overview"}{/t}</a></li>
 
-				<li><a href="#settings/list_translations/">{t}Translations{/t}</a></li>
-				<li><a href="#settings/view_settings/">{t}Configuration{/t}</a></li>
+
 				<li><a href="#settings/list_users/">{t}Users{/t}</a></li>
+				<li><a href="#tag/list_tags/">{t}Tags{/t}</a></li>
 
 			</ul>
 
@@ -35,6 +35,9 @@
 			</form>
 
 			<ul class="nav pull-right">
+				<li><a href="#translation/list_translations/">{t}Translations{/t}</a></li>
+				<li><a href="#settings/view_settings/">{t}Configuration{/t}</a></li>
+				<li><a href="#install/updates/">{t}Update{/t}</a></li>
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">{t}Settings{/t}<b class="caret"></b></a>
 					<ul class="dropdown-menu">
@@ -65,36 +68,38 @@
 
 
 <div id='content'>
-	<div id="notification" class="hidden"></div>
+	<div id="notification"></div>
 
 	<div id='content_area'></div>
 </div>
 
 <div id='panel' class="noselect">
-	<div class="navbar navbar-inverse">
-		<div class="navbar-inner">
-			<span style="padding-top:6px;display: inline-block;">{t}Structure{/t}</span>
+	{*<div class="navbar navbar-inverse">*}
+		{*<div class="navbar-inner">*}
+			{*<span style="padding-top:6px;display: inline-block;">{t code='structure'}{/t}</span>*}
 
-			<div class="btn-group pull-right">
-				<a class="btn btn-mini btn-primary" href="#"><i class="icon-page icon-white"></i> {t}Add{/t}</a>
-				<a class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
-				<ul class="dropdown-menu">
-					{foreach from=$arrModules key=key item=item}
-						<li>
-							<a href="#">
-								<img src="{$item.icon}" alt="{t code="module_`$item.ID`"}{/t}" data-module="{$item.ID}"/>
-								{$item.ID}
-							</a>
-						</li>
-					{/foreach}
-				</ul>
-			</div>
-		</div>
-	</div>
+			{*<div class="btn-group" style="float:right;">*}
+				{*<a class="btn btn-mini btn-primary" href="#add/article/1/rus/"><i class="icon-page icon-white"></i> {t}Add{/t}</a>*}
+				{*<a class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>*}
+				{*<ul class="dropdown-menu">*}
+					{*{foreach from=$arrModules key=key item=item}*}
+						{*<li>*}
+							{*<a href="#add/{$item.ID}/1/rus/">*}
+								{*<img src="{$item.icon}" alt="{t code="module_`$item.ID`"}{/t}" data-module="{$item.ID}"/>*}
+								{*{$item.ID}*}
+							{*</a>*}
+						{*</li>*}
+					{*{/foreach}*}
+				{*</ul>*}
+			{*</div>*}
+		{*</div>*}
+	{*</div>*}
 
 	<div style="direction:ltr;padding:8px 0;" class="well">
 
 		<ul class="nav nav-list" id="panel_list">
+
+			<li class="nav-header">{t code='structure'}{/t}</li>
 			<li id="content_menu">
 				<ul id="mainmenu">
 					<li id="node1" class="root">
@@ -104,17 +109,33 @@
 			</li>
 
 
-			<li class="nav-header">{t}Content by type{/t}</li>
-			<li class="">
-				<a rel="news/list_news" href="http://kurapov.name/content/call/news/list_news/&amp;static=1" class="ajax">{t}News{/t}</a>
-			</li>
-			<li class="">
-				<a rel="image/list_images" href="http://kurapov.name/content/call/image/list_images/&amp;static=1" class="ajax">{t}Images{/t}</a>
+			<li>
+				<div class="btn-group" style="margin: 5px auto 0;width: 104px;display: block;
+				}">
+					<a class="btn btn-mini btn-primary" href="#add/article/1/rus/"><i class="icon-page icon-white"></i> {t}Add{/t}</a>
+					<a class="btn btn-mini btn-primary dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						{foreach from=$arrModules key=key item=item}
+							<li>
+								<a href="#add/{$item.ID}/1/rus/">
+									<img src="{$item.icon}" alt="{t code="module_`$item.ID`"}{/t}" data-module="{$item.ID}"/>
+									{$item.ID}
+								</a>
+							</li>
+						{/foreach}
+					</ul>
+				</div>
 			</li>
 
-			<li class="">
-				<a rel="article/list_articles" href="http://kurapov.name/content/call/article/list_articles/&amp;static=1" class="ajax">{t}Articles{/t}</a>
-			</li>
+			<li class="nav-header">{t}Content by type{/t}</li>
+			<li><a rel="news/list_news" href="{$sys_url}content/call/news/list_news/&amp;static=1" class="ajax">{t}News{/t}</a></li>
+
+			<li><a rel="article/list_articles" href="{$sys_url}content/call/article/list_articles/&amp;static=1" class="ajax">{t}Articles{/t}</a></li>
+
+			<li><a rel="image/list_images" href="{$sys_url}content/call/image/list_images/&amp;static=1" class="ajax">{t}Images{/t}</a></li>
+
+			<li><a rel="file/list_files" href="{$sys_url}content/call/file/list_files/" class="ajax">{t}Files{/t}</a></li>
+
 
 			{foreach from=$arrModuleMenu item=module}
 				<li class="divider"></li>
@@ -127,6 +148,11 @@
 					{/foreach}
 				{/if}
 			{/foreach}
+
+			<li class="nav-header">File upload drop area</li>
+			<li id="upload_area" style="height: 80px;background-color: #dbdd73;border: 1px dashed gray;"></li>
+			<li class="nav-header">{t code='tags'}{/t}</li>
+			<li id="side_tag_list"></li>
 
 		</ul>
 	</div>
@@ -165,6 +191,7 @@
 	</li>
 	*}
 </ul>
+
 <ul id='context_menu' class="hidden"></ul>
 
 <div id="panel_resize"></div>

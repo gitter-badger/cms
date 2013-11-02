@@ -93,6 +93,7 @@ class Redirect extends \Gratheon\CMS\ContentModule {
         $objLink = $content_redirect->obj("parentID='$parentID'");
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
         if ($objLink->destination_type == 'URL') {
             $this->controller->redirect($objLink->URL);

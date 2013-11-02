@@ -41,7 +41,3 @@
 		</div>
 	</div>
 {/if}
-
-<div class="buttons clear">
-	<button><span>{t}Save{/t}</span></button>
-</div>

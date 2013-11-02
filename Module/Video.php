@@ -83,7 +83,7 @@ class Video extends \Gratheon\CMS\ContentModule
 		$content_external_video->update($recElement, 'parentID=' . $parentID);
 	}
 
-	function edit($recMenu = null) {
+	public function edit($recMenu = null) {
 
 		$content_external_video = $this->model($this->model_name);
 
@@ -119,12 +119,12 @@ class Video extends \Gratheon\CMS\ContentModule
 		}
 	}
 
-	function delete($parentID) {
+	public function delete($parentID) {
 		$content_external_video = $this->model($this->model_name);
 		$recElement             = $content_external_video->delete('parentID=' . $parentID);
 	}
 
-	function get_adminpanel_box_list() {
+	public function get_adminpanel_box_list() {
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
@@ -143,7 +143,7 @@ class Video extends \Gratheon\CMS\ContentModule
 	}
 
 	//Private methods
-	function getVideoParams($recElement) {
+	public function getVideoParams($recElement) {
 		$content_external_video = $this->model($this->model_name);
 
 		$recElement->FlashVars = '';
@@ -192,7 +192,7 @@ class Video extends \Gratheon\CMS\ContentModule
 
 	}
 
-	function getArticleData($parentID, $arrFoundEmbeddedIDs = array()) {
+	public function getArticleData($parentID, $arrFoundEmbeddedIDs = array()) {
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
@@ -216,7 +216,7 @@ class Video extends \Gratheon\CMS\ContentModule
 
 	//Public methods
 
-	function search_from_public($q) {
+	public function search_from_public($q) {
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
@@ -239,10 +239,10 @@ class Video extends \Gratheon\CMS\ContentModule
 		return $arrEnvelope;
 	}
 
-	function search_from_admin($q) {
+	public function search_from_admin($q) {
 	}
 
-	function list_video_block($pageID) {
+	public function list_video_block($pageID) {
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
@@ -270,7 +270,7 @@ class Video extends \Gratheon\CMS\ContentModule
 
 
 	//Public methods
-	function category_view(&$recEntry) {
+	public function category_view(&$recEntry) {
 		$content_external_video = $this->model($this->model_name);
 
 //		$this->add_css('video/video.css');

@@ -3,6 +3,10 @@ namespace Gratheon\Cms\Controller\Content;
 
 class Install extends \Gratheon\Core\Controller {
 
+	public function log($result){
+		echo "<div>".$result."</div>";
+	}
+
     function updates() {
         $sys_update = $this->model('sys_update');
 
@@ -14,7 +18,7 @@ class Install extends \Gratheon\Core\Controller {
 
         $dir = dir($pathToUpdates);
 
-		pre($dir);
+		echo "<div style='background-color:white'>";
 
         $tmpSync = new \Gratheon\CMS\Sync();
         if (!$tmpSync->existsTable('sys_update')) {
@@ -34,7 +38,7 @@ class Install extends \Gratheon\Core\Controller {
                 $ID = (int)$sID;
                 $exExecution = $sys_update->int($ID);
                 if (!$exExecution) {
-                    pre('Executing update #' . $ID);
+                    $this->log('Executing update #' . $ID);
                     //require_once($pathToUpdates . $file);
                     $strUpdateName = "\\Gratheon\\CMS\\Updates\\Step" . $sID;
 
@@ -42,7 +46,7 @@ class Install extends \Gratheon\Core\Controller {
                     $bSuccess = $objUpdate->process();
 
                     if ($objUpdate->bReloadNeeded) {
-                        pre("update #$ID requested window reload");
+						$this->log("update #$ID requested window reload");
                         echo "<script>window.location.reload();</script>";
                         exit();
                     }
@@ -52,16 +56,20 @@ class Install extends \Gratheon\Core\Controller {
                     }
                     else {
                         if ($objUpdate->bStopsUpgradeOnFailure) {
-                            pre("update #$ID failed critically, upgrade process halted");
+							$this->log("update #$ID failed critically, upgrade process halted");
+							$dir->close();
+							echo '</div>';
+							exit();
                         }
                         else {
-                            pre("update #$ID failed");
+							$this->log("update #$ID failed");
                         }
                     }
                 }
             }
         }
 
+		echo '</div>';
         $dir->close();
     }
 }

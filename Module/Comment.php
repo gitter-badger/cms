@@ -21,11 +21,15 @@ class Comment
         $this->assign('bHideContainer', true);
 
         $parentID = $recMenu->ID;
-        if ($parentID) {
+        if ($recMenu->elementID) {
+			$recElement = $content_comment->obj('ID=' . $recMenu->elementID);
+			$this->assign('recElement', $recElement);
+		}
+        elseif ($parentID) {
             $recElement = $content_comment->obj('parentID=' . $parentID);
-            $this->assign('recElement', $recElement);
-        }
-    }
+			$this->assign('recElement', $recElement);
+		}
+	}
 
     public function update($parentID) {
         $content_comment = $this->model('Comment');
@@ -64,17 +68,11 @@ class Comment
         $content_menu = $this->model('Menu');
 
         $objLastData['data'] = $content_comment->arr(
-            '1=1 ORDER BY m.date_added DESC', 13,
+            '1=1 ORDER BY m.date_added DESC LIMIT 13',
             '*,m.parentID as articleID',
-                $content_comment->table . ' as c LEFT JOIN ' .
-                        $content_menu->table . ' as m ON c.parentID=m.ID'
+            'content_comment as c LEFT JOIN ' .
+            'content_menu as m ON c.parentID=m.ID'
         );
-
-        if ($objLastData['data']) {
-            foreach ($objLastData['data'] as &$image) {
-                $image->link_delete = sys_url . content::NAME . '/call/comment/dashboard_delete/?ID=' . $image->ID;
-            }
-        }
 
         $objLastData['title'] = $this->translate('Comments');
         $objLastData['count'] = $content_comment->int("1=1", "COUNT(*)");
@@ -239,6 +237,7 @@ class Comment
 
     public function search_from_public($q) {
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
         $content_menu = $this->model('Menu');
         $content_comment = $this->model('Comment');
@@ -357,6 +356,7 @@ class Comment
         $content_menu = $this->model('Menu');
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
         $tree = new \Gratheon\CMS\Tree();
 
         $iLimit = $this->config('list_last_comment_count') ? $this->config('list_last_comment_count') : 9;
@@ -370,7 +370,7 @@ class Comment
             LEFT JOIN content_person as p ON u.personID = p.ID
             ');
 
-        $tree->strWhere = "module='comment' AND langID='$this->langID' AND ";
+         $tree->strWhere = "module='comment' AND langID='{$this->controller->langID}' AND ";
         if ($arrLastComments) {
             foreach ($arrLastComments as &$item) {
                 $item->content = strip_tags($item->content);
@@ -420,7 +420,7 @@ class Comment
 
         foreach ($arrComments as &$item) {
             $item->element = $content_comment->obj(
-                "c.parentID='".$item->ID."'",
+                "c.parentID='".$item->ID."' OR c.ID='".$item->elementID."'",
 
                 "c.*, ct.url u_url, p.firstname, u.email u_email, DATEDIFF(NOW(), c.date_added) as daysago,
 			    DATE_FORMAT(c.date_added,'%H:%i') as time_added,
@@ -452,7 +452,8 @@ class Comment
             $item->element->content = $content_comment->formatHTML($item->element->content);
         }
 
-        //pre($arrComments);
+//		echo '<pre>';
+//        print_r($arrComments);
         return $arrComments;
     }
 

@@ -132,8 +132,10 @@ class Tree extends \Gratheon\Core\Model
 
     public function buildLevel($parentID)
     {
-        $ret = $this->arr($this->strWhere . " t1.parentID='$parentID' ORDER BY " . $this->strOrder,
-                             $this->strSelect, $this->table . ' t1 ' . $this->strFrom);
+        $ret = $this->arr(
+			$this->strWhere . " t1.parentID='$parentID'
+			ORDER BY " . $this->strOrder,
+            $this->strSelect, $this->table . ' t1 ' . $this->strFrom);
 
         $limits = $this->obj("parentID='$parentID'", "MAX(position) as mx, MIN(position) as mn");
         if (is_array($ret))
@@ -155,7 +157,7 @@ class Tree extends \Gratheon\Core\Model
     {
         $arrlevels = array();
         foreach ($arrselected as $ID){
-            if(Tree::$arrParentIDCache[$ID]){
+            if(isset(Tree::$arrParentIDCache[$ID]) && Tree::$arrParentIDCache[$ID]){
                 $recParent = new \stdClass();
                 $recParent->title = Tree::$arrParentIDCache[$ID]->title;
                 $recParent->ID = Tree::$arrParentIDCache[$ID]->ID;
@@ -189,7 +191,7 @@ class Tree extends \Gratheon\Core\Model
 
         if (!isset(Tree::$arrParentIDCache[$selectedID])) {
             $intParentID = $this->int("ID='$selectedID'", "parentID");
-            if (count(Tree::$arrParentIDCache[$selectedID]) < 1000) {
+            if (isset(Tree::$arrParentIDCache[$selectedID]) && count(Tree::$arrParentIDCache[$selectedID]) < 1000) {
                 Tree::$arrParentIDCache[$selectedID] = $intParentID;
             }
         }

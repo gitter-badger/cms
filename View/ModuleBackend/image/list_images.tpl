@@ -1,5 +1,8 @@
+<div style="background-color: white;">
+<h1>{t}Images{/t}</h1>
+
 {if $images}
-	<ul class="thumbnails">
+	<ul class="thumbnails" style="background-color: white;">
 		{foreach from=$images item=image}
 			<li class="span2">
 				<div class="thumbnail" style="height: 80px; overflow: hidden;">
@@ -13,5 +16,6 @@
 			</li>
 		{/foreach}
 	</ul>
-	{include file="helpers/paginator.tpl"}
+	{include file="helpers/paginator.tpl" ajax_path='image/list_images'}
 {/if}
+</div>

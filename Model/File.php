@@ -27,6 +27,18 @@ class File extends \Gratheon\Core\Model {
 		return sys_url . 'res/'.$subpath;
 	}
 
+	public function getLocalURL($file) {
+		$subpath = 'file/' . $file->ID . '.' . $file->ext;
+
+		return sys_url . 'res/'.$subpath;
+	}
+
+	public function localFileExists($file) {
+		$subpath = 'file/' . $file->ID . '.' . $file->ext;
+
+		return file_exists(sys_root . 'res/'.$subpath);
+	}
+
 
 	public function setAmazonData($bucket, $host, $key = '', $secret = '') {
 		if($key) {

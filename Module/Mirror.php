@@ -8,9 +8,9 @@ use Gratheon\CMS;
 
 class Mirror extends \Gratheon\CMS\ContentModule {
 
-    var $models = array('content_menu');
-
-    var $name = 'mirror';
+    public $models = array('content_menu');
+    public $name = 'mirror';
+	public $content_template;
 
     function edit($recMenu = null) {
         $tree = new \Gratheon\CMS\Tree;
@@ -56,6 +56,7 @@ class Mirror extends \Gratheon\CMS\ContentModule {
 
             $this->controller->loadModule($objElement->module, function($objModule) use ($objElement, $objMirror, $parentID, &$recEntry) {
 				$menu = new \Gratheon\CMS\Menu();
+				$menu->loadLanguageCount();
                 $objModule->init($objElement->method);
 
                 if (method_exists($objModule, 'category_view')) {
@@ -77,8 +78,10 @@ class Mirror extends \Gratheon\CMS\ContentModule {
         $objElement = $content_menu->obj($objMirror->elementID);
         $module = $this;
 
+
+
         if ($objElement->module) {
-            $objElement = $this->controller->loadModule($objElement->module, function($objModule) use($objElement, $objMirror, $module, &$controller){
+			$objElement2 = $this->controller->loadModule($objElement->module, function($objModule) use($objElement, $objMirror, $module, &$controller){
                 $objModule->init($objElement->method);
 
                 if (method_exists($objModule, $objElement->method)) {
@@ -86,24 +89,31 @@ class Mirror extends \Gratheon\CMS\ContentModule {
                     $module->add_js($objModule->name . '/' . $objElement->method . '.js');
                     $module->add_css($objModule->name . '/' . $objElement->method . '.css');
 
-                    $objElement = $objModule->{$objElement->method}($objElement->ID);
+//                    $objElement2 =
+					$objModule->{$objElement->method}($objElement->ID);
 
-                    $objElement->title = $objMirror->title;
-
-                    return $objElement;
+//                    $objElement2->title = $objMirror->title;
+//                    return $objElement2;
                 }
             });
 
-            $this->assign('element', $objElement);
+//print_r($objElement2);
 
-            if (!$objElement->content_template) {
-                $this->content_template = $objElement->module . '/' . $objElement->method . '.tpl';
-            }
-            else {
-                $this->content_template = $objElement->module . '/' . $objElement->content_template;
-            }
-
-            return $objElement;
+//
+            $this->assign('element', $objElement2);
+//
+			$this->content_template = $objElement->module . '/' . $objElement->method . '.tpl';
+//			if (!isset($objElement->content_template)) {
+//            }
+//            else
+//			{
+//                $this->content_template = $objElement->module . '/' . $objElement->content_template;
+//            }
+//
+//            return $objElement;
         }
+
+//		$this->content_template = $objElement->module . '/' . $objElement->method . '.tpl';
+//		print_r($this->content_template);
     }
 }

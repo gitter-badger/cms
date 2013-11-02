@@ -9,7 +9,21 @@ namespace Gratheon\CMS\Model;
 class Article extends \Gratheon\Core\Model {
 	public $imagemodel;
 
-	use ModelSingleton;
+//	use ModelSingleton;
+	private static $instance;
+
+
+	public static function singleton() {
+		if(!isset(self::$instance)) {
+			$c              = __CLASS__;
+			self::$instance = new $c;
+		}
+		return self::$instance;
+	}
+
+	final public function __clone() {
+		trigger_error('Cloning not allowed on a singleton object', E_USER_ERROR);
+	}
 
 	final function __construct($test=false) {
 		if(!$test)
@@ -141,6 +155,7 @@ class Article extends \Gratheon\Core\Model {
 		$this->lastListCount = $this->count();
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 		if($arrArticles) {
 			foreach($arrArticles as &$item) {
 				$item->link_view = $menu->getPageURL($item->ID) . '/';

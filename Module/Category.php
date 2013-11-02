@@ -143,12 +143,11 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 		//Query
 		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t1.*,DATEDIFF(NOW(),t1.date_added) as diff,DATE_FORMAT(t1.date_added,'%d.%m %H:%i') as date_added2
-				FROM " . $content_menu->table . " t1
-				LEFT JOIN " . $content_menu_rights->table . " t2 ON t2.pageID=t1.ID
-				WHERE 1=1
-					$strFilter
+				FROM content_menu t1
+				LEFT JOIN content_menu_rights t2 ON t2.pageID=t1.ID
+				WHERE 1=1";
 
-				$strOrder ";
+		$strSQL .= $strFilter . ' ' . $strOrder;
 
 		$arrList = $content_menu->q($strSQL);
 
@@ -177,7 +176,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 						$objModule->{$item_view}($item);
 					}
 
-					if(!$item->template) {
+					if(!isset($item->template)) {
 						$item->template = 'ModuleFrontend/' . $objModule->name . '/' . $item_view . '.tpl';
 					}
 					/*
@@ -223,8 +222,9 @@ class Category extends \Gratheon\CMS\ContentModule {
 		$arrList = $content_menu->q($strSQL);
 
 		$menu = new \Gratheon\CMS\Menu();
-		if($arrList){
-			foreach($arrList as &$item){
+		$menu->loadLanguageCount();
+		if($arrList) {
+			foreach($arrList as &$item) {
 				$item->url = $menu->getPageURL($item->ID);
 			}
 		}
@@ -239,8 +239,11 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 
 	function image_list($parentID) {
+
+		/** @var \Gratheon\CMS\Model\Image $content_image */
 		$content_category = $this->model('content_category');
 		$content_menu     = $this->model('content_menu');
+		$content_image    = $this->model('Image');
 
 		$this->add_js('/ext/jquery/jquery.hotkeys.js');
 		$this->add_js($this->name . '/' . __FUNCTION__ . '.js');
@@ -278,12 +281,23 @@ class Category extends \Gratheon\CMS\ContentModule {
 		}
 
 		//Query
-		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t1.*,DATEDIFF(NOW(),t1.date_added) as diff,DATE_FORMAT(t1.date_added,'%d.%m %H:%i') as date_added2
+		$strSQL = "SELECT SQL_CALC_FOUND_ROWS t3.*,
+					DATEDIFF(NOW(),t1.date_added) as diff,
+					DATE_FORMAT(t1.date_added,'%d.%m %H:%i') as date_added2
 				FROM content_menu t1
 				LEFT JOIN content_menu_rights t2 ON t2.pageID=t1.ID
+				INNER JOIN content_image t3 ON t3.ID=t1.elementID
 				WHERE 1=1 $strFilter $strOrder ";
 
 		$arrList = $content_menu->q($strSQL);
+
+		if($arrList) {
+			foreach($arrList as &$item) {
+				$item->url_square = $content_image->getSquareURL($item);
+				$item->url_original = $content_image->getOriginalURL($item);
+				$item->url_rectangle = $content_image->getRectangleURL($item);
+			}
+		}
 
 		//Paginator
 		if($arrCategory->elements_per_page) {
@@ -320,8 +334,8 @@ class Category extends \Gratheon\CMS\ContentModule {
 
 		// Load RSS module
 		require_once('vendor/tot-ra/feedcreator/feedcreator.class.php');
-		$rss = new \UniversalFeedCreator();
-		$rss->encoding='UTF-8';
+		$rss           = new \UniversalFeedCreator();
+		$rss->encoding = 'UTF-8';
 
 		// Find category
 		$arrCategory = $content_category->obj('parentID=' . $parentID);
@@ -346,14 +360,16 @@ class Category extends \Gratheon\CMS\ContentModule {
 		}
 
 		$rss->title                     = $content_menu->int("ID=" . $parentID, 'title');
-		$rss->description               = $rss->title; //"Personal Blog";
+		$rss->description               = ''; //$rss->title; //"Personal Blog";
 		$rss->descriptionTruncSize      = 500;
 		$rss->descriptionHtmlSyndicated = true;
 		$rss->link                      = sys_url;
-		$rss->image->title              = $rss->title;
-		$rss->image->link               = sys_url;
-		$rss->image->url                = sys_url . 'res/avatar.jpg';
-		$rss->syndicationURL            = sys_url . substr($_SERVER["PHP_SELF"],1);
+
+		$rss->image          = new \stdClass;
+		$rss->image->title   = ''; //$rss->title;
+		$rss->image->link    = sys_url;
+		$rss->image->url     = sys_url . 'res/avatar.jpg';
+		$rss->syndicationURL = sys_url . substr($_SERVER["PHP_SELF"], 1);
 
 		//Query all images
 		//That have parent article viewable
@@ -388,6 +404,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 			use (&$item, $content_menu, &$rss, $sys_tags, $content_tags, $content_image) {
 
 				$menu = new \Gratheon\CMS\Menu();
+				$menu->loadLanguageCount();
 
 				if(method_exists($objModule, 'category_view')) {
 					$objModule->category_view($item);
@@ -403,7 +420,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 					$recEntry->images       = $item->images;
 					$recEntry->description  = $item->element->content; //$data->short;
 
-					/** @var \Gratheon\CMS\Model\Image $content_image*/
+					/** @var \Gratheon\CMS\Model\Image $content_image */
 					foreach((array)$item->images as $image) {
 						$recEntry->description .= '<a href="' . $content_image->getURL($image, 'original', false) . '"><img src="' . $content_image->getURL($image, 'square', false) . '" alt="' . $image->title . '"/></a>';
 					}

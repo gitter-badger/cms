@@ -11,8 +11,7 @@ use Gratheon\Core;
 class Article
 	extends \Gratheon\CMS\ContentModule
 	implements \Gratheon\CMS\Module\Behaviour\Searchable,
-	\Gratheon\CMS\Module\Behaviour\VisibleOnDashboard
-{
+	\Gratheon\CMS\Module\Behaviour\VisibleOnDashboard {
 
 	public $name = 'article';
 
@@ -33,8 +32,8 @@ class Article
 	public function edit($recMenu = null) {
 
 		/** @var \Gratheon\CMS\Model\Article $content_article */
-		$content_article           = $this->model('Article');
-		$content_article_autodraft = $this->model('ArticleAutodraft');
+		$content_article             = $this->model('Article');
+		$content_article_autodraft   = $this->model('ArticleAutodraft');
 		$content_article->imagemodel = $this->model('Image');
 		$this->setAmazon($content_article->imagemodel);
 
@@ -48,18 +47,18 @@ class Article
 			//Inline images search and replace for edit mode
 			$module              = $this;
 			$recElement->content = $content_article->decodeImages($recElement->content, false, false,
-				function($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating) use ($module) {
-				return $module->decodeInlineImage($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating);
-			});
+				function ($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating) use ($module) {
+					return $module->decodeInlineImage($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating);
+				});
 
 
 			$controller = $this->controller;
 
 			$recElement->content = $content_article->decodeEmbeddableForAdmin(
 				$recElement->content,
-				function($module, $ID, $recEmbeddedElement) use ($controller) {
+				function ($module, $ID, $recEmbeddedElement) use ($controller) {
 					/** @var \Gratheon\Core\Controller $controller */
-					return $controller->loadModule($module, function($objModule) use ($ID, $recEmbeddedElement) {
+					return $controller->loadModule($module, function ($objModule) use ($ID, $recEmbeddedElement) {
 						/** @var \Gratheon\CMS\Module\Behaviour\Embeddable $objModule */
 						return $objModule->getPlaceholder($recEmbeddedElement);
 					});
@@ -93,7 +92,7 @@ class Article
 		}
 
 		$this->assign('arrExtraTabs', array(
-			'semantic'    => array(
+			'semantic' => array(
 				'title'    => 'Semantics',
 				'template' => 'ModuleBackend/article/' . __FUNCTION__ . '.tab_semantic.tpl'
 			),
@@ -120,6 +119,7 @@ class Article
 
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$oFilter = new \Gratheon\Core\TextFilter();
 
@@ -131,11 +131,14 @@ class Article
 			return false;
 		}
 
-		if(strlen($this->controller->in->post['article_content']) > 0 && $recElement) {
+		if($recElement) {
 			//delete all drafts
 			$content_article_autodraft->delete("nodeID=" . $parentID);
 
-			$recElement->content       = stripslashes($this->controller->in->post['article_content']);
+			$recElement->content = stripslashes($this->controller->in->post['article_content']);
+			if(strlen($recElement->content) == 0) {
+				$recElement->content = '<p></p>';
+			}
 			$recElement->content_index = $oFilter->convert_html_to_text($recElement->content);
 			$recElement->content       = $content_article->encodeImages($recElement->content, $parentID);
 			$recElement->content       = $content_article->encodeEmbeddables($recElement->content, $parentID);
@@ -168,7 +171,7 @@ class Article
 
 				/** @var $objExportService LivejournalService */
 				$objExportService     = $content_news->getServiceObject('livejournal');
-				$arrExportSyncAccount = (array)$sys_sync_account->obj("service='livejournal'", "*, DECODE(`password`,'".\SiteConfig::db_encrypt_salt."') decrypted_password");
+				$arrExportSyncAccount = (array)$sys_sync_account->obj("service='livejournal'", "*, DECODE(`password`,'" . \SiteConfig::db_encrypt_salt . "') decrypted_password");
 				$objExportService->postMessage($strContent, $arrExportSyncAccount, $recMenu->title);
 			}
 
@@ -205,7 +208,7 @@ class Article
 
 
 	public function insert($parentID) {
-		/** @var \Gratheon\CMS\Model\Article $content_article*/
+		/** @var \Gratheon\CMS\Model\Article $content_article */
 		$content_article           = $this->model('Article');
 		$content_article_autodraft = $this->model('ArticleAutodraft');
 		$content_menu              = $this->model('Menu');
@@ -213,7 +216,7 @@ class Article
 		$content_article->imagemodel = $this->model('Image');
 		$this->setAmazon($content_article->imagemodel);
 
-		$oFilter                   = new \Gratheon\Core\TextFilter();
+		$oFilter = new \Gratheon\Core\TextFilter();
 
 		if($this->controller->in->post['method'] && $this->controller->in->post['method'] != 'front_view') {
 			return false;
@@ -365,33 +368,33 @@ class Article
 
 		//Filter on top
 		$strFilter = '1=1';
-		if($this->controller->in->request['date_from']) {
-			$_SESSION[$this->name][$strFunction]['date_from'] = $this->controller->in->request['date_from'];
-			$arrDate                                          = explode('.', $this->controller->in->request['date_from']);
-			$strFromDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-		}
-		elseif($_SESSION[$this->name][$strFunction]['date_from']) {
-			$arrDate     = explode('.', $_SESSION[$this->name][$strFunction]['date_from']);
-			$strFromDate = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-		}
+//		if($this->controller->in->request['date_from']) {
+//			$_SESSION[$this->name][$strFunction]['date_from'] = $this->controller->in->request['date_from'];
+//			$arrDate                                          = explode('.', $this->controller->in->request['date_from']);
+//			$strFromDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
+//		}
+//		elseif($_SESSION[$this->name][$strFunction]['date_from']) {
+//			$arrDate     = explode('.', $_SESSION[$this->name][$strFunction]['date_from']);
+//			$strFromDate = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
+//		}
 
-		if($strFromDate) {
-			$strFilter .= " AND t1.date_added>='$strFromDate 00:00:00'";
-		}
+//		if($strFromDate) {
+//			$strFilter .= " AND t1.date_added>='$strFromDate 00:00:00'";
+//		}
 
-		if($this->controller->in->request['date_to']) {
-			$_SESSION[$this->name][$strFunction]['date_to'] = $this->controller->in->request['date_to'];
-			$arrDate                                        = explode('.', $this->controller->in->request['date_to']);
-			$strToDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-		}
-		elseif($_SESSION[$this->name][$strFunction]['date_to']) {
-			$arrDate   = explode('.', $_SESSION[$this->name][$strFunction]['date_to']);
-			$strToDate = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-		}
+//		if($this->controller->in->request['date_to']) {
+//			$_SESSION[$this->name][$strFunction]['date_to'] = $this->controller->in->request['date_to'];
+//			$arrDate                                        = explode('.', $this->controller->in->request['date_to']);
+//			$strToDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
+//		}
+//		elseif($_SESSION[$this->name][$strFunction]['date_to']) {
+//			$arrDate   = explode('.', $_SESSION[$this->name][$strFunction]['date_to']);
+//			$strToDate = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
+//		}
 
-		if($strToDate) {
-			$strFilter .= " AND t1.date_added<='$strToDate 23:59:59'";
-		}
+//		if($strToDate) {
+//			$strFilter .= " AND t1.date_added<='$strToDate 23:59:59'";
+//		}
 
 		$content_article = $this->model('Article');
 
@@ -399,9 +402,8 @@ class Article
 
 		//query block
 		$arrList = $content_article->q(
-			"SELECT SQL_CALC_FOUND_ROWS DATE_FORMAT(t1.date_added,'%d.%m.%Y %H:%i') added_time_formatted, t2.title, t1.ID
+			"SELECT SQL_CALC_FOUND_ROWS DATE_FORMAT(t1.date_added,'%d.%m.%Y %H:%i') added_time_formatted, t1.title, t1.ID
 			FROM content_article t1
-			LEFT JOIN content_menu t2 ON t2.id=t1.parentID
 
 			WHERE $strFilter
 			ORDER BY t1.date_added DESC
@@ -412,15 +414,17 @@ class Article
 
 		$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
 
+		if($arrList){
 		foreach($arrList as &$objItem) {
 			$objItem->link_edit   = sys_url . 'content/call/' . $this->name . '/edit_article/?id=' . $objItem->ID;
 			$objItem->link_delete = sys_url . 'content/call/' . $this->name . '/delete_article/?id=' . $objItem->ID . "&page=" . $intPage;
+		}
 		}
 
 		#Create page navigation for first page
 		//$intPage=isset($_GET['page'])? (int)$_GET['page']:0;
 
-		$this->assign('title', $this->translate('Articles') . ' (' . $total_count . ')');
+		//$this->assign('title', $this->translate('Articles') . ' (' . $total_count . ')');
 		$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
 
 		$this->assign('objPaginator', $objPaginator);
@@ -437,7 +441,42 @@ class Article
 		return $this->controller->view('ModuleBackend/' . $this->name . '/' . __FUNCTION__ . '.tpl');
 	}
 
-	public function setAmazon(&$content_image){
+
+	public function edit_article() {
+		/** @var \Gratheon\CMS\Model\Article $content_article */
+		$content_article             = $this->model('Article');
+		$content_article->imagemodel = $this->model('Image');
+		$this->setAmazon($content_article->imagemodel);
+
+		//$content_article->imagemodel
+
+		$articleID = $this->controller->in->get('id');
+
+		if($_POST){
+			$recElement = new \stdClass();;
+			$recElement->title = stripslashes($this->controller->in->post['title']);
+			$recElement->content = stripslashes($this->controller->in->post['content']);
+			$recElement->date_changed = 'NOW()';
+
+			$content_article->update($recElement, "ID='$articleID'");
+		}
+
+		if($articleID) {
+			$recElement = $content_article->obj("ID='$articleID'");
+
+			$recElement->content = str_replace(array('&lt;', '&gt;'), array('&amp;lt;', '&amp;gt;'), $recElement->content);
+
+			$this->assign('recElement', $recElement);
+		}
+
+		$content_menu = $this->model('Menu');
+		$pages = $content_menu->arr("(elementID='$articleID' OR ID='{$recElement->parentID}') AND module='article'");
+		$this->assign('pages', $pages);
+		$this->assign('link_save', sys_url.'/content/call/article/edit_article/?id='.$articleID);
+	}
+
+
+	public function setAmazon(&$content_image) {
 		if($this->config('amazon_key', 'Image')) {
 			$content_image->setAmazonData(
 				$this->config('amazon_bucket', 'Image'),
@@ -448,9 +487,11 @@ class Article
 		}
 	}
 
+
 	//Private methods
 	public function get_article($parentID) {
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 		$user = $this->controller->user;
 
 		if(!$parentID) {
@@ -468,7 +509,6 @@ class Article
 		$this->setAmazon($content_image);
 
 		$content_article->imagemodel = $content_image;
-
 
 
 		$content_menu_rights = $this->model('content_menu_rights');
@@ -509,16 +549,17 @@ class Article
 			$arrFoundEmbeddedIDs = array();
 
 
+			$strWhere                   = '';
 			$controller                 = $this->controller;
 			$recEntry->element->content = $content_article->decodeEmbeddablesForPublic(
 				$recEntry->element->content,
 
-				function($module, $recElement) use ($controller, &$arrFoundEmbeddedIDs) {
+				function ($module, $recElement) use ($controller, &$arrFoundEmbeddedIDs) {
 					/** @var \Gratheon\Core\Controller $controller */
-					return $controller->loadModule($module, function($objModule) use ($recElement, &$arrFoundEmbeddedIDs) {
+					return $controller->loadModule($module, function ($objModule) use ($recElement, &$arrFoundEmbeddedIDs) {
 						$arrFoundEmbeddedIDs[] = $recElement->ID;
 
-						/**@var \Gratheon\CMS\Module\Behaviour\Embeddable $objModule*/
+						/**@var \Gratheon\CMS\Module\Behaviour\Embeddable $objModule */
 						return $objModule->decodeEmbeddable($recElement);
 					});
 				}
@@ -535,14 +576,14 @@ class Article
 
 			$self = $this;
 			foreach($recEntry->elementTypes as $strType) {
-				$this->controller->loadModule($strType, function($module) use($recEntry, $strType, $content_article, $self, $arrFoundEmbeddedIDs) {
+				$this->controller->loadModule($strType, function ($module) use ($recEntry, $strType, $content_article, $self, $arrFoundEmbeddedIDs) {
 					if(method_exists($module, 'getArticleData')) {
 						$recEntry->subNode[$strType] = $module->getArticleData($recEntry->ID, $arrFoundEmbeddedIDs);
 
 						if($strType == 'image') {
 							$recEntry->element->content = $content_article->decodeImages(
 								$recEntry->element->content, true, true,
-								function($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating) use ($self) {
+								function ($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating) use ($self) {
 									return $self->decodeInlineImage($str, $recImage, $links, $imageReplacementMatch, $strStyle, $strRating);
 								});
 						}
@@ -553,9 +594,9 @@ class Article
 					case 'category':
 						$recEntry->galleries = $content_menu->q(
 							"SELECT t1.*
-                            FROM content_menu as t1
-                            LEFT JOIN content_image as t2 ON t1.ID=t2.parentID
-                            WHERE t1.parentID='{$recEntry->ID}' AND t1.module='category' and t1.method='image_list'
+                            FROM content_menu AS t1
+                            LEFT JOIN content_image AS t2 ON t1.ID=t2.parentID
+                            WHERE t1.parentID='{$recEntry->ID}' AND t1.module='category' AND t1.method='image_list'
                             ORDER BY t1.position"
 						);
 
@@ -563,8 +604,8 @@ class Article
 
 							$gallery->images = $content_menu->q(
 								"SELECT t1.title,t1.parentID,t2.ID,t2.float_position,t2.image_format,t2.thumbnail_type, t2.cloud_storage
-                                FROM content_menu as t1
-                                LEFT JOIN content_image as t2 ON t1.ID=t2.parentID
+                                FROM content_menu AS t1
+                                LEFT JOIN content_image AS t2 ON t1.ID=t2.parentID
                                 WHERE t1.parentID='{$gallery->ID}' AND t1.module='image'
                                 ORDER BY t1.position"
 							);
@@ -589,7 +630,6 @@ class Article
 
 			}
 		}
-
 
 
 		if($recEntry->userID) {
@@ -635,6 +675,7 @@ class Article
 
 	public function get_article_series($arrTags, $intLanguage) {
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$sys_tags  = $this->model('sys_tags');
 		$arrSeries = array();
@@ -687,6 +728,7 @@ class Article
 	public function searchByTag($tagID) {
 		$content_article = $this->model('Article');
 		$menu            = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$arrArticles = $content_article->q(
 			"SELECT t2.title,t2.ID
@@ -714,13 +756,14 @@ class Article
 
 	public function search_from_admin($q) {
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$content_article = $this->model('Article');
 
 		$arrArticles = $content_article->q(
 			"SELECT t2.title,t2.ID
-			FROM content_article as t1
-			INNER JOIN content_menu as t2 ON t2.ID=t1.parentID
+			FROM content_article AS t1
+			INNER JOIN content_menu AS t2 ON t2.ID=t1.parentID
 			WHERE t1.content_index LIKE '%$q%' OR t2.title LIKE '%$q%'"
 		);
 
@@ -750,7 +793,7 @@ class Article
 		$objContent   = $this->get_article($parentID);
 
 		if(in_array(4, $objContent->rights)) {
-			$this->controller->loadModule('comment', function($objComment) use($objContent) {
+			$this->controller->loadModule('comment', function ($objComment) use ($objContent) {
 				/** @var \Gratheon\CMS\Module\Comment $objComment */
 				$objContent->arrComments = $objComment->getNodeComments($objContent->ID);
 			});
@@ -800,6 +843,7 @@ class Article
 		}
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$arrSelected          = $tree->buildSelected($recEntry->ID);
 		$recEntry->navigation = $tree->buildLevels($arrSelected);
@@ -812,6 +856,7 @@ class Article
 
 	public function category_tile(&$recEntry) {
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 		$tree = new \Gratheon\CMS\Tree;
 
 		$this->add_js('image/image.js');
@@ -826,8 +871,8 @@ class Article
 
 		//$recEntry->element = $content_article->obj('parentID=' . $recEntry->ID);
 		$image = $content_menu->q("SELECT t1.title,t1.parentID,t2.ID,t2.float_position,t2.image_format,t2.thumbnail_type, t2.cloud_storage
-                                    FROM content_menu as t1
-                                    LEFT JOIN content_image as t2 ON t1.ID=t2.parentID
+                                    FROM content_menu AS t1
+                                    LEFT JOIN content_image AS t2 ON t1.ID=t2.parentID
                                     WHERE t1.parentID='{$recEntry->ID}' AND t1.module='image'
                                     ORDER BY t1.position
                                     LIMIT 1", 'object'

@@ -146,6 +146,7 @@ class Sitemap extends \Gratheon\CMS\ContentModule {
 
 
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 		$SitemapTree->initialize(10);
 
 

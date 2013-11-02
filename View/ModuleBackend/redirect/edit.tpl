@@ -23,7 +23,7 @@
 						<label>
 							<input type="radio"  name="pageID" value="{$item->ID}" {if $item->ID eq $recElement->pageID}checked='checked'{/if}>
 							{section name=connections loop=$item->level}&nbsp;&nbsp;&nbsp;{/section}
-							<img src="{$smarty.const.sys_url}/app/content/img/cms/icons/menu/{$item->module}.png"> {$item->title}
+							<img src="{$smarty.const.sys_url}/vendor/Gratheon/CMS/assets/img/icons/menu/{$item->module}.png"> {$item->title}
 						</label>
 					</li>
 				{/if}

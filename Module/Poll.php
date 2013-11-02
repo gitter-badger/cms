@@ -120,6 +120,7 @@ class Poll extends \Gratheon\CMS\ContentModule {
 	function category_view(&$item) {
 		$tree = new \Gratheon\CMS\Tree;
 		$menu = new \Gratheon\CMS\Menu();
+		$menu->loadLanguageCount();
 
 		$sys_tags     = $this->model('sys_tags');
 		$content_tags = $this->model('content_tags');

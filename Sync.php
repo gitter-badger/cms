@@ -13,11 +13,11 @@ class Sync extends \Gratheon\Core\Model {
 
 
 	function ask($query) {
-		pre($this->adapter->mysql_error);
+		print_r($this->adapter->mysql_error);
 
 		$this->q($query);
 		if($this->adapter->mysql_error) {
-			pre($this->adapter->mysql_error);
+			print_r($this->adapter->mysql_error);
 			$this->bUpdateSuccess = false;
 		}
 	}
@@ -48,8 +48,8 @@ class Sync extends \Gratheon\Core\Model {
 		$arrRows = $this->q("SHOW COLUMNS FROM `{$strTable}`");
 		foreach($arrRows as $arrRow) {
 			if($arrRow->Field == $strField AND (!$strType || $arrRow->Type == $strType)) {
-				//pre($strTable);
-				//pre($arrRow);
+				//print_r($strTable);
+				//print_r($arrRow);
 				return true;
 			}
 		}
@@ -71,7 +71,6 @@ class Sync extends \Gratheon\Core\Model {
 	function existsTableForeignKey($strTable, $strField) {
 		$oResult = $this->q("SHOW CREATE TABLE `{$strTable}`", 'ray');
 		$sResult = $oResult[0]['Create Table'];
-
 		if(strpos($sResult, "FOREIGN KEY (`" . $strField . "`) REFERENCES") !== false) {
 			return true;
 		}
