@@ -16,13 +16,6 @@ class Article
 
 	public $name = 'article';
 
-	public $models = array(
-		'content_article', 'content_image', 'content_menu',
-		'content_article_autodraft', 'content_external_video',
-		'sys_tags', 'content_tags', 'content_comment', 'sys_banned',
-		'content_menu_rights', 'sys_user', 'tpl_links_page'
-	);
-
 	public $public_methods = array('front_view', 'add_article');
 
 	public $static_methods = array('add_comment', 'addTranslatedArticle');
@@ -34,11 +27,8 @@ class Article
 
 		/** @var \Gratheon\CMS\Model\Article $content_article */
 		$content_article             = $this->model('Article');
-		$content_article_autodraft   = $this->model('ArticleAutodraft');
 		$content_article->imagemodel = $this->model('Image');
 		$this->setAmazon($content_article->imagemodel);
-
-		//$content_article->imagemodel
 
 		$parentID = $recMenu->ID;
 
@@ -66,26 +56,6 @@ class Article
 				}
 			);
 
-			//Draft editing
-			if($_GET['draftID']) {
-				$objDraft = $content_article_autodraft->obj((int)$_GET['draftID']);
-			}
-			else {
-				$objDraft = $content_article_autodraft->obj("nodeID='$parentID' ORDER BY date_added DESC", "ID,DATE_FORMAT(date_added, '%d.%m.%Y %H:%i') date_added_formatted");
-
-				if($objDraft->ID) {
-					$objDraft->link_load = sys_url . 'content/content/edit/?ID=' . $parentID . '&draftID=' . $objDraft->ID;
-
-
-					$this->assign('info', array(
-						$this->translate('Last changes were not saved, do you want to') . ' <a href="' . $objDraft->link_load . '" class="ajax" title="' . $objDraft->date_added_formatted . '">' .
-								$this->translate('open last draft') . '</a>?'
-					));
-					$this->assign('objDraft', $objDraft);
-				}
-			}
-
-			//Connections tab
 
 			$recElement->content = str_replace(array('&lt;', '&gt;'), array('&amp;lt;', '&amp;gt;'), $recElement->content);
 
@@ -149,34 +119,34 @@ class Article
 			$content_article->update($recElement, "ID='{$recElement->ID}'");
 
 
-			$this->ping_frontpage_updates($this->controller->in->post['ping']);
+			$this->ping_frontpage_updates($this->controller->in->post('ping'));
 
-			if($this->controller->in->post['crosspost']['livejournal']) {
-				$strContent = $content_article->decodeImages($recElement->content, $parentID);
+//			if($this->controller->in->post['crosspost']['livejournal']) {
+//				$strContent = $content_article->decodeImages($recElement->content, $parentID);
+//
+//				$recArticle = $this->get_article($parentID);
+//
+//				if($recArticle->images) {
+//					foreach($recArticle->images as $image) {
+//						$strContent .= "<a title='" . $image->title . "' href='" . $image->link_original . "'><img src='" . $image->link_square . "' /></a>";
+//					}
+//
+//				}
+//				$strContent = str_replace('<hr />', '<lj-cut text="more..">', $strContent);
+//				$strContent = $strContent . "</lj-cut><br /><a href='" . $menu->getPageURL($parentID) . "'>original..</a><br />";
+//
+//				$sys_sync_account = $this->model('sys_sync_account');
+//
+//
+//				$content_news = new Gratheon\CMS\Module\News();
+//
+//				/** @var $objExportService LivejournalService */
+//				$objExportService     = $content_news->getServiceObject('livejournal');
+//				$arrExportSyncAccount = (array)$sys_sync_account->obj("service='livejournal'", "*, DECODE(`password`,'" . \SiteConfig::db_encrypt_salt . "') decrypted_password");
+//				$objExportService->postMessage($strContent, $arrExportSyncAccount, $recMenu->title);
+//			}
 
-				$recArticle = $this->get_article($parentID);
-
-				if($recArticle->images) {
-					foreach($recArticle->images as $image) {
-						$strContent .= "<a title='" . $image->title . "' href='" . $image->link_original . "'><img src='" . $image->link_square . "' /></a>";
-					}
-
-				}
-				$strContent = str_replace('<hr />', '<lj-cut text="more..">', $strContent);
-				$strContent = $strContent . "</lj-cut><br /><a href='" . $menu->getPageURL($parentID) . "'>original..</a><br />";
-
-				$sys_sync_account = $this->model('sys_sync_account');
-
-
-				$content_news = new Gratheon\CMS\Module\News();
-
-				/** @var $objExportService LivejournalService */
-				$objExportService     = $content_news->getServiceObject('livejournal');
-				$arrExportSyncAccount = (array)$sys_sync_account->obj("service='livejournal'", "*, DECODE(`password`,'" . \SiteConfig::db_encrypt_salt . "') decrypted_password");
-				$objExportService->postMessage($strContent, $arrExportSyncAccount, $recMenu->title);
-			}
-
-			if($this->controller->in->post['download_format'] == 'docx') {
+			if($this->controller->in->post('download_format') == 'docx') {
 				require_once 'external_libraries/docxgen/phpDocx.php';
 				$phpdocx         = new phpdocx(sys_root . "cms/external_libraries/docxgen/template.docx");
 				$phpdocx->tmpDir = sys_root . 'app/content/cache/docx/word/';
@@ -335,15 +305,6 @@ class Article
 		$content_article->delete("parentID=" . $parentID);
 	}
 
-
-	// Other admin methods
-//	public function save_draft() {
-//		$content_article_autodraft = new content_article_autodraft();
-//		$content_article_autodraft->add_draft((int)$_GET['id'], $_POST['title'], $_POST['article_content']);
-//		die(1);
-//	}
-
-
 	private function ping_frontpage_updates($aServicesToNotify) {
 		$oRemoteService = new \Gratheon\CMS\Service\DefaultService();
 		if($aServicesToNotify['technorati']) {
@@ -365,37 +326,10 @@ class Article
 		$this->use_gz = false;
 
 		$strFunction = strtolower(__FUNCTION__);
-		$offset      = $_GET['page'] > 0 ? $this->per_page * ((int)$_GET['page'] - 1) : 0;
+		$offset      = $this->controller->in->get('page') > 0 ? $this->per_page * ((int)$this->controller->in->get('page') - 1) : 0;
 
 		//Filter on top
 		$strFilter = '1=1';
-//		if($this->controller->in->request['date_from']) {
-//			$_SESSION[$this->name][$strFunction]['date_from'] = $this->controller->in->request['date_from'];
-//			$arrDate                                          = explode('.', $this->controller->in->request['date_from']);
-//			$strFromDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-//		}
-//		elseif($_SESSION[$this->name][$strFunction]['date_from']) {
-//			$arrDate     = explode('.', $_SESSION[$this->name][$strFunction]['date_from']);
-//			$strFromDate = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-//		}
-
-//		if($strFromDate) {
-//			$strFilter .= " AND t1.date_added>='$strFromDate 00:00:00'";
-//		}
-
-//		if($this->controller->in->request['date_to']) {
-//			$_SESSION[$this->name][$strFunction]['date_to'] = $this->controller->in->request['date_to'];
-//			$arrDate                                        = explode('.', $this->controller->in->request['date_to']);
-//			$strToDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-//		}
-//		elseif($_SESSION[$this->name][$strFunction]['date_to']) {
-//			$arrDate   = explode('.', $_SESSION[$this->name][$strFunction]['date_to']);
-//			$strToDate = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
-//		}
-
-//		if($strToDate) {
-//			$strFilter .= " AND t1.date_added<='$strToDate 23:59:59'";
-//		}
 
 		$content_article = $this->model('Article');
 
@@ -413,19 +347,16 @@ class Article
 
 		$total_count = $content_article->count();
 
-		$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+		$intPage = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 0;
 
-		if($arrList){
-		foreach($arrList as &$objItem) {
-			$objItem->link_edit   = sys_url . 'content/call/' . $this->name . '/edit_article/?id=' . $objItem->ID;
-			$objItem->link_delete = sys_url . 'content/call/' . $this->name . '/delete_article/?id=' . $objItem->ID . "&page=" . $intPage;
+		if($arrList) {
+			foreach($arrList as &$objItem) {
+				$objItem->link_edit   = sys_url . 'content/call/' . $this->name . '/edit_article/?id=' . $objItem->ID;
+				$objItem->link_delete = sys_url . 'content/call/' . $this->name . '/delete_article/?id=' . $objItem->ID . "&page=" . $intPage;
+			}
 		}
-		}
 
-		#Create page navigation for first page
-		//$intPage=isset($_GET['page'])? (int)$_GET['page']:0;
 
-		//$this->assign('title', $this->translate('Articles') . ' (' . $total_count . ')');
 		$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
 
 		$this->assign('objPaginator', $objPaginator);
@@ -435,7 +366,7 @@ class Article
 		$this->assign('link_filter', sys_url . '/content/call/' . $this->name . '/' . $strFunction . '/');
 		$this->assign('link_add', sys_url . '/content/call/' . $this->name . '/edit_article/');
 
-		$this->assign('form_filter', $_SESSION[$this->name][$strFunction]);
+		$this->assign('form_filter', $this->controller->session->get($this->name, $strFunction));
 
 		//$this->assign('show_twitter',$this->config('twitter_login'));
 
@@ -453,10 +384,11 @@ class Article
 
 		$articleID = $this->controller->in->get('id');
 
-		if($_POST){
-			$recElement = new \stdClass();;
-			$recElement->title = stripslashes($this->controller->in->post['title']);
-			$recElement->content = stripslashes($this->controller->in->post['content']);
+		if($_POST) {
+			$recElement = new \stdClass();
+			;
+			$recElement->title        = stripslashes($this->controller->in->post['title']);
+			$recElement->content      = stripslashes($this->controller->in->post['content']);
 			$recElement->date_changed = 'NOW()';
 
 			$content_article->update($recElement, "ID='$articleID'");
@@ -471,9 +403,9 @@ class Article
 		}
 
 		$content_menu = $this->model('Menu');
-		$pages = $content_menu->arr("(elementID='$articleID' OR ID='{$recElement->parentID}') AND module='article'");
+		$pages        = $content_menu->arr("(elementID='$articleID' OR ID='{$recElement->parentID}') AND module='article'");
 		$this->assign('pages', $pages);
-		$this->assign('link_save', sys_url.'/content/call/article/edit_article/?id='.$articleID);
+		$this->assign('link_save', sys_url . '/content/call/article/edit_article/?id=' . $articleID);
 	}
 
 

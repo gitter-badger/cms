@@ -263,8 +263,8 @@ class Poll extends \Gratheon\CMS\ContentModule {
 
 		$recVote = $recReply = new \Gratheon\Core\Record();
 
-		$recReply->pollID    = $recVote->pollID = $ID = (int)$_GET['ID'];
-		$recReply->answerID  = $recVote->answerID = (int)$_GET['answerID'];
+		$recReply->pollID    = $recVote->pollID = $ID = (int)$this->controller->in->get('ID');
+		$recReply->answerID  = $recVote->answerID = (int)$this->controller->in->get('answerID');
 		$recVote->IP         = "INET_ATON('" . $user->IP . "')";
 		$recVote->userID     = $user->data['ID'];
 		$recVote->date_added = 'NOW()';
@@ -302,7 +302,7 @@ class Poll extends \Gratheon\CMS\ContentModule {
 
 	function svg() {
 
-		$ID = (int)$_GET['ID']; //(int)$_GET['PollID'];
+		$ID = (int)$this->controller->in->get('ID'); //(int)$this->controller->in->get('PollID');
 		if(!$ID) {
 			return;
 		}
@@ -314,8 +314,8 @@ class Poll extends \Gratheon\CMS\ContentModule {
 		$graph = new \stdClass();
 
 		//Graph config
-		$graph->width     = $_GET['w'] ? (int)$_GET['w'] : 370;
-		$graph->height    = $_GET['h'] ? (int)$_GET['h'] : 100;
+		$graph->width     = $this->controller->in->get('w') ? (int)$this->controller->in->get('w') : 370;
+		$graph->height    = $this->controller->in->get('h') ? (int)$this->controller->in->get('h') : 100;
 		$graph->padding   = 5;
 		$graph->fill      = array(255, 153, 0);
 		$graph->cx        = 0.5 * $graph->width;

@@ -209,7 +209,7 @@ class Tree extends \Gratheon\Core\Model
             $recParent = $this->obj("ID='$selectedID'");
             Tree::$arrParentIDCache[$selectedID] = $recParent->parentID;
 
-            if (count(Tree::$arrParentCache[$selectedID]) < 50) {
+            if (!isset(Tree::$arrParentCache[$selectedID]) || count(Tree::$arrParentCache[$selectedID]) < 50) {
                 Tree::$arrParentCache[$selectedID] = $recParent;
             }
         }

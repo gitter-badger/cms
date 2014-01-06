@@ -1,0 +1,46 @@
+#context_menu {
+	position: absolute;
+	-moz-user-select: none;
+	background-color: #F4F4F6;
+	border: 1px solid;
+	width: 100px;
+	border-color: #DBDFF3 rgb(172, 175, 191) rgb(172, 175, 191) rgb(219, 233, 243);
+	list-style: none;
+	padding: 2px;
+	z-index: 50;
+
+	li {
+		padding: 2px 0 2px 20px;
+		cursor: default;
+		display: block;
+		list-style: none;
+	}
+
+	div {
+		line-height: 16px;
+	}
+
+	li.hr {
+		padding: 0;
+		background: #ACAFBF;
+		height: 1px;
+	}
+
+	li.menu_upload {
+		background: url('../../img/icons/blue_arrow_up_small.png') no-repeat left;
+	}
+
+	li:hover, #context_menu li.selected {
+		background-color: #0A246A;
+		color: white;
+	}
+
+	li:hover div {
+		color: white;
+	}
+
+	.delete_link {
+		background: url('../../img/icons/delete.png') no-repeat left;
+	}
+
+}

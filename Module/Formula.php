@@ -62,19 +62,14 @@ class Formula extends \Gratheon\CMS\ContentModule
     }
 
     public function decodeEmbeddable($menu){
-		$parentID = $menu->ID;
 		$ID = $menu->elementID;
 
         $this->controller->add_js('http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML', false);
 
         $content_formula = $this->model('content_formula');
-        $content_menu = $this->model('content_menu');
-
-
-        //$menu = $content_menu->obj($ID);
         $record = $content_formula->obj("parentID='$ID'");
 
-        if($record->format=='latex'){
+        if(isset($record->format) && $record->format=='latex'){
             $record->content = '<div class="formula">
             <div class="formula_source">\\['. $record->content. '\\]</div>
             <div class="formula_description">'.nl2br($record->description).'</div>
@@ -83,6 +78,10 @@ class Formula extends \Gratheon\CMS\ContentModule
             ';
         }
 
-        return $record->content;
+		if(isset($record->content)) {
+			$record->content;
+		}
+
+        return '';
     }
 }

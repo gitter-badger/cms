@@ -11,17 +11,17 @@ class Front extends \Gratheon\Core\Controller {
 	public $content_template = 'front.main.tpl';
 	public $preinit_languages = true;
 	public $load_config = true;
-	public $langID = 'eng';
 
-
-	public $models = array(
-		'iso_languages',
-		'content_menu', 'content_article', 'content_comment', 'content_poll', 'content_poll_answers', 'content_poll_votes',
-		'content_menu_rights', 'content_file_jar', 'content_file', 'content_image',
-		'sys_banned', 'sys_languages', 'sys_tags', 'content_tags', 'content_module', 'content_module_connections');
-
+	public function init(){
+		$this->loadLanguages();
+		$this->loadUser();
+	}
 
 	public function loadLanguages() {
+
+		$this->arrLanguages = $this->initLanguages($this->in->URI, $this->config->get('use_language_detection'));
+		$this->load_translations($this->in->URI[0]);
+
 		$sys_languages = $this->model('sys_languages');
 
 		$recLanguage  = $sys_languages->obj("ID='" . $this->langID . "'");
@@ -59,9 +59,6 @@ class Front extends \Gratheon\Core\Controller {
 	public function handleViewPermissionDenied() {
 		echo "Permission denied";
 		exit();
-//        $this->assign('errors', array($this->translate('Please login')));
-//        $this->container_template = sys_root . 'app/front/view/layout/front.page.tpl';
-//        $this->assign('content_template', sys_root . 'app/front/view/helpers/messages.tpl');
 	}
 
 
@@ -238,10 +235,6 @@ class Front extends \Gratheon\Core\Controller {
 		$this->assign('translations', $this->getTranslationsAsJS());
 		$this->assign('controller', $controller);
 		$this->add_js_var('sys_url', sys_url);
-//		if(isset($_GET['a'])){
-//			echo $controller->container_template;
-//			exit();
-//		}
 
 		return $controller->container_template;
 	}
@@ -281,8 +274,6 @@ class Front extends \Gratheon\Core\Controller {
 
 	//Generic search, depending on content type
 	public function search() {
-//        $this->add_css('night_theme.css', 'screen');
-
 		$content_menu   = $this->model('content_menu');
 		$sys_tags       = $this->model('sys_tags');
 		$content_module = $this->model('content_module');
@@ -336,8 +327,8 @@ class Front extends \Gratheon\Core\Controller {
 		$sys_languages = $this->model('sys_languages');
 		$content_menu  = $this->model('content_menu');
 
-		$iParentID = $_GET['id'];
-		$iLang     = $_GET['lang'];
+		$iParentID = $this->in->get('id');
+		$iLang     = $this->in->get('lang');
 		if(!$iLang) {
 			$iLang = $sys_languages->int("is_default=1", "ID");
 		}
@@ -407,10 +398,7 @@ class Front extends \Gratheon\Core\Controller {
 //
 			case 'full':
 				$arrTree = array();
-//				echo '<pre>';
 				$menu->buildFullTree($arrTree, array(1), $arrIDs[1], 5);
-//				print_r($arrIDs);
-//				print_r($arrTree);
 				$this->assign('arrMenu', $arrTree);
 				break;
 		}

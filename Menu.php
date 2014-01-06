@@ -27,6 +27,20 @@ class Menu extends \Gratheon\CMS\Tree {
 	}
 
 
+	function getPageByModule($moduleName, $language){
+		$content_menu   = \Gratheon\CMS\Model\Menu::singleton();
+
+		$intPage = $content_menu->int("module='$moduleName' AND langID='$language'", 'ID');
+
+		if($this->intLangCount > 1) {
+			$strPage = $this->getPageURL($intPage);
+		}
+		else {
+			$strPage = $this->getPageURL($intPage);
+		}
+		return $strPage;
+	}
+
 	function getPageURL($intID) {
 		$arrParents = $this->buildSelected((int)$intID);
 

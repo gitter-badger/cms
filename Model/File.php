@@ -20,7 +20,7 @@ class File extends \Gratheon\Core\Model {
 	public function getURL($file) {
 		$subpath = 'file/' . $file->ID . '.' . $file->ext;
 
-		if($file->cloud_storage=='amazon' && $this->amazon_host != '' && $this->amazon_bucket != '') {
+		if(isset($file->cloud_storage) && $file->cloud_storage=='amazon' && $this->amazon_host != '' && $this->amazon_bucket != '') {
 			return 'https://' . $this->amazon_host . '/' . $this->amazon_bucket . '/' . $subpath;
 		}
 

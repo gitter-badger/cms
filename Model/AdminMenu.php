@@ -16,6 +16,7 @@ class AdminMenu extends \Gratheon\Core\Model{
 	public function getHierarchicalArray() {
 		$arrModuleMenu = array();
 		$arrModules    = $this->arr('parentID=0 ORDER BY position');
+
 		foreach($arrModules as $item) {
 
 			$arrNode = array(
@@ -23,18 +24,20 @@ class AdminMenu extends \Gratheon\Core\Model{
 				'rel'    => $item->module . '/' . $item->method,
 				'title'  => $item->title,
 				'link'   => sys_url . 'content/call/' . $item->module . '/' . $item->method,
-				'active' => ($this->in->URI[3] == $item->module) ? 1 : 0
+				'active' => (isset($this->controller->in->URI[3]) && $this->controller->in->URI[3] == $item->module) ? 1 : 0
 			);
 
 			//add second level menu
 			$arrChildren = $this->arr('parentID=' . $item->ID . ' ORDER BY position');
 			foreach($arrChildren as $item2) {
+				$modules = $this->arrint('parentID=' . $item->ID, 'module');
+
 				$arrNode['children'][] = array(
-					'name'   => $item2->file,
+					'name'   => $item2->module,
 					'rel'    => $item2->module . '/' . $item2->method,
 					'title'  => $item2->title,
 					'link'   => sys_url . 'content/call/' . $item2->module . '/' . $item2->method . '/',
-					'active' => (in_array($this->in->URI[4], $this->arrint('parentID=' . $item->ID, 'module')))
+					'active' => (isset($this->controller->in->URI[4]) && in_array($this->controller->in->URI[4], $modules))
 							? 1 : 0,
 				);
 			}

@@ -170,9 +170,10 @@ class Video extends \Gratheon\CMS\ContentModule
 						$recElement->FlashVars  = 'config={"playlist":[' . ($recElement->file_image ? '{"url": "' . $recElement->file_image . '", "scaling": "scale"},' : '') . '{"url":"' . $recElement->external_flv . '","autoPlay":false,"autoBuffering":true}],"clip":{}}';
 						$recElement->src        = $recElement->external_flv;
 						break;
+
 					case 'jwplayer':
 						$recElement->flash_path = '/ext/jwplayer/player.swf';
-						$recElement->FlashVars  = 'image=' . $recElement->file_image . '&file=' . $recElement->external_flv . '&stretching=fill&controlbar.position=over';
+						$recElement->FlashVars  = (isset($recElement->file_image) ? 'image=' . $recElement->file_image.'&' : '') . 'file=' . $recElement->external_flv . '&stretching=fill&controlbar.position=over';
 						$recElement->src        = $recElement->external_flv;
 						break;
 				}
@@ -196,6 +197,7 @@ class Video extends \Gratheon\CMS\ContentModule
 		$content_external_video = $this->model($this->model_name);
 		$content_menu           = $this->model('content_menu');
 
+		$strWhere = '';
 		if($arrFoundEmbeddedIDs) {
 			$strWhere = " AND t1.ID NOT IN (" . implode(',', $arrFoundEmbeddedIDs) . ")";
 		}

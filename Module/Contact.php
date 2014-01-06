@@ -120,10 +120,10 @@ class Contact extends \Gratheon\CMS\ContentModule {
         $content_contact_log = $this->model('content_contact_log');
         $content_contact = $this->model('content_contact');
 
-        $recLog = $content_contact_log->obj('ID=' . $_GET['ID']);
+        $recLog = $content_contact_log->obj('ID=' . $this->controller->in->get('ID'));
         $recElement = $content_contact->obj($recLog->contactID);
 
-        $content_contact_log->delete('ID=' . $_GET['ID']);
+        $content_contact_log->delete('ID=' . $this->controller->in->get('ID'));
 
         $this->controller->redirect('/content/edit/?ID=' . $recElement->parentID);
     }
@@ -138,7 +138,7 @@ class Contact extends \Gratheon\CMS\ContentModule {
         if ($parentID) {
             $recElement = $content_contact->obj('parentID=' . $parentID);
 
-            $offset = isset($_GET['page']) ? $this->per_page * ($_GET['page'] - 1) : 0;
+            $offset = $this->controller->in->get('page') ? $this->per_page * ($this->controller->in->get('page') - 1) : 0;
             $arrList = $content_contact_log->arr('contactID=' . $recElement->ID . " ORDER BY date_added DESC LIMIT " . $offset . ',' . $this->per_page,
                 "*, DATE_FORMAT(date_added,'%d.%m.%Y %h:%i') date_added_formatted");
 
@@ -148,9 +148,9 @@ class Contact extends \Gratheon\CMS\ContentModule {
             }
 
             #Create page navigation for first page
-            $intPage = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+            $intPage = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 0;
             $objPaginator = new CMS\Paginator($this->controller->in, $content_contact_log->count, $intPage, $this->per_page);
-            $objPaginator->url = '/content/edit/?ID=' . $_GET['id'];
+            $objPaginator->url = '/content/edit/?ID=' . $this->controller->in->get('id');
 
             $this->assign('recElement', $recElement);
             $this->assign('objPaginator', $objPaginator);

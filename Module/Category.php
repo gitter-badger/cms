@@ -10,17 +10,16 @@ namespace Gratheon\CMS\Module;
 use Gratheon\CMS;
 
 class Category extends \Gratheon\CMS\ContentModule {
-
 	public $name = 'category';
 
-	public $models = array(
-		'content_article', 'content_image', 'content_menu', 'content_menu_rights',
-		'content_category', 'sys_languages',
-		'sys_tags', 'content_tags', 'content_comment', 'content_poll'
+	public $public_methods = array(
+		'tag_map',
+		'image_list',
+		'pub_list',
+		'pub_tiles',
+		'pub_plain_list'
 	);
 
-
-	public $public_methods = array('pub_list', 'image_list', 'tag_map', 'pub_tiles', 'pub_plain_list');
 	public $static_methods = array('front_rss');
 
 
@@ -71,35 +70,15 @@ class Category extends \Gratheon\CMS\ContentModule {
 	}
 
 
-	/*
-	 function admin_search($q) {
-		 global $controller, $menu;
-		 $content_menu = $this->model('content_category');
+	public $modulesChildren = array('file', 'image', 'video', 'map');
+	public $modulesAllTree = array('article', 'poll', 'mirror');
 
-		 $arrArticles = $content_menu->arr("title LIKE '%" . $q . "%'", 'title,ID');
 
-		 $arrEnvelope        = new SearchEnvelope();
-		 $arrEnvelope->count = $content_menu->count();
-		 $arrEnvelope->title = $controller->translate('Categories');
-
-		 foreach ($arrArticles as &$item) {
-			 $item->link_view = $menu->getPageURL($item->ID) . '/';
-			 $item->link_edit = 'content/#' . $item->ID;
-		 }
-
-		 $arrEnvelope->list = $arrArticles;
-
-		 return $arrEnvelope;
-	 }
- */
 	function pub_list($parentID, $item_view = 'category_view') {
-		$content_menu        = $this->model('Menu');
-		$content_category    = $this->model('content_category');
-		$content_menu_rights = $this->model('content_menu_rights');
-		$sys_tags            = $this->model('sys_tags');
-		$content_tags        = $this->model('content_tags');
-
-		//$this->add_js('/ext/jquery/jquery.hotkeys.js');
+		$content_menu     = $this->model('Menu');
+		$content_category = $this->model('content_category');
+		$sys_tags         = $this->model('sys_tags');
+		$content_tags     = $this->model('content_tags');
 
 		$strFilter   = $strOrder = '';
 		$arrCategory = $content_category->obj('parentID=' . $parentID);
@@ -107,7 +86,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 		if($arrCategory->deepness == 'only_children') {
 			$strFilter .= " AND t1.parentID='$parentID' AND
 			(
-                t1.module IN ('article','poll','mirror', 'article') AND
+                t1.module IN ('" . implode("','", $this->modulesChildren) . "') AND
                 t1.method='front_view' AND
                 t2.groupID='" . $this->controller->user->data['groupID'] . "' AND
                 t2.rightID=2 OR t1.module IN ('file','image','video','map')
@@ -116,7 +95,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 		}
 		else {
 			$strFilter .= " AND
-					t1.module IN ('article','poll', 'article') AND
+					t1.module IN ('" . implode("','", $this->modulesAllTree) . "') AND
 					t1.method='front_view' AND
 					t2.groupID='" . $this->controller->user->data['groupID'] . "' AND
 					t1.langID='{$this->controller->langID}' AND
@@ -129,7 +108,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 		}
 
 		if($arrCategory->elements_per_page) {
-			$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+			$intPage = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 1;
 			if($intPage < 1) {
 				$intPage = 1;
 			}
@@ -269,7 +248,7 @@ class Category extends \Gratheon\CMS\ContentModule {
 		}
 
 		if($arrCategory->elements_per_page) {
-			$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+			$intPage = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 1;
 			if($intPage < 1) {
 				$intPage = 1;
 			}
@@ -326,23 +305,26 @@ class Category extends \Gratheon\CMS\ContentModule {
 	}
 
 
-	function front_rss($parentID = 1) {
+	function front_rss($parentID) {
 		$content_category = $this->model('content_category');
 		$sys_languages    = $this->model('sys_languages');
 		$content_menu     = $this->model('content_menu');
 
+		if(!$parentID) {
+			$parentID = 2;
+		}
 
-		// Load RSS module
-//		require_once('vendor/tot-ra/feedcreator/feedcreator.class.php');
-//		$rss           = new \UniversalFeedCreator();
-//		$rss->encoding = 'UTF-8';
-//
 		$rss = new \Gratheon\Core\View\RSSProxy();
 
 		// Find category
-		$arrCategory = $content_category->obj('parentID=' . $parentID);
-		$strFilter   = '';
-		$strOrder    = '';
+		$arrCategory = $content_category->prepare(["parentID" => $parentID])->obj('parentID=:parentID');
+
+		if(!$arrCategory){
+			return false;
+		}
+
+		$strFilter = '';
+		$strOrder  = '';
 
 		if($arrCategory->deepness == 'only_children') {
 			$strFilter .= " t1.parentID='$parentID' AND ";
@@ -351,12 +333,12 @@ class Category extends \Gratheon\CMS\ContentModule {
 			$strOrder .= " ORDER BY t1." . $arrCategory->orderby . " DESC ";
 		}
 		if($arrCategory->elements_per_page) {
-			$intPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+			$intPage = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 1;
 			$offset  = ($intPage - 1) * 10;
 			$strOrder .= " LIMIT $offset, 10 ";
 		}
 
-		$langID = (int)$_GET['lang'];
+		$langID = (int)$this->controller->in->get('lang');
 		if(!$langID) {
 			$langID = $sys_languages->int("is_default=1", 'ID');
 		}
@@ -408,18 +390,30 @@ class Category extends \Gratheon\CMS\ContentModule {
 					$item->arrTags       = $sys_tags->arr('t1.ID=t2.tagID AND t2.contentID=' . $item->ID, 't1.ID, t1.pop, t1.title', $sys_tags->table . ' t1 LEFT JOIN ' . $content_tags->table . ' t2 ON t1.ID=t2.tagID');
 
 
-					$recEntry['link']         = $recEntry['guid'] = $menu->getPageURL($item->ID); //sys_url.'article/'.$item->ID;
-					$recEntry['title']        = $item->title;
-					$recEntry['files']        = $item->arrFiles;
-					$recEntry['flash_videos'] = $item->flash_videos;
-					$recEntry['images']       = $item->images;
-					$recEntry['date']         = date('r', $item->date_added_unix);
+					$recEntry['link']  = $recEntry['guid'] = $menu->getPageURL($item->ID); //sys_url.'article/'.$item->ID;
+					$recEntry['title'] = $item->title;
+
+					if(isset($item->arrFiles)) {
+						$recEntry['files'] = $item->arrFiles;
+					}
+
+					if(isset($item->flash_videos)) {
+						$recEntry['flash_videos'] = $item->flash_videos;
+					}
+
+					if(isset($item->images)) {
+						$recEntry['images'] = $item->images;
+					}
+
+					$recEntry['date'] = date('r', $item->date_added_unix);
 
 					$recEntry['description'] = $item->element->content; //$data->short;
 
 					/** @var \Gratheon\CMS\Model\Image $content_image */
-					foreach((array)$recEntry['images'] as $image) {
-						$recEntry['description'] .= '<a href="' . $content_image->getURL($image, 'original', false) . '"><img src="' . $content_image->getURL($image, 'square', false) . '" alt="' . $image->title . '"/></a>';
+					if(isset($recEntry['images'])) {
+						foreach((array)$recEntry['images'] as $image) {
+							$recEntry['description'] .= '<a href="' . $content_image->getURL($image, 'original', false) . '"><img src="' . $content_image->getURL($image, 'square', false) . '" alt="' . $image->title . '"/></a>';
+						}
 					}
 
 					$recEntry['description'] = str_replace("href='/", "href='" . sys_url . "/", $recEntry['description']); //relative to absolute urls

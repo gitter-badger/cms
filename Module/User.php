@@ -214,7 +214,7 @@ class User extends \Gratheon\CMS\ContentModule {
 
 
 	function activate() {
-		$strHash = $_GET['hash'];
+		$strHash = $this->controller->in->get('hash');
 		$arrUser = $sys_user->obj("activation_hash='$strHash'");
 
 		$arrUser->activated = 1;
@@ -743,7 +743,7 @@ class User extends \Gratheon\CMS\ContentModule {
 		// $client->setDeveloperKey('insert_your_developer_key');
 		$oauth2 = new apiOauth2Service($client);
 
-		if(isset($_GET['code'])) {
+		if($this->controller->in->get('code')) {
 			$client->authenticate();
 			$_SESSION['token'] = $client->getAccessToken();
 			$redirect          = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];

@@ -114,19 +114,19 @@ class ImageConvertor {
 		    chmod($file, 0755);
         }
 */
-		$this->original_image_info = getimagesize($file);
+		$this->original_image_info = \getimagesize($file);
 
 		switch ($this->original_image_info[2]) {
 			case IMAGETYPE_GIF:
-				$this->original_image_resource = imagecreatefromgif($file);
+				$this->original_image_resource = \imagecreatefromgif($file);
 				break;
 
 			case IMAGETYPE_JPEG:
-				$this->original_image_resource = imagecreatefromjpeg($file);
+				$this->original_image_resource = \imagecreatefromjpeg($file);
 				break;
 
 			case IMAGETYPE_PNG:
-				$this->original_image_resource = imagecreatefrompng($file);
+				$this->original_image_resource = \imagecreatefrompng($file);
 				break;
 
 			default:
@@ -142,7 +142,7 @@ class ImageConvertor {
 	public function resizeRectangle($width = 0, $height = 0, $upscale = false, $keep_proportions=true) {
 
 		if ($height <= 0 && $width <= 0) {
-			throw new Exception('invalid image dimensions');
+			throw new \Exception('invalid image dimensions');
 		}
 
 		$image      = $this->original_image_resource;
@@ -177,11 +177,11 @@ class ImageConvertor {
             $final_height = $height;
         }
 
-		$image_resized = imagecreatetruecolor($final_width, $final_height);
+		$image_resized = \imagecreatetruecolor($final_width, $final_height);
 
 		$this->loadTransparency($image, $image_resized, $type_old);
 
-		imagecopyresampled(
+		\imagecopyresampled(
             $image_resized, $image,
             0, 0,
             $this->crop_position[0], $this->crop_position[1],
@@ -198,22 +198,22 @@ class ImageConvertor {
 
 	public function loadTransparency($image, &$image_resized, $type_old) {
 		if (($type_old == IMAGETYPE_GIF) || ($type_old == IMAGETYPE_PNG)) {
-			$trnprt_indx = imagecolortransparent($image);
+			$trnprt_indx = \imagecolortransparent($image);
 
 			// If we have a specific transparent color
 			if ($trnprt_indx >= 0) {
 
 				// Get the original image's transparent color's RGB values
-				$trnprt_color = imagecolorsforindex($image, $trnprt_indx);
+				$trnprt_color = \imagecolorsforindex($image, $trnprt_indx);
 
 				// Allocate the same color in the new image resource
-				$trnprt_indx = imagecolorallocate($image_resized, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
+				$trnprt_indx = \imagecolorallocate($image_resized, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
 
 				// Completely fill the background of the new image with allocated color.
-				imagefill($image_resized, 0, 0, $trnprt_indx);
+				\imagefill($image_resized, 0, 0, $trnprt_indx);
 
 				// Set the background color for new image to transparent
-				imagecolortransparent($image_resized, $trnprt_indx);
+				\imagecolortransparent($image_resized, $trnprt_indx);
 
 
 			}
@@ -221,16 +221,16 @@ class ImageConvertor {
 			elseif ($type_old == IMAGETYPE_PNG) {
 
 				// Turn off transparency blending (temporarily)
-				imagealphablending($image_resized, false);
+				\imagealphablending($image_resized, false);
 
 				// Create a new transparent color for image
-				$color = imagecolorallocate($image_resized, 255, 255, 255); //imagecolorallocatealpha($image_resized, 0, 0, 0, 127);
+				$color = \imagecolorallocate($image_resized, 255, 255, 255); //imagecolorallocatealpha($image_resized, 0, 0, 0, 127);
 
 				// Completely fill the background of the new image with allocated color.
-				imagefill($image_resized, 0, 0, $color);
+				\imagefill($image_resized, 0, 0, $color);
 
 				// Restore transparency blending
-				imagesavealpha($image_resized, true);
+				\imagesavealpha($image_resized, true);
 			}
 		}
 	}
@@ -238,7 +238,7 @@ class ImageConvertor {
 
     public function deleteOriginal($file, $use_linux_commands = false) {
 		if ($use_linux_commands) {
-			exec('rm ' . $file);
+			\exec('rm ' . $file);
 		}
 		else
 		{
@@ -251,8 +251,8 @@ class ImageConvertor {
     public function outputImage($output) {
 		switch ($output) {
 			case 'browser':
-				$mime = image_type_to_mime_type($this->original_image_info[2]);
-				header("Content-type: $mime");
+				$mime = \image_type_to_mime_type($this->original_image_info[2]);
+				\header("Content-type: $mime");
 				$output = NULL;
 				break;
 
@@ -261,21 +261,21 @@ class ImageConvertor {
 				break;
 		}
 
-        if(file_exists($output)){
-            unlink($output);
+        if(\file_exists($output)){
+            \unlink($output);
         }
 
 		switch ($this->original_image_info[2]) {
 			case IMAGETYPE_GIF:
-				imagegif($this->resized_image_resource, $output);
+				\imagegif($this->resized_image_resource, $output);
 				break;
 
 			case IMAGETYPE_JPEG:
-				imagejpeg($this->resized_image_resource, $output, 100);
+				\imagejpeg($this->resized_image_resource, $output, 100);
 				break;
 
 			case IMAGETYPE_PNG:
-				imagepng($this->resized_image_resource, $output);
+				\imagepng($this->resized_image_resource, $output);
 				break;
 		}
 		return true;
@@ -299,19 +299,19 @@ class ImageConvertor {
 	     if (is_resource($image1))
 	          $im = $image1;
 		 elseif(strlen($image1)>200){
-			 $im = imagecreatefromstring($image1);
+			 $im = \imagecreatefromstring($image1);
 		 }
 	     else
-	          if (!$im = imagecreatefrompng($image1))
+	          if (!$im = \imagecreatefrompng($image1))
 	               trigger_error("Image 1 could not be opened",E_USER_ERROR);
 
 	     if (is_resource($image2))
 	          $im2 = $image2;
 	     elseif(strlen($image2)>200){
-             $im2 = imagecreatefromstring($image2);
+             $im2 = \imagecreatefromstring($image2);
          }
 	     else
-	          if (!$im2 = imagecreatefrompng($image2))
+	          if (!$im2 = \imagecreatefrompng($image2))
 	               trigger_error("Image 2 could not be opened",E_USER_ERROR);
 
 
@@ -329,12 +329,12 @@ class ImageConvertor {
 	          {
 	          for ($height=0;$height<=imagesy($im)-1;$height++)
 	               {
-	               $rgb = imagecolorat($im, $width, $height);
+	               $rgb = \imagecolorat($im, $width, $height);
 	               $r1 = ($rgb >> 16) & 0xFF;
 	               $g1 = ($rgb >> 8) & 0xFF;
 	               $b1 = $rgb & 0xFF;
 
-	               $rgb = imagecolorat($im2, $width, $height);
+	               $rgb = \imagecolorat($im2, $width, $height);
 	               $r2 = ($rgb >> 16) & 0xFF;
 	               $g2 = ($rgb >> 8) & 0xFF;
 	               $b2 = $rgb & 0xFF;

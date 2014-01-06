@@ -183,8 +183,10 @@ class Image extends \Gratheon\Core\Model {
 		//		$objPaginator->url='#image/list_images/';
 
 		if($images) {
-			foreach($images as &$item) {
-				$item->image_link = $this->getURL($item, 'square');
+			foreach($images as &$image) {
+				$image->link_square = $this->getSquareURL($image);
+				$image->link_rectangle = $this->getRectangleURL($image);
+				$image->link_original = $this->getOriginalURL($image);
 			}
 		}
 		return $images;

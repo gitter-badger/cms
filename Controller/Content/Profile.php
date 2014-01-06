@@ -16,11 +16,12 @@ class Profile extends \Gratheon\Core\Controller {
         $this->assign('arrLanguages', $arrLanguages);
         $this->assign('title', $this->translate('Authentication'));
 
-        if (isset($this->in->post['login'])) {
-            $success = $this->user->login($this->in->post['login'], md5($this->in->post['pass']));
+		$success = false;
+        if ($this->in->post('login')) {
+            $success = $this->user->login($this->in->post('login'), md5($this->in->post('pass')));
         }
 
-        if ($success || $this->user->data['ID'] && $this->user->data['groupID'] == 2) {
+        if ($success || isset($this->user->data['ID']) && $this->user->data['groupID'] == 2) {
             $this->redirect(sys_url . 'content/');
         }
 

@@ -6,7 +6,7 @@ class Step00026 extends \Gratheon\CMS\Sync{
 
     function process(){
 
-		if($this->existsTableField('content_image','amazon_hosted')){
+		if($this->existsTableField('content_image','cloud_storage')){
 			$this->ask("ALTER TABLE `content_image`     ADD COLUMN `EXIF` TEXT CHARSET utf8 NULL AFTER `amazon_hosted`;");
 			$this->ask("ALTER TABLE `content_file`     ADD COLUMN `cloud_storage` VARCHAR(15) NULL AFTER `scribd_show`;");
 			$this->ask("ALTER TABLE `content_image`     CHANGE `amazon_hosted` `cloud_storage` VARCHAR(15) NULL ;");

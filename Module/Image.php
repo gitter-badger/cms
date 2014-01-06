@@ -32,7 +32,7 @@ class Image extends CMS\ContentModule
 			$filename = implode('.', $aFile);
 		}
 
-		$strMenuTitle = $this->controller->in->post['title'] ? $this->controller->in->post['title'] : $filename;
+		$strMenuTitle = $this->controller->in->post('title') ? $this->controller->in->post('title') : $filename;
 		//$content_menu->q('UPDATE '.$content_menu->table.' SET title="'.$strMenuTitle.'" WHERE ID='.$parentID);
 
 		$intElement = $this->addFile($parentID);
@@ -43,7 +43,7 @@ class Image extends CMS\ContentModule
 		);
 
 
-		$this->saveImageRating($this->controller->in->post['xrate'], $parentID);
+		$this->saveImageRating($this->controller->in->post('xrate'), $parentID);
 
 		$content_image = $this->model('Image');
 
@@ -153,10 +153,10 @@ class Image extends CMS\ContentModule
 				$arrFile['tmpfile'] = $strFileTmpName = & $_FILES[$strField]['tmp_name'];
 			}
 		}
-		elseif(file_exists($this->getIncomingFilePath($this->controller->in->post['title']))) {
-			$arrFile['tmpfile'] = $this->getIncomingFilePath($this->controller->in->post['title']);
+		elseif(file_exists($this->getIncomingFilePath($this->controller->in->post('title')))) {
+			$arrFile['tmpfile'] = $this->getIncomingFilePath($this->controller->in->post('title'));
 
-			$arrFile['name'] = $this->controller->in->post['title'];
+			$arrFile['name'] = $this->controller->in->post('title');
 			$arrFile['type'] = CMS\Model\Image::getMimeContentType($arrFile['tmpfile']);
 			$arrFile['size'] = filesize($arrFile['tmpfile']);
 		}
@@ -212,7 +212,7 @@ class Image extends CMS\ContentModule
 		$content_image->update($recElement, 'parentID=' . $parentID);
 
 
-		$this->saveImageRating($this->controller->in->post['xrate'], $parentID);
+		$this->saveImageRating($this->controller->in->post('xrate'), $parentID);
 	}
 
 

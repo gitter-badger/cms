@@ -77,7 +77,7 @@ $(document).ready(function () {
 		afterMove: function (destination, source, pos) {
 			//alert("destination-"+destination.attr('id')+" source-"+source.attr('id')+" pos-"+pos);
 			Content.notePanel.set(t('Moving..'), '');
-			$.get(sys_url + 'content/content/menu_precise_move/?ID=' + source.attr('id').replace('node', '') + '&parentID=' + destination.attr('id').replace('node', '') + '&pos=' + pos, function (responce) {
+			$.get(sys_url + 'content/menu/menu_precise_move/?ID=' + source.attr('id').replace('node', '') + '&parentID=' + destination.attr('id').replace('node', '') + '&pos=' + pos, function (responce) {
 				Content.notePanel.set(t('Move completed'), 'success', 3);
 			});
 
@@ -116,7 +116,7 @@ $(document).ready(function () {
 
 		},
 		animate: true,
-		urlReadNodes: sys_url + 'content/content/menu_preload/?', //+MenuTree.langID+'&ID='+ID+''
+		urlReadNodes: sys_url + 'content/menu/menu_preload/?', //+MenuTree.langID+'&ID='+ID+''
 		urlAnchorBase: sys_url + 'content/'
 	});
 

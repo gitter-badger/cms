@@ -2,6 +2,6 @@
 	<textarea id="article_content" class="wysiwyg" name="article_content" style="height: 400px; width: 100%;">
 	{if $recMenu->ID}{$recElement->content}
 		{elseif $recDraft->content}{$recDraft->content}
-		{else}<p></p>{/if}
+		{else}<p>&nbsp;</p>{/if}
 	</textarea>
 </div>

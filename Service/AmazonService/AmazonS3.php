@@ -1215,17 +1215,17 @@ final class S3Request {
 		//var_dump($this->bucket, $this->uri, $this->resource, $url);
 
 		// Basic setup
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_USERAGENT, 'S3/php');
+		$curl = \curl_init();
+		\curl_setopt($curl, CURLOPT_USERAGENT, 'S3/php');
 
-        curl_setopt($curl, CURLOPT_CAINFO, sys_root . '/vendor/Gratheon/CMS/Service/cacerts.pem');
+        \curl_setopt($curl, CURLOPT_CAINFO, sys_root . '/vendor/Gratheon/CMS/Service/cacerts.pem');
 
 		if (AmazonS3::$useSSL) {
-			curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 1);
-			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
+			\curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+			\curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
 		}
 
-		curl_setopt($curl, CURLOPT_URL, $url);
+		\curl_setopt($curl, CURLOPT_URL, $url);
 
 		// Headers
 		$headers = array(); $amz = array();

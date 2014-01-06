@@ -54,7 +54,7 @@ $(document).ready(function() {
         TREE.editDeepChild = function(ID) {
             var nID = "" + ID;
             nID = nID.replace('node', '');
-            jQuery.getJSON(sys_url + 'content/content/menu_parents/?langID=' + Content.langID + '&ID=' + nID + '',
+            jQuery.getJSON(sys_url + 'content/menu/menu_parents/?langID=' + Content.langID + '&ID=' + nID + '',
                 function(arrItems) {
                     TREE.arrQueue = arrItems;
                     TREE.intQueueIndex = 0;

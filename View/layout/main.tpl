@@ -47,7 +47,6 @@
 						<li><a href="#settings/list_emails/">{t}Email templates{/t}</a></li>
 						<li><a href="#settings/list_sync_accounts/">{t}Sync accounts{/t}</a></li>
 						<li><a href="#settings/view_diagnostics/">{t}Diagnostics{/t}</a></li>
-
 					</ul>
 				</li>
 
@@ -135,6 +134,8 @@
 			<li><a rel="image/list_images" href="{$sys_url}content/call/image/list_images/&amp;static=1" class="ajax">{t}Images{/t}</a></li>
 
 			<li><a rel="file/list_files" href="{$sys_url}content/call/file/list_files/" class="ajax">{t}Files{/t}</a></li>
+			<li><a rel="movie/list_movies" href="{$sys_url}content/call/movie/list_movies/" class="ajax">{t}Movies{/t}</a></li>
+			<li><a rel="table/list_tables" href="{$sys_url}content/call/table/list_tables/" class="ajax">{t}Tables{/t}</a></li>
 
 
 			{foreach from=$arrModuleMenu item=module}

@@ -6,9 +6,10 @@ class Step00024 extends \Gratheon\CMS\Sync{
 
     function process(){
 		if(!$this->existsTableForeignKey('content_menu','module')){
-       		$this->ask("ALTER TABLE `content_menu` ADD CONSTRAINT `content_menu_FK2` FOREIGN KEY (`module`)
+			$this->ask("ALTER TABLE `content_menu` ADD CONSTRAINT `content_menu_FK2` FOREIGN KEY (`module`)
         REFERENCES `content_module` (`ID`) ON DELETE SET NULL  ON UPDATE CASCADE ;");
 		}
+
 		return $this->bUpdateSuccess;
     }
 }

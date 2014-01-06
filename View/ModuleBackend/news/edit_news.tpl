@@ -31,7 +31,7 @@
 			<div class="controls">
 				<input type="text" class="date span2" id="date_open_from_formatted" name="date_open_from_formatted" value="{$objNews->date_open_from_formatted}"/>
 				<input type="text" class="time span1" name="time_open_from_formatted" value="{$objNews->time_open_from_formatted}"/>
-&mdash;
+				&mdash;
 				<input type="text" class="date span2" id="date_open_from_formatted" name="date_open_to_formatted" value="{$objNews->date_open_to_formatted}"/>
 				<input type="text" class="time span1" name="time_open_to_formatted" value="{$objNews->time_open_to_formatted}"/>
 			</div>
@@ -47,29 +47,46 @@
 		</div>
 
 		{if $news_images}
-		<div class="control-group">
-			<label class="control-label" for="date_added_formatted">{t}Attached images{/t}</label>
+			<div class="control-group">
+				<label class="control-label" for="date_added_formatted">{t}Attached images{/t}</label>
 
-			<div class="controls">
-				{foreach from=$news_images item=item}
-					<label style="width:160px;display: inline-block;font-size: 11px;border:1px solid #323232;background-color: #cacaca;margin:3px;color:black;">
-						<img src="{$item->image_link}" /><br />
-						<div style="padding:3px 10px;overflow: hidden;height: 24px;"><input type="checkbox" name="image_ids[]" value="{$item->ID}" checked="checked"/>&nbsp; {$item->filename}</div>
-					</label>
-				{/foreach}
+				<div class="controls">
+					{foreach from=$news_images item=item}
+						<label style="width:160px;display: inline-block;font-size: 11px;border:1px solid #323232;background-color: #cacaca;margin:3px;color:black;">
+							<img src="{$item->link_square}"/><br/>
+
+							<div style="padding:3px 10px;overflow: hidden;height: 24px;">
+								<input type="checkbox" name="image_ids[]" value="{$item->ID}" checked="checked"/>&nbsp; {$item->filename}
+							</div>
+						</label>
+					{/foreach}
+				</div>
 			</div>
-		</div>
 		{/if}
 
 		<div class="control-group">
 			<label class="control-label" for="date_added_formatted">{t}Add recent images{/t}</label>
 
 			<div class="controls">
-				{foreach from=$latest_images item=item}
-					<label style="width:160px;display: inline-block;font-size: 11px;border:1px solid #323232;background-color: #cacaca;margin:3px;color:black;">
-						<img src="{$item->image_link}" /><br />
-						<div style="padding:3px 10px;overflow: hidden;height: 24px;"><input type="checkbox" name="image_ids[]" value="{$item->ID}"/>&nbsp; {$item->filename}</div>
-					</label>
+				{foreach from=$latest_images item=item key=key}
+					{if $key>2}
+						<label style="width:300px;font-size: 11px;border:1px solid #323232;background-color: #cacaca;margin:3px;color:black;">
+							<img src="{$item->link_rectangle}" style="max-height:30px;width:40px;"/>
+
+							<div style="padding:3px 10px;overflow: hidden;height: 24px;display: inline-block;">
+								<input type="checkbox" name="image_ids[]" value="{$item->ID}"/>&nbsp; {$item->filename}
+							</div>
+						</label>
+					{else}
+						<label style="float:left; width:160px;display: inline-block;font-size: 11px;border:1px solid #323232;background-color: #cacaca;margin:3px;color:black;">
+							<img src="{$item->link_square}" style="max-height:90px;"/>
+
+							<div style="padding:3px 10px;overflow: hidden;height: 24px;display: inline-block;">
+								<input type="checkbox" name="image_ids[]" value="{$item->ID}"/>&nbsp; {$item->filename}
+							</div>
+						</label>
+					{/if}
+					{if $key==2}<br/>{/if}
 				{/foreach}
 			</div>
 		</div>

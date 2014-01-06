@@ -34,7 +34,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		//Filter on top
 		$strFilter = '1=1';
-		if($this->controller->in->request['date_from']) {
+		if($this->controller->in->request('date_from')) {
 			$_SESSION[$this->name][$strFunction]['date_from'] = $this->controller->in->request['date_from'];
 			$arrDate                                          = explode('.', $this->controller->in->request['date_from']);
 			$strFromDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
@@ -51,9 +51,9 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			$strFilter .= " AND t1.date_added>='$strFromDate 00:00:00'";
 		}
 
-		if($this->controller->in->request['date_to']) {
-			$_SESSION[$this->name][$strFunction]['date_to'] = $this->controller->in->request['date_to'];
-			$arrDate                                        = explode('.', $this->controller->in->request['date_to']);
+		if($this->controller->in->request('date_to')) {
+			$_SESSION[$this->name][$strFunction]['date_to'] = $this->controller->in->request('date_to');
+			$arrDate                                        = explode('.', $this->controller->in->request('date_to'));
 			$strToDate                                      = $arrDate[2] . '-' . $arrDate[1] . '-' . $arrDate[0];
 		}
 		elseif($_SESSION[$this->name][$strFunction]['date_to']) {
@@ -83,10 +83,8 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			ORDER BY t1.date_added DESC
 			LIMIT {$offset},{$intPerPage}", "array"
 		);
+
 		$total_count = $content_news->count();
-
-//        $total_count  = $content_news->q("SELECT FOUND_ROWS()", 'int');
-
 		$intPage = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 0;
 
 		foreach($arrList as $objItem) {
@@ -253,18 +251,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			}
 
 
-			$news_images = $content_news_images->arr(
-				't1.news_id=' . $ID,
-				't2.ID, t2.filename, t2.image_format, t2.cloud_storage',
-				'content_news_images t1 INNER JOIN content_image t2 ON t2.id=t1.image_id'
-			);
-
-			if($news_images) {
-				foreach($news_images as &$image) {
-					$image->image_link = $content_image->getSquareURL($image);
-				}
-			}
-
+			$news_images = $this->getNewsImages($ID, $content_image);
 			$this->add_js_var('news_delete_image', sys_url . 'content/call/' . $this->name . '/delete_image/');
 
 			$this->assign('news_images', $news_images);
@@ -279,6 +266,29 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		return 'ModuleFrontend/' . $this->name . '/' . __FUNCTION__ . '.tpl';
 	}
+
+
+	protected function getNewsImages($ID, $content_image) {
+		if(!$ID){
+			return false;
+		}
+		$content_news_images = $this->model('content_news_images');
+		$news_images = $content_news_images->arr(
+			't1.news_id="' . $ID.'"',
+			't2.ID, t2.filename, t2.image_format, t2.cloud_storage',
+			'content_news_images t1 INNER JOIN content_image t2 ON t2.id=t1.image_id'
+		);
+
+		if($news_images) {
+			foreach($news_images as &$image) {
+				$image->link_square = $content_image->getSquareURL($image);
+				$image->link_rectangle = $content_image->getRectangleURL($image);
+				$image->link_original = $content_image->getOriginalURL($image);
+			}
+		}
+		return $news_images;
+	}
+
 
 	private function getImageModel() {
 		/** @var CMS\Model\Image $content_image */
@@ -309,21 +319,6 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$content_news->delete("ID='$ID'");
 		$this->controller->redirect($this->name . '/list_news/?page=' . $this->controller->in->get('page'));
 	}
-
-//
-//	public function delete_image($ID = null) {
-//		if(!$ID) {
-//			$ID = (int)$this->controller->in->get('ID');
-//		}
-//
-//		$modImage = new modImage();
-//		$modImage->load_models();
-//
-//		if($ID) {
-//			$modImage->deleteByID($ID);
-//		}
-//	}
-
 
 	public function getServiceObject($sService) {
 		$strCleanService = $this->getServiceName($sService);
@@ -611,8 +606,10 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			INNER JOIN content_news_body t2 ON t1.ID=t2.newsID AND t2.langID='{$this->controller->langID}' AND t2.title<>''
 			LEFT JOIN content_news_external t3 ON t3.newsID=t1.ID");
 
-		$strMenuPath = $menu->getTplPage('news_details', $this->controller->langID);
+		$strMenuPath = $menu->getPageByModule('news', $this->controller->langID);
 
+
+		$content_image = $this->getImageModel();
 		if($arrNews) {
 			foreach($arrNews as &$arrItem) {
 				$arrItem->link_view = $strMenuPath . $arrItem->ID;
@@ -620,6 +617,8 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 				if($arrItem->serviceName == 'twitter') {
 					$arrItem->content = $this->addTwitterLinks($arrItem->content);
 				}
+
+				$arrItem->images = $this->getNewsImages($arrItem->ID, $content_image);
 			}
 		}
 
@@ -793,7 +792,6 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		$content_news        = $this->model('News');
 		$content_image       = $this->model('Image');
-		$content_news_images = $this->model('NewsImage');
 
 		$arrNews = $content_news->q(
 			"SELECT SQL_CALC_FOUND_ROWS t1.*,t2.login,DATEDIFF(NOW(),t1.date_added) as diff,
@@ -830,17 +828,19 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		if($arrNews) {
 			foreach($arrNews as &$objNews) {
-				$objNews->images = $content_news_images->q(
-					"SELECT t1.image_id, t2.image_format
-					FROM content_news_images t1
-					INNER JOIN content_image t2 ON t2.id=t1.image_id
-					WHERE t1.news_id='{$objNews->ID}'", "array");
+//				$objNews->images = $content_news_images->q(
+//					"SELECT t1.image_id, t2.image_format
+//					FROM content_news_images t1
+//					INNER JOIN content_image t2 ON t2.id=t1.image_id
+//					WHERE t1.news_id='{$objNews->ID}'", "array");
+//
+//				if($objNews->images) {
+//					foreach($objNews->images as &$image) {
+//						$image->link_image = $content_image->getRectangleURL($image); //sys_url . 'res/image/thumb/' . $image->image_id . '.' . $image->image_format;
+//					}
+//				}
 
-				if($objNews->images) {
-					foreach($objNews->images as &$image) {
-						$image->link_image = $content_image->getRectangleURL($image); //sys_url . 'res/image/thumb/' . $image->image_id . '.' . $image->image_format;
-					}
-				}
+				$objNews->images = $this->getNewsImages($objNews->ID, $content_image);
 
 				if($objNews->serviceName == 'twitter') {
 					$objNews->content = $this->addTwitterLinks($objNews->content);
@@ -852,7 +852,7 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 		$this->assign('article', $arrNews[0]);
 		$this->assign('intPageCount', $objPaginator->page_count);
-		$this->assign('arrArticles', $arrNews);
+		$this->assign('arrList', $arrNews);
 	}
 
 
@@ -865,10 +865,21 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$ID = end($this->controller->in->URI);
 
 		$content_news = $this->model('News');
+		$content_image = $this->getImageModel();
+
+		$strDateFormat = $this->controller->config('date_format_sql');
+		$strDateFormat = $strDateFormat ? $strDateFormat : '%d.%m.%Y';
 
 		$arrItem = $content_news->q(
-			"SELECT *, DATEDIFF(NOW(),date_added) AS diff, DATE_FORMAT(date_added,'%d MONTH %Y, %H:%i') AS date_formatted,
-            DATE_FORMAT(date_added,'%M') AS date_month, t3.serviceName
+			"SELECT *,
+			DATEDIFF(NOW(),date_added) AS diff,
+
+            DATE_FORMAT(date_added,'%M') AS date_month, t3.serviceName,
+
+			DATE_FORMAT(date_added,'$strDateFormat') date_added_formatted,
+            DATE_FORMAT(date_open_from,'$strDateFormat') date_open_from_formatted,
+            DATE_FORMAT(date_open_to,'$strDateFormat') date_open_to_formatted
+
 			FROM content_news t1
 			INNER JOIN content_news_body t2 ON t1.ID=t2.newsID AND t2.langID='{$this->controller->langID}'
 			LEFT JOIN content_news_external t3 ON t3.newsID=t1.ID
@@ -879,7 +890,12 @@ class News extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 			$arrItem->content = $this->addTwitterLinks($arrItem->content);
 		}
 
-		$arrItem->date_formatted = str_replace('MONTH', strtolower($this->translate($arrItem->date_month)), $arrItem->date_formatted);
+		$arrItem->images = $this->getNewsImages($arrItem->ID, $content_image);
+
+
+		if(isset($arrItem->date_formatted)){
+			$arrItem->date_formatted = str_replace('MONTH', strtolower($this->translate($arrItem->date_month)), $arrItem->date_formatted);
+		}
 		$this->assign('title', $this->config('title_article') . $arrItem->title);
 		$this->assign('element', $arrItem);
 

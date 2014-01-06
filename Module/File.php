@@ -10,11 +10,6 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 	public $name = 'file';
 
-	public $models = array('content_file', 'content_menu', 'content_file_scribd', 'content_image');
-
-
-//	private $document_scribd_extensions = array('pdf', 'ps', 'docx', 'doc', 'ppt', 'pps', 'pptx', 'xls', 'xlsx', 'odt', 'sxw', 'odp', 'sxi', 'ods', 'sxc', 'txt', 'rtf');
-
 	private function getFileModel() {
 		/** @var CMS\Model\File $content_file */
 		$content_file = $this->model('File');
@@ -189,7 +184,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		$content_file = $this->getFileModel();
 //		$content_file->getFiles();
 
-		$offset     = $_GET['page'] > 0 ? $this->per_page * ((int)$_GET['page'] - 1) : 0;
+		$offset     = $this->controller->in->get('page') > 0 ? $this->per_page * ((int)$this->controller->in->get('page') - 1) : 0;
 		$intPerPage = $this->per_page;
 		$files      = $content_file->q(
 			"SELECT SQL_CALC_FOUND_ROWS t1.*, t2.ID pageID
@@ -200,7 +195,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 		);
 
 		$total_count  = $content_file->count();
-		$intPage      = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+		$intPage      = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 0;
 		$objPaginator = new CMS\Paginator($this->controller->in, $total_count, $intPage, $this->per_page);
 		//		$objPaginator->url='#image/list_images/';
 
@@ -243,7 +238,7 @@ class File extends \Gratheon\CMS\ContentModule implements \Gratheon\CMS\Module\B
 
 
 	public function delete_file($fileID) {
-		$intPage      = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+		$intPage      = $this->controller->in->get('page') ? (int)$this->controller->in->get('page') : 0;
 		$content_file = $this->getFileModel();
 
 		$arrFile = $content_file->obj("ID='$fileID'");

@@ -1,0 +1,83 @@
+div#panel {
+	background-color: rgb(239, 239, 239);
+
+	a#dashboard {
+		height: 20px;
+	}
+
+	.tab {
+		background: #24344E url('../img/bg/menu_selected.jpg');
+		padding: 2px 5px 2px 5px;
+		color: white;
+		border-bottom: 1px solid #555566;
+		min-height: 18px;
+	}
+
+	.tab a {
+		color: white;
+		text-decoration: none;
+	}
+
+	.tab a span {
+		border-bottom: 1px dotted white;
+	}
+
+	.tab a.module_menu_1 {
+		display: block;
+		width: 100%;
+	}
+
+	.tab a.module_menu_1 span {
+		margin-left: 20px;
+	}
+
+	.tab_value {
+		margin-top: 5px;
+		background: white;
+		-moz-opacity: .95;
+		opacity: .95;
+		-moz-border-radius: 2px;
+		-khtml-border-radius: 2px;
+		-webkit-border-radius: 2px;
+		border-radius: 2px;
+	}
+
+	.tab_value * {
+		color: #0C192F;
+	}
+
+	.tab_value a {
+		color: #0C192F;
+	}
+
+	.tab_value .tab_level2 li {
+		list-style: none;
+	}
+
+	.tab_value .tab_level2 li a {
+		display: block;
+		width: 100%;
+		padding: 1px 20px;
+		color: black;
+	}
+
+	.tab_value .tab_level2 li.selected {
+		background-color: #FFE87F;
+		color: black;
+	}
+
+	div#panel_list {
+		overflow-y: auto;
+		overflow-x: hidden;
+		width: 100%;
+		margin-top: 5px;
+	}
+
+	#content_menu {
+		list-style: none;
+		overflow-x: hidden;
+		background: white;
+		max-height: 400px;
+		border-radius: 5px;
+	}
+}

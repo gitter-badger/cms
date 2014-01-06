@@ -91,7 +91,7 @@ class Comment
 		global $user;
 		$content_menu = $this->model('Menu');
 
-		$ID = (int)$_GET['ID'];
+		$ID = (int)$this->controller->in->get('ID');
 		if($user->data['groupID'] == 2 && $ID) {
 			$content_menu->delete($ID);
 			$this->delete($ID);
@@ -109,8 +109,8 @@ class Comment
 		setcookie('email', $this->controller->in->post['comment_email'], strtotime("+1 week"), '/');
 
 
-		$intNodeID                                  = (int)$_GET['nodeID'];
-		$intParentID                                = $_GET['parentID'] ? (int)$_GET['parentID'] : $intNodeID;
+		$intNodeID                                  = (int)$this->controller->in->get('nodeID');
+		$intParentID                                = $this->controller->in->get('parentID') ? (int)$this->controller->in->get('parentID') : $intNodeID;
 		$this->controller->in->post['comment_body'] = stripslashes($this->controller->in->post['reply']); // $_SESSION['front']['comment_field']
 
 
@@ -288,10 +288,10 @@ class Comment
 		$langID    = $this->controller->langID;
 		$strFilter = '';
 
-		$nodeID = (int)$_GET['nodeID'];
+		$nodeID = (int)$this->controller->in->get('nodeID');
 		if($nodeID) {
 			$arrIDs = array();
-			$tree->getLinearChildIDs((int)$_GET['nodeID'], $arrIDs);
+			$tree->getLinearChildIDs((int)$this->controller->in->get('nodeID'), $arrIDs);
 			$strFilter .= "t1.ID IN (" . implode(',', $arrIDs) . ") AND ";
 			$rss->title = $this->controller->translate('Comments to') . ' "' . $content_menu->int("ID=" . $nodeID, 'title') . '"';
 		}

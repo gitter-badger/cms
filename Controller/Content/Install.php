@@ -4,7 +4,7 @@ namespace Gratheon\Cms\Controller\Content;
 class Install extends \Gratheon\Core\Controller {
 
 	public function log($result){
-		echo "<div>".$result."</div>";
+		echo "<div style='background-color:black;color:white;margin:3px;padding:5px;font-family:Consolas,monospace;'>".$result."</div>";
 	}
 
     function updates() {
@@ -18,7 +18,6 @@ class Install extends \Gratheon\Core\Controller {
 
         $dir = dir($pathToUpdates);
 
-		echo "<div style='background-color:white'>";
 
         $tmpSync = new \Gratheon\CMS\Sync();
         if (!$tmpSync->existsTable('sys_update')) {
@@ -31,6 +30,8 @@ class Install extends \Gratheon\Core\Controller {
         }
 
 
+		$this->log('Installing updates');
+
         //List files in images directory
         while (($file = $dir->read()) !== false) {
             if (is_file($pathToUpdates . $file)) {
@@ -38,12 +39,14 @@ class Install extends \Gratheon\Core\Controller {
                 $ID = (int)$sID;
                 $exExecution = $sys_update->int($ID);
                 if (!$exExecution) {
-                    $this->log('Executing update #' . $ID);
+
                     //require_once($pathToUpdates . $file);
                     $strUpdateName = "\\Gratheon\\CMS\\Updates\\Step" . $sID;
 
                     $objUpdate = new $strUpdateName('');
                     $bSuccess = $objUpdate->process();
+
+					$this->log('Executing update #' . $ID." : ".$objUpdate->description);
 
                     if ($objUpdate->bReloadNeeded) {
 						$this->log("update #$ID requested window reload");
@@ -69,7 +72,6 @@ class Install extends \Gratheon\Core\Controller {
             }
         }
 
-		echo '</div>';
         $dir->close();
     }
 }
